@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SpaceSelfLog Visualizer</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>SpaceSelfLog Visualizer</h1>
+      <div id="tabs" class="tabs" hidden>
+        <button id="tabLoadView" class="tab">Load &amp; View</button>
+        <button id="tabStatistics" class="tab">Statistics</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="import">
+        <label class="btn" for="folderPicker">Select Session Folder</label>
+        <input id="folderPicker" type="file" webkitdirectory directory multiple />
+        <p class="hint">Please select a session root folder like <code>Data/2025-11-09_11-01-25</code> (containing <code>Data/analysis_results.json</code>; images will only be read from <code>Images_censored</code>, automatically generated if not present).</p>
+        <div id="importStatus" class="status"></div>
+        <div id="loadingSpinner" class="spinner" hidden></div>
+      </section>
+
+      <section class="stats" id="statsSection" hidden>
+        <h2>Session Information</h2>
+        <div class="stats-grid">
+          <div class="stat"><span>Total Photos</span><strong id="statCount">-</strong></div>
+          <div class="stat"><span>Start Time</span><strong id="statStart">-</strong></div>
+          <div class="stat"><span>End Time</span><strong id="statEnd">-</strong></div>
+          <div class="stat"><span>Avg Interval</span><strong id="statInterval">-</strong></div>
+          <div class="stat"><span>Total Duration</span><strong id="statDuration">-</strong></div>
+          <div class="stat"><span>Active Duration</span><strong id="statActiveDuration">-</strong></div>
+          <!-- Session metadata appended here (same style as stats items) -->
+          <div class="stat"><span>API Provider</span><strong id="sessionProvider">-</strong></div>
+          <div class="stat"><span>Model</span><strong id="sessionModel">-</strong></div>
+          <div class="stat"><span>Experiment #</span><strong id="sessionExperiment">-</strong></div>
+          <div class="stat stat-prompt"><span>Prompt</span><strong id="sessionPrompt">-</strong></div>
+        </div>
+        <div class="pauses" id="pauses"></div>
+      </section>
+
+      <section class="viewer" id="viewerSection" hidden>
+        <div class="viewer-header">
+          <div class="pager">
+            <button id="prevBtn" class="nav">← Previous</button>
+            <span id="pagerText">0 / 0</span>
+            <button id="nextBtn" class="nav">Next →</button>
+            <input id="jumpInput" type="number" min="1" value="" placeholder="Go" />
+          </div>
+          <!-- add a button to delete the current image from the session (delete from the 1. Images foler 2. the Images_censored folder 3. analysis_results.json) -->
+          <!-- add a button to censor the current image: 点击按钮后，然后按钮上的字变成 “Confirm”，鼠标和图片位置重叠时变成圆形画笔，按下鼠标拖动可以在图上（紫色）涂出想要 censored 的区域，松开鼠标后，点击按钮确认 censored 区域，然后会自动生成 censored 后的图片并替换在 Images_censored 文件夹中的。生成censor要和server.py中的方式样式一致-->
+          <!-- 这两种编辑完成后都会自动重新加载当前图片，并更新统计信息 -->
+           <div class="Tools">
+           <button id="deleteBtn" class="delete" type="button">Delete</button>
+           <button id="censorBtn" class="delete" type="button">Censor</button>
+            <button id="censorModeBtn" class="btn" type="button" hidden>Re-censor</button>
+            <button id="brushSizeBtn" class="btn" type="button" hidden>Brush 2/4</button>
+          </div>
+          
+          
+        </div>
+        <div class="canvas">
+          <img id="viewerImage" alt="Current Image" />
+          <button id="checkAllBtn" class="btn check-all" type="button">Check all</button>
+        </div>
+        <div class="meta-grid" id="metaGrid">
+          <div class="meta" id="metaRaw"><span>Raw Output</span><strong id="metaModel">—</strong></div>
+          <!-- Dynamic formatted keys will be injected here by script.js (after Raw Output) -->
+          <div class="meta"><span>Inference Time</span><strong id="metaInference">—</strong></div>
+          <div class="meta"><span>Capture Time</span><strong id="metaCapture">—</strong></div>
+          <div class="meta"><span>ID</span><strong id="metaId">—</strong></div>
+        </div>
+      </section>
+
+      <section class="statistics" id="statisticsSection" hidden>
+        <h2>Statistics</h2>
+        <div class="charts-grid" id="chartsGrid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title">Activity Label Frequency</div>
+              <button class="chart-unfold" id="btnUnfoldFormatted">Unfold</button>
+            </div>
+            <div class="chart-bars" id="chartFormatted"></div>
+          </div>
+          <div class="chart-card chart-wide">
+            <div class="chart-header">
+              <div class="chart-title">Timeline Heatmap</div>
+              <button class="chart-unfold" id="btnHeatmapNorm">Normalize: Row</button>
+              <button class="chart-unfold" id="btnUnfoldHeatmap">Unfold</button>
+            </div>
+            <div class="heatmap" id="chartHeatmap">
+              <!-- Populated by script.js: axis row + activity rows -->
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title">Annotation Activity Frequency</div>
+              <button class="chart-unfold" id="btnUnfoldAnnotation">Unfold</button>
+            </div>
+            <div class="chart-bars" id="chartAnnotation"></div>
+          </div>
+          <div class="chart-card chart-wide">
+            <div class="chart-header">
+              <div class="chart-title">Annotation Timeline Heatmap</div>
+              <button class="chart-unfold" id="btnHeatmapNormAnnotation">Normalize: Row</button>
+              <button class="chart-unfold" id="btnUnfoldAnnotationHeatmap">Unfold</button>
+            </div>
+            <div class="heatmap" id="chartAnnotationHeatmap"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title">Annotation Activity Accuracy</div>
+              <button class="chart-unfold" id="btnAnnotationMetric">Metric: Accuracy</button>
+              <button class="chart-unfold" id="btnUnfoldAnnotationAccuracy">Unfold</button>
+            </div>
+            <div class="chart-bars" id="chartAnnotationAccuracy"></div>
+          </div>
+          <!-- Future charts will be added here; grid displays 3 per row -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Chart modal overlay -->
+    <div class="chart-modal-backdrop" id="chartModal" hidden>
+      <div class="chart-modal-content" id="chartModalContent">
+        <div class="chart-modal-header">
+          <div class="chart-modal-title" id="chartModalTitle"></div>
+          <button class="chart-modal-close" id="chartModalClose">Close</button>
+        </div>
+        <div class="chart-modal-body" id="chartModalBody"></div>
+      </div>
+    </div>
+
+    <footer>
+      <small>Use keyboard ← / → to navigate</small>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+  </html>

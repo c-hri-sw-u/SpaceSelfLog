@@ -1,0 +1,11 @@
+flask>=3.0.0
+flask-cors>=4.0.0
+ultralytics>=8.3.0
+opencv-python>=4.8.0
+pillow>=10.0.0
+requests>=2.31.0
+numpy>=1.26.0
+
+# 可选：如 YOLO 报错提示缺少 torch，请手动安装 CPU 版：
+# torch
+# torchvision

@@ -1,0 +1,3708 @@
+[
+  {
+    "responseTime": 784409459.316838,
+    "modelOutput": "chopping",
+    "formattedOutput": {
+      "activityLabel": "chopping"
+    },
+    "id": "71E933E4-E5CC-4745-9BE0-A695527A7704",
+    "captureTime": 784409458.181184,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716658.jpg"
+  },
+  {
+    "responseTime": 784409474.369104,
+    "modelOutput": "scrolling",
+    "formattedOutput": {
+      "activityLabel": "scrolling"
+    },
+    "id": "BF120FB5-1060-4F6E-9812-691B999235D9",
+    "captureTime": 784409473.180245,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716673.jpg"
+  },
+  {
+    "responseTime": 784409489.421651,
+    "modelOutput": "GroceryShopping",
+    "formattedOutput": {
+      "activityLabel": "groceryshopping"
+    },
+    "id": "5F6C1BA1-C135-4093-893E-5B31BF01D725",
+    "captureTime": 784409488.180655,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716688.jpg"
+  },
+  {
+    "responseTime": 784409504.168129,
+    "modelOutput": "cooking",
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "F44D0114-895A-4D12-A763-EF7B7AF56C09",
+    "captureTime": 784409503.181503,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716703.jpg"
+  },
+  {
+    "responseTime": 784409519.733032,
+    "modelOutput": "scrolling",
+    "formattedOutput": {
+      "activityLabel": "scrolling"
+    },
+    "id": "60483B27-4A79-4892-9B2E-6BACEE8D5C90",
+    "captureTime": 784409518.18149,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716718.jpg"
+  },
+  {
+    "responseTime": 784409534.172304,
+    "modelOutput": "Cooking",
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "B9D823CF-1C31-4439-A370-2C9A6BFD4E4A",
+    "captureTime": 784409533.181647,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716733.jpg"
+  },
+  {
+    "responseTime": 784409549.53254,
+    "modelOutput": "scrolling",
+    "formattedOutput": {
+      "activityLabel": "scrolling"
+    },
+    "id": "8B49D9F5-8533-4849-B063-594C7CB6DE42",
+    "captureTime": 784409548.18165,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716748.jpg"
+  },
+  {
+    "responseTime": 784409564.315248,
+    "modelOutput": "Cooking",
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "CC2B8333-ABED-4305-B2BD-8E4917292866",
+    "captureTime": 784409563.181752,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716763.jpg"
+  },
+  {
+    "responseTime": 784409579.241133,
+    "modelOutput": "preparing food",
+    "formattedOutput": {
+      "activityLabel": "preparing"
+    },
+    "id": "FA4EA898-1CA5-4F05-A38E-9CDE90C60B78",
+    "captureTime": 784409578.181821,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716778.jpg"
+  },
+  {
+    "responseTime": 784409594.281349,
+    "modelOutput": "Chopping",
+    "formattedOutput": {
+      "activityLabel": "chopping"
+    },
+    "id": "928B0D44-6E96-4CCA-87EE-30F0C82E802E",
+    "captureTime": 784409593.181985,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716793.jpg"
+  },
+  {
+    "responseTime": 784409609.1301,
+    "modelOutput": "washing",
+    "formattedOutput": {
+      "activityLabel": "washing"
+    },
+    "id": "54BB1DF6-7ECB-4C85-B1C1-2DA33F634EC3",
+    "captureTime": 784409608.18198,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716808.jpg"
+  },
+  {
+    "responseTime": 784409624.286102,
+    "modelOutput": "washing",
+    "formattedOutput": {
+      "activityLabel": "washing"
+    },
+    "id": "7B3BA479-D982-4758-9015-03679E9AF543",
+    "captureTime": 784409623.182165,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716823.jpg"
+  },
+  {
+    "responseTime": 784409639.132957,
+    "modelOutput": "peeling",
+    "formattedOutput": {
+      "activityLabel": "peeling"
+    },
+    "id": "8BD3A601-3BFB-48C6-83A4-D457FFECCB25",
+    "captureTime": 784409638.182184,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716838.jpg"
+  },
+  {
+    "responseTime": 784409654.289491,
+    "modelOutput": "slicing",
+    "formattedOutput": {
+      "activityLabel": "slicing"
+    },
+    "id": "8C0000AB-CFC9-4F8E-92E4-6490EE411FAC",
+    "captureTime": 784409653.182293,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716853.jpg"
+  },
+  {
+    "id": "D4901523-BCE1-4A32-947E-85DC2999B18C",
+    "captureTime": 784409668.182404,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716868.jpg",
+    "modelOutput": "preparing meal",
+    "formattedOutput": {
+      "activityLabel": "preparing"
+    },
+    "responseTime": 784409669.239145
+  },
+  {
+    "id": "F0BF5187-BE39-4898-872A-1AAD17835898",
+    "captureTime": 784409683.18245,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716883.jpg",
+    "modelOutput": "Refrigerating",
+    "formattedOutput": {
+      "activityLabel": "refrigerating"
+    },
+    "responseTime": 784409684.190712
+  },
+  {
+    "id": "3B301AAD-E004-49B2-9F65-BEF6FA0C5F3C",
+    "captureTime": 784409698.182569,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716898.jpg",
+    "modelOutput": "cooking",
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "responseTime": 784409699.7571
+  },
+  {
+    "id": "FBCE7D40-A509-4156-9A8B-81A50DA32CEF",
+    "captureTime": 784409713.182621,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716913.jpg",
+    "modelOutput": "Cooking",
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "responseTime": 784409714.195912
+  },
+  {
+    "id": "933B1267-6C61-4AC9-9113-3ADC20FCC3FA",
+    "captureTime": 784409728.182737,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716928.jpg",
+    "modelOutput": "Cooking",
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "responseTime": 784409729.248299
+  },
+  {
+    "id": "E22023FA-15C5-4238-8798-8407F9B65EA2",
+    "responseTime": 784409744.303399,
+    "modelOutput": "Microwaving",
+    "formattedOutput": {
+      "activityLabel": "microwaving"
+    },
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716943.jpg",
+    "captureTime": 784409743.181988
+  },
+  {
+    "id": "8172BE5F-7CFF-4F98-B9B6-B6AC7BF49C4C",
+    "responseTime": 784409759.839513,
+    "modelOutput": "cracking",
+    "formattedOutput": {
+      "activityLabel": "cracking"
+    },
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716958.jpg",
+    "captureTime": 784409758.156333
+  },
+  {
+    "id": "3D33C1FD-1B78-408D-84E0-9E998BE27B1E",
+    "responseTime": 784409774.162914,
+    "modelOutput": "washing",
+    "formattedOutput": {
+      "activityLabel": "washing"
+    },
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716973.jpg",
+    "captureTime": 784409773.144265
+  },
+  {
+    "id": "7BEED056-F3D6-4DBE-B84E-511E2D03F36B",
+    "responseTime": 784409789.109554,
+    "modelOutput": "washing",
+    "formattedOutput": {
+      "activityLabel": "washing"
+    },
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762716988.jpg",
+    "captureTime": 784409788.138946
+  },
+  {
+    "id": "1D365813-5394-412D-BE76-1384DAF8870D",
+    "responseTime": 784409804.086727,
+    "modelOutput": "cooking",
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717003.jpg",
+    "captureTime": 784409803.137781
+  },
+  {
+    "id": "09816481-5E43-43AA-89FB-F1762D6224AB",
+    "responseTime": 784409819.112584,
+    "modelOutput": "cooking",
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717018.jpg",
+    "captureTime": 784409818.137071
+  },
+  {
+    "id": "81414FD8-0FDA-42D4-BCDD-8C230A00BEC1",
+    "responseTime": 784409834.780311,
+    "modelOutput": "cooking",
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717033.jpg",
+    "captureTime": 784409833.136758
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "305EA320-4558-46BF-9D47-4D5BBEACDB26",
+    "captureTime": 784409848.136483,
+    "responseTime": 784409849.113855,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717048.jpg",
+    "modelOutput": "cooking"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "E1550322-0B1B-48A1-903B-853A77CA7666",
+    "captureTime": 784409863.136271,
+    "responseTime": 784409864.165001,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717063.jpg",
+    "modelOutput": "Cooking"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "FF58D5BC-31FE-45A2-ABC8-83BA6D3658C7",
+    "captureTime": 784409878.135717,
+    "responseTime": 784409879.217726,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717078.jpg",
+    "modelOutput": "cooking"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "2A84EFA9-D817-42BA-B2B0-8FBCCA1E7971",
+    "captureTime": 784409893.13525,
+    "responseTime": 784409894.172714,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717093.jpg",
+    "modelOutput": "Cooking"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "7DB3AF8D-AAA3-425C-8F02-26B0B651D44E",
+    "captureTime": 784409908.135919,
+    "responseTime": 784409909.120037,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717108.jpg",
+    "modelOutput": "Cooking"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "627EEF34-E9C1-405C-8ECC-A286BE89FA50",
+    "captureTime": 784409923.135788,
+    "responseTime": 784409924.171533,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717123.jpg",
+    "modelOutput": "Cooking"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "F6230D9E-38B0-4071-8CC9-CE7A93BF0448",
+    "captureTime": 784409938.135789,
+    "responseTime": 784409939.122243,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717138.jpg",
+    "modelOutput": "cooking\n"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "washing"
+    },
+    "id": "54CC8312-51E8-424B-82E2-737C83E3026F",
+    "captureTime": 784409953.135611,
+    "responseTime": 784409954.074129,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717153.jpg",
+    "modelOutput": "washing"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "B233CCDA-2FF8-49D0-B0BC-FC86AAA9C0F1",
+    "captureTime": 784409968.135604,
+    "responseTime": 784409969.128256,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717168.jpg",
+    "modelOutput": "Cooking"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "0A876277-2D5F-43AB-9184-183A4ACAFFB0",
+    "captureTime": 784409983.135471,
+    "responseTime": 784409984.076773,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717183.jpg",
+    "modelOutput": "cooking"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "79CA397C-FCC4-4E5A-8445-AF883A4D04C1",
+    "captureTime": 784409998.135443,
+    "responseTime": 784410000.767395,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717198.jpg",
+    "modelOutput": "cooking"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "0F7322A5-D9C8-47E3-9941-848E4135079F",
+    "captureTime": 784410013.135316,
+    "responseTime": 784410014.184003,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717213.jpg",
+    "modelOutput": "cooking"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "7C053A82-8D91-45EE-883E-019A9D8640E5",
+    "captureTime": 784410028.135162,
+    "responseTime": 784410029.030926,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717228.jpg",
+    "modelOutput": "cooking"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "id": "BD23D1BB-12F1-40BD-B91B-CBAF3D82935D",
+    "captureTime": 784410043.13505,
+    "responseTime": 784410044.08325,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717243.jpg",
+    "modelOutput": "Cooking"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "washing"
+    },
+    "id": "5FA00AA2-23CD-4299-ADA9-B4BB75B8307D",
+    "captureTime": 784410058.134999,
+    "responseTime": 784410059.033924,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717258.jpg",
+    "modelOutput": "washing"
+  },
+  {
+    "formattedOutput": {
+      "activityLabel": "unrolling"
+    },
+    "id": "476AE857-BE22-4BEB-BDB5-8178D4D9F3AA",
+    "captureTime": 784410073.134842,
+    "responseTime": 784410074.086652,
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717273.jpg",
+    "modelOutput": "unrolling"
+  },
+  {
+    "modelOutput": "cooking",
+    "captureTime": 784410088.134731,
+    "id": "224311BE-4EB8-4CBC-9A8F-CD67423F57C5",
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717288.jpg",
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    },
+    "responseTime": 784410089.138632
+  },
+  {
+    "modelOutput": "Cleaning",
+    "captureTime": 784410103.134625,
+    "id": "73E5CC97-4A2C-47E3-B6D8-453A4F9F50D7",
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717303.jpg",
+    "formattedOutput": {
+      "activityLabel": "cleaning"
+    },
+    "responseTime": 784410104.090965
+  },
+  {
+    "modelOutput": "working",
+    "captureTime": 784410118.134516,
+    "id": "DF68FD45-9317-48EF-9D93-F3F2B556DD0F",
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717318.jpg",
+    "formattedOutput": {
+      "activityLabel": "working"
+    },
+    "responseTime": 784410119.247464
+  },
+  {
+    "modelOutput": "coding",
+    "captureTime": 784410133.134358,
+    "id": "D7B0CEEB-EF90-4170-AF63-5B85E07B352F",
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717333.jpg",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    },
+    "responseTime": 784410134.299639
+  },
+  {
+    "modelOutput": "Typing",
+    "captureTime": 784410148.134225,
+    "id": "EB3E68F8-27D4-40D5-B97D-50CA2E7CAAC4",
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717348.jpg",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    },
+    "responseTime": 784410149.145616
+  },
+  {
+    "modelOutput": "working",
+    "captureTime": 784410163.134125,
+    "id": "F781BBEE-C5A2-4499-8DC0-7FD7D6213503",
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717363.jpg",
+    "formattedOutput": {
+      "activityLabel": "working"
+    },
+    "responseTime": 784410164.096553
+  },
+  {
+    "modelOutput": "videoconferencing",
+    "captureTime": 784410178.133831,
+    "id": "A1E9DB7F-73DC-4951-AD06-58BC5549C188",
+    "imagePath": "/var/mobile/Containers/Data/Application/CDCBAA6F-3DD7-4E25-A3D1-FF435D6F5EEB/Documents/AIAnalysis/Sessions/2025-11-09_11-01-25/Images/analysis_1762717378.jpg",
+    "formattedOutput": {
+      "activityLabel": "videoconferencing"
+    },
+    "responseTime": 784410179.382073
+  },
+  {
+    "id": "69c0d0b5-88a9-4647-86a3-f6e10390a651",
+    "captureTime": 784396917,
+    "responseTime": 784573365.2639999,
+    "inferenceTimeMs": 176448264,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704117.jpg",
+    "modelOutput": "editing",
+    "formattedOutput": {
+      "activityLabel": "editing"
+    }
+  },
+  {
+    "id": "3a71b055-8200-4e43-91e4-1834cf79544a",
+    "captureTime": 784396932,
+    "responseTime": 784573367.677,
+    "inferenceTimeMs": 176435677,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704132.jpg",
+    "modelOutput": "cooking",
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    }
+  },
+  {
+    "id": "63036854-4a80-4390-924a-630e36d70de7",
+    "captureTime": 784396947,
+    "responseTime": 784573368.565,
+    "inferenceTimeMs": 176421565,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704147.jpg",
+    "modelOutput": "packing",
+    "formattedOutput": {
+      "activityLabel": "packing"
+    }
+  },
+  {
+    "id": "58f2f9ec-ab87-44c5-92cd-4898a71fcb77",
+    "captureTime": 784396962,
+    "responseTime": 784573369.5469999,
+    "inferenceTimeMs": 176407547,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704162.jpg",
+    "modelOutput": "toasting",
+    "formattedOutput": {
+      "activityLabel": "toasting"
+    }
+  },
+  {
+    "id": "f97f406b-fb00-421e-b6d2-c3678992e74c",
+    "captureTime": 784396977,
+    "responseTime": 784573370.4890001,
+    "inferenceTimeMs": 176393489,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704177.jpg",
+    "modelOutput": "Drinking",
+    "formattedOutput": {
+      "activityLabel": "drinking"
+    }
+  },
+  {
+    "id": "3bb60012-0f95-4c71-b9b6-2627005551de",
+    "captureTime": 784396992,
+    "responseTime": 784573371.3540001,
+    "inferenceTimeMs": 176379354,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704192.jpg",
+    "modelOutput": "Moving",
+    "formattedOutput": {
+      "activityLabel": "moving"
+    }
+  },
+  {
+    "id": "9c7e4bfe-85db-4493-83aa-f004c9551f84",
+    "captureTime": 784397007,
+    "responseTime": 784573372.056,
+    "inferenceTimeMs": 176365056,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704207.jpg",
+    "modelOutput": "cleaning",
+    "formattedOutput": {
+      "activityLabel": "cleaning"
+    }
+  },
+  {
+    "id": "b3f2e72d-25b4-4c4a-9f60-dfa44bd0b7b0",
+    "captureTime": 784397022,
+    "responseTime": 784573373.027,
+    "inferenceTimeMs": 176351027,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704222.jpg",
+    "modelOutput": "Opening",
+    "formattedOutput": {
+      "activityLabel": "opening"
+    }
+  },
+  {
+    "id": "d3f9845d-6ac8-4e12-afa3-b7f434c2ab19",
+    "captureTime": 784397037,
+    "responseTime": 784573374.033,
+    "inferenceTimeMs": 176337033,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704237.jpg",
+    "modelOutput": "unloading",
+    "formattedOutput": {
+      "activityLabel": "unloading"
+    }
+  },
+  {
+    "id": "4612b5bc-59e2-49e0-b677-ce906c5461b3",
+    "captureTime": 784397052,
+    "responseTime": 784573375.1800001,
+    "inferenceTimeMs": 176323180,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704252.jpg",
+    "modelOutput": "unloading",
+    "formattedOutput": {
+      "activityLabel": "unloading"
+    }
+  },
+  {
+    "id": "cfaa1f00-0005-4ad6-9be0-7fdf29b88a52",
+    "captureTime": 784397067,
+    "responseTime": 784573376.1040001,
+    "inferenceTimeMs": 176309104,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704267.jpg",
+    "modelOutput": "Washing",
+    "formattedOutput": {
+      "activityLabel": "washing"
+    }
+  },
+  {
+    "id": "7a0e2fd0-1f7b-4929-a13d-69fca931918b",
+    "captureTime": 784397082,
+    "responseTime": 784573376.9849999,
+    "inferenceTimeMs": 176294985,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704282.jpg",
+    "modelOutput": "washing",
+    "formattedOutput": {
+      "activityLabel": "washing"
+    }
+  },
+  {
+    "id": "97cfd5e0-0bd6-47fa-aaa4-7699073a0514",
+    "captureTime": 784397097,
+    "responseTime": 784573377.997,
+    "inferenceTimeMs": 176280997,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704297.jpg",
+    "modelOutput": "Cleaning",
+    "formattedOutput": {
+      "activityLabel": "cleaning"
+    }
+  },
+  {
+    "id": "af8e110b-74ab-4a7e-99fc-f077dfa91ccf",
+    "captureTime": 784397112,
+    "responseTime": 784573379.049,
+    "inferenceTimeMs": 176267049,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704312.jpg",
+    "modelOutput": "eating",
+    "formattedOutput": {
+      "activityLabel": "eating"
+    }
+  },
+  {
+    "id": "aa74d20a-14e1-4138-833e-33281c8030e7",
+    "captureTime": 784397127,
+    "responseTime": 784573379.9690001,
+    "inferenceTimeMs": 176252969,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704327.jpg",
+    "modelOutput": "sitting",
+    "formattedOutput": {
+      "activityLabel": "sitting"
+    }
+  },
+  {
+    "id": "5cd05fd8-c18d-4c89-9ab4-9ce302cd5f15",
+    "captureTime": 784397142,
+    "responseTime": 784573381.325,
+    "inferenceTimeMs": 176239325,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704342.jpg",
+    "modelOutput": "Pouring.",
+    "formattedOutput": {
+      "activityLabel": "pouring"
+    }
+  },
+  {
+    "id": "8d99b00c-8d3b-46a7-aa94-02e2a5a50e52",
+    "captureTime": 784397157,
+    "responseTime": 784573382.4779999,
+    "inferenceTimeMs": 176225478,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704357.jpg",
+    "modelOutput": "eating",
+    "formattedOutput": {
+      "activityLabel": "eating"
+    }
+  },
+  {
+    "id": "3e9b4e56-b399-4bdc-a020-fd1ac50e2389",
+    "captureTime": 784397172,
+    "responseTime": 784573383.7590001,
+    "inferenceTimeMs": 176211759,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704372.jpg",
+    "modelOutput": "eating",
+    "formattedOutput": {
+      "activityLabel": "eating"
+    }
+  },
+  {
+    "id": "691788e3-14c7-4d59-9a65-3d34d21d7bf9",
+    "captureTime": 784397187,
+    "responseTime": 784573384.721,
+    "inferenceTimeMs": 176197721,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704387.jpg",
+    "modelOutput": "eating",
+    "formattedOutput": {
+      "activityLabel": "eating"
+    }
+  },
+  {
+    "id": "8b1c678b-b387-4a52-8873-43cccccabddf",
+    "captureTime": 784397202,
+    "responseTime": 784573385.6370001,
+    "inferenceTimeMs": 176183637,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704402.jpg",
+    "modelOutput": "eating",
+    "formattedOutput": {
+      "activityLabel": "eating"
+    }
+  },
+  {
+    "id": "349c736b-c348-4423-a149-034ae6e09e8a",
+    "captureTime": 784397217,
+    "responseTime": 784573386.688,
+    "inferenceTimeMs": 176169688,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704417.jpg",
+    "modelOutput": "Eating",
+    "formattedOutput": {
+      "activityLabel": "eating"
+    }
+  },
+  {
+    "id": "4d6f30c3-b06e-410d-bd80-cc7c8a46ace7",
+    "captureTime": 784397232,
+    "responseTime": 784573387.721,
+    "inferenceTimeMs": 176155721,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704432.jpg",
+    "modelOutput": "drinking",
+    "formattedOutput": {
+      "activityLabel": "drinking"
+    }
+  },
+  {
+    "id": "67867cea-6690-41b0-acaa-eae0933c0bf4",
+    "captureTime": 784397247,
+    "responseTime": 784573388.7160001,
+    "inferenceTimeMs": 176141716,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704447.jpg",
+    "modelOutput": "eating",
+    "formattedOutput": {
+      "activityLabel": "eating"
+    }
+  },
+  {
+    "id": "9bc23617-bd51-487e-891f-69bb0493ab27",
+    "captureTime": 784397262,
+    "responseTime": 784573389.685,
+    "inferenceTimeMs": 176127685,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704462.jpg",
+    "modelOutput": "eating",
+    "formattedOutput": {
+      "activityLabel": "eating"
+    }
+  },
+  {
+    "id": "be9ce5d9-6adc-409c-ac79-2c79ce4cb3e9",
+    "captureTime": 784397277,
+    "responseTime": 784573390.803,
+    "inferenceTimeMs": 176113803,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704477.jpg",
+    "modelOutput": "eating",
+    "formattedOutput": {
+      "activityLabel": "eating"
+    }
+  },
+  {
+    "id": "0dd9832a-beba-4ed0-8643-5ca00d041a1d",
+    "captureTime": 784397292,
+    "responseTime": 784573391.7809999,
+    "inferenceTimeMs": 176099781,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704492.jpg",
+    "modelOutput": "eating",
+    "formattedOutput": {
+      "activityLabel": "eating"
+    }
+  },
+  {
+    "id": "82587929-541d-446d-80ee-728a7c89aeee",
+    "captureTime": 784397307,
+    "responseTime": 784573392.7820001,
+    "inferenceTimeMs": 176085782,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704507.jpg",
+    "modelOutput": "eating",
+    "formattedOutput": {
+      "activityLabel": "eating"
+    }
+  },
+  {
+    "id": "d4800adc-340f-46df-9ef0-f621e26cfd54",
+    "captureTime": 784397322,
+    "responseTime": 784573393.9860001,
+    "inferenceTimeMs": 176071986,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704522.jpg",
+    "modelOutput": "Sitting.",
+    "formattedOutput": {
+      "activityLabel": "sitting"
+    }
+  },
+  {
+    "id": "48b754a8-c1aa-4199-8d86-bff40aa6a495",
+    "captureTime": 784397337,
+    "responseTime": 784573395.108,
+    "inferenceTimeMs": 176058108,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704537.jpg",
+    "modelOutput": "eating",
+    "formattedOutput": {
+      "activityLabel": "eating"
+    }
+  },
+  {
+    "id": "15a30c5b-fcaf-4118-946a-19f0691cde5f",
+    "captureTime": 784397352,
+    "responseTime": 784573396.3989999,
+    "inferenceTimeMs": 176044399,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704552.jpg",
+    "modelOutput": "organizing",
+    "formattedOutput": {
+      "activityLabel": "organizing"
+    }
+  },
+  {
+    "id": "0f1dae38-827b-4ef0-b47d-609953f28198",
+    "captureTime": 784397367,
+    "responseTime": 784573398.075,
+    "inferenceTimeMs": 176031075,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704567.jpg",
+    "modelOutput": "reaching",
+    "formattedOutput": {
+      "activityLabel": "reaching"
+    }
+  },
+  {
+    "id": "5f9973d6-5d40-43a3-b41c-64efc4f53739",
+    "captureTime": 784397382,
+    "responseTime": 784573399.214,
+    "inferenceTimeMs": 176017214,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704582.jpg",
+    "modelOutput": "shopping",
+    "formattedOutput": {
+      "activityLabel": "shopping"
+    }
+  },
+  {
+    "id": "51068eaa-25ce-43de-900e-49ffaf907869",
+    "captureTime": 784397397,
+    "responseTime": 784573400.4820001,
+    "inferenceTimeMs": 176003482,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704597.jpg",
+    "modelOutput": "Pouring",
+    "formattedOutput": {
+      "activityLabel": "pouring"
+    }
+  },
+  {
+    "id": "e11e0a2f-4261-4299-99db-1fd4e9114f2b",
+    "captureTime": 784397412,
+    "responseTime": 784573401.5699999,
+    "inferenceTimeMs": 175989570,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704612.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "5c0bb173-87ca-42c5-9dc7-909e57e4874f",
+    "captureTime": 784397427,
+    "responseTime": 784573402.6559999,
+    "inferenceTimeMs": 175975656,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704627.jpg",
+    "modelOutput": "plugging",
+    "formattedOutput": {
+      "activityLabel": "plugging"
+    }
+  },
+  {
+    "id": "6bd7b41b-82e4-4787-8128-e7a6809a7315",
+    "captureTime": 784397442,
+    "responseTime": 784573403.7880001,
+    "inferenceTimeMs": 175961788,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704642.jpg",
+    "modelOutput": "closing窗帘",
+    "formattedOutput": {
+      "activityLabel": "closing"
+    }
+  },
+  {
+    "id": "00a93cd9-ee84-4666-8128-2c715ac376e6",
+    "captureTime": 784397457,
+    "responseTime": 784573404.793,
+    "inferenceTimeMs": 175947793,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704657.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "ed9ec8f0-0f6c-4ba1-93ca-dbc9212be0c3",
+    "captureTime": 784397472,
+    "responseTime": 784573405.8770001,
+    "inferenceTimeMs": 175933877,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704672.jpg",
+    "modelOutput": "Gaming",
+    "formattedOutput": {
+      "activityLabel": "gaming"
+    }
+  },
+  {
+    "id": "5fbfbdf5-c003-4aad-9852-dbb034dc6c98",
+    "captureTime": 784397487,
+    "responseTime": 784573407.211,
+    "inferenceTimeMs": 175920211,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704687.jpg",
+    "modelOutput": "Writing",
+    "formattedOutput": {
+      "activityLabel": "writing"
+    }
+  },
+  {
+    "id": "59375903-73d5-47e2-8672-07019d181092",
+    "captureTime": 784397510,
+    "responseTime": 784573409.036,
+    "inferenceTimeMs": 175899036,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704710.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "6ddeb2f8-3277-47d4-b748-eda65d0fb917",
+    "captureTime": 784397566,
+    "responseTime": 784573410.9990001,
+    "inferenceTimeMs": 175844999,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704766.jpg",
+    "modelOutput": "Working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "986ceeb5-e820-489e-ab7e-68ad111461fc",
+    "captureTime": 784397581,
+    "responseTime": 784573412.0969999,
+    "inferenceTimeMs": 175831097,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704781.jpg",
+    "modelOutput": "exercising",
+    "formattedOutput": {
+      "activityLabel": "exercising"
+    }
+  },
+  {
+    "id": "b7fa7909-267b-44d8-a599-458b62bef44f",
+    "captureTime": 784397596,
+    "responseTime": 784573413.148,
+    "inferenceTimeMs": 175817148,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704796.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "a15c7099-c568-4ee4-841c-cc67ceef3f05",
+    "captureTime": 784397611,
+    "responseTime": 784573414.1760001,
+    "inferenceTimeMs": 175803176,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704811.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "ffec4ddb-7a3a-4501-a4ab-19d7e5ffe541",
+    "captureTime": 784397626,
+    "responseTime": 784573416.25,
+    "inferenceTimeMs": 175790250,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704826.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "1864d53f-187c-4468-b707-e155165d39d7",
+    "captureTime": 784397641,
+    "responseTime": 784573417.5510001,
+    "inferenceTimeMs": 175776551,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704841.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "6aae0e5a-53ec-40df-9c07-e547980d28b3",
+    "captureTime": 784397656,
+    "responseTime": 784573418.473,
+    "inferenceTimeMs": 175762473,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704856.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "d48af207-5037-4513-9bce-9a1d36c4eb1b",
+    "captureTime": 784397671,
+    "responseTime": 784573419.4100001,
+    "inferenceTimeMs": 175748410,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704871.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "f936449b-a4f2-434e-86ee-c6be3ffa72ac",
+    "captureTime": 784397686,
+    "responseTime": 784573420.342,
+    "inferenceTimeMs": 175734342,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704886.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "e11fc47f-3819-4914-b147-3e0da7774ba4",
+    "captureTime": 784397701,
+    "responseTime": 784573421.2360001,
+    "inferenceTimeMs": 175720236,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704901.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "624ed3a7-d165-4b81-bd24-96be82e9a63e",
+    "captureTime": 784397716,
+    "responseTime": 784573422.21,
+    "inferenceTimeMs": 175706210,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704916.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "2ac00b4a-53fd-4ebf-bbb9-d1d23ce7270f",
+    "captureTime": 784397731,
+    "responseTime": 784573423.1429999,
+    "inferenceTimeMs": 175692143,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704931.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "8efb14cd-62c5-4bcd-b043-0bf4ada51871",
+    "captureTime": 784397746,
+    "responseTime": 784573424.3410001,
+    "inferenceTimeMs": 175678341,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704946.jpg",
+    "modelOutput": "Procrastinating",
+    "formattedOutput": {
+      "activityLabel": "procrastinating"
+    }
+  },
+  {
+    "id": "fffe022a-3474-4dc5-a235-25df85a59b93",
+    "captureTime": 784397761,
+    "responseTime": 784573425.3399999,
+    "inferenceTimeMs": 175664340,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704961.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "75e887bd-15b4-4e3f-9345-216e1cb60bff",
+    "captureTime": 784397776,
+    "responseTime": 784573426.368,
+    "inferenceTimeMs": 175650368,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704976.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "6503fdd2-dacc-4d7f-a407-db8403b6fc44",
+    "captureTime": 784397791,
+    "responseTime": 784573427.287,
+    "inferenceTimeMs": 175636287,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762704991.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "0662e204-5f10-44d2-8739-505e5437cc0e",
+    "captureTime": 784397806,
+    "responseTime": 784573430.3770001,
+    "inferenceTimeMs": 175624377,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705006.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "203319d1-9183-4aaf-a61f-473f766fae74",
+    "captureTime": 784397821,
+    "responseTime": 784573431.458,
+    "inferenceTimeMs": 175610458,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705021.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "ed11d6df-682e-4f4c-b5f4-7c5dcaa35faa",
+    "captureTime": 784397836,
+    "responseTime": 784573432.5450001,
+    "inferenceTimeMs": 175596545,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705036.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "ade0c4ad-bc92-403f-9d53-169b17096ba9",
+    "captureTime": 784397851,
+    "responseTime": 784573433.477,
+    "inferenceTimeMs": 175582477,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705051.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "1ba5e980-2232-44fb-b7bc-7cd19f4e03f2",
+    "captureTime": 784397866,
+    "responseTime": 784573434.7980001,
+    "inferenceTimeMs": 175568798,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705066.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "8aedae34-e543-4660-ba9c-028029ae966b",
+    "captureTime": 784397881,
+    "responseTime": 784573435.9519999,
+    "inferenceTimeMs": 175554952,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705081.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "db084265-cfd9-4afc-93a6-1b3587ff1aba",
+    "captureTime": 784397896,
+    "responseTime": 784573437.129,
+    "inferenceTimeMs": 175541129,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705096.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "86ce11a4-c0af-451a-bbab-e91ba6ceb993",
+    "captureTime": 784397911,
+    "responseTime": 784573438.0940001,
+    "inferenceTimeMs": 175527094,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705111.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "10996876-affd-478a-aa3e-fb860e3bee4a",
+    "captureTime": 784397926,
+    "responseTime": 784573439.062,
+    "inferenceTimeMs": 175513062,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705126.jpg",
+    "modelOutput": "reaching",
+    "formattedOutput": {
+      "activityLabel": "reaching"
+    }
+  },
+  {
+    "id": "62689426-0e6a-4025-9a26-70e00277ce7b",
+    "captureTime": 784397941,
+    "responseTime": 784573440.0869999,
+    "inferenceTimeMs": 175499087,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705141.jpg",
+    "modelOutput": "Working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "1abdb000-d890-4175-89f5-8d6c9a2724be",
+    "captureTime": 784397956,
+    "responseTime": 784573441.099,
+    "inferenceTimeMs": 175485099,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705156.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "40fd27c7-075b-4222-9ceb-b4f2b4a60795",
+    "captureTime": 784397971,
+    "responseTime": 784573442.1259999,
+    "inferenceTimeMs": 175471126,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705171.jpg",
+    "modelOutput": "Coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "b6aa5c9e-b661-422e-9470-21ac6522c858",
+    "captureTime": 784397986,
+    "responseTime": 784573443.2839999,
+    "inferenceTimeMs": 175457284,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705186.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "ec06173b-e5fa-4449-95e2-d311557f3484",
+    "captureTime": 784398001,
+    "responseTime": 784573444.9089999,
+    "inferenceTimeMs": 175443909,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705201.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "49bde73c-72c8-4565-8b36-5ecf84175605",
+    "captureTime": 784398016,
+    "responseTime": 784573445.914,
+    "inferenceTimeMs": 175429914,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705216.jpg",
+    "modelOutput": "Working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "b9a8313e-c857-400c-a253-ba4b29eaaf05",
+    "captureTime": 784398031,
+    "responseTime": 784573447.2780001,
+    "inferenceTimeMs": 175416278,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705231.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "e62323ca-3d94-4e9e-bbe5-18dc6a3298d2",
+    "captureTime": 784398046,
+    "responseTime": 784573448.19,
+    "inferenceTimeMs": 175402190,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705246.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "a5bd8e5e-5535-404f-bbf7-b665a90a146f",
+    "captureTime": 784398061,
+    "responseTime": 784573449.319,
+    "inferenceTimeMs": 175388319,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705261.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "99389c08-0535-44da-bf1f-c8d43e9190ce",
+    "captureTime": 784398076,
+    "responseTime": 784573450.3440001,
+    "inferenceTimeMs": 175374344,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705276.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "58653fc6-5fad-4c33-85df-159dc369477a",
+    "captureTime": 784398091,
+    "responseTime": 784573451.427,
+    "inferenceTimeMs": 175360427,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705291.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "dd9264b7-ff53-4129-9c02-8c68a5a7d32b",
+    "captureTime": 784398106,
+    "responseTime": 784573452.4790001,
+    "inferenceTimeMs": 175346479,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705306.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "649f9a89-63b4-4af2-ace0-6af46a8314d4",
+    "captureTime": 784398121,
+    "responseTime": 784573453.4070001,
+    "inferenceTimeMs": 175332407,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705321.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "2f3b8ec9-ae4e-4f34-8937-a21f19a90713",
+    "captureTime": 784398136,
+    "responseTime": 784573454.5179999,
+    "inferenceTimeMs": 175318518,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705336.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "b18b1b5f-6cd9-4288-a0d7-3eb59e144f5d",
+    "captureTime": 784398151,
+    "responseTime": 784573455.473,
+    "inferenceTimeMs": 175304473,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705351.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "26d3b618-701e-4145-99f6-1438a30c97c7",
+    "captureTime": 784398166,
+    "responseTime": 784573456.4820001,
+    "inferenceTimeMs": 175290482,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705366.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "28d8bdfe-fb64-4a9a-8c82-913ff5104f95",
+    "captureTime": 784398181,
+    "responseTime": 784573457.631,
+    "inferenceTimeMs": 175276631,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705381.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "b004ca78-a4d7-42fd-8297-9591a446874e",
+    "captureTime": 784398196,
+    "responseTime": 784573458.5739999,
+    "inferenceTimeMs": 175262574,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705396.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "71efc911-b757-4db5-a325-8ac83cc45ccc",
+    "captureTime": 784398211,
+    "responseTime": 784573459.5350001,
+    "inferenceTimeMs": 175248535,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705411.jpg",
+    "modelOutput": "programming",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "a70988da-fe7d-40a3-ba1b-26a2ea03df90",
+    "captureTime": 784398226,
+    "responseTime": 784573460.4979999,
+    "inferenceTimeMs": 175234498,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705426.jpg",
+    "modelOutput": "programming",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "03871203-1fe2-4572-851b-2ed22cc7fb6a",
+    "captureTime": 784398241,
+    "responseTime": 784573461.435,
+    "inferenceTimeMs": 175220435,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705441.jpg",
+    "modelOutput": "Working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "37105aff-35a4-489a-bded-0d202a30702b",
+    "captureTime": 784398256,
+    "responseTime": 784573462.4949999,
+    "inferenceTimeMs": 175206495,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705456.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "4e07af16-a686-4ad1-b32f-ff74d9cd1714",
+    "captureTime": 784398271,
+    "responseTime": 784573463.496,
+    "inferenceTimeMs": 175192496,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705471.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "1beb8d2b-cb24-4d2a-9f1d-f2e171971f27",
+    "captureTime": 784398286,
+    "responseTime": 784573464.6159999,
+    "inferenceTimeMs": 175178616,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705486.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "a4953325-899d-4988-80fc-21af14d5a392",
+    "captureTime": 784398301,
+    "responseTime": 784573465.6099999,
+    "inferenceTimeMs": 175164610,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705501.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "d6ff7d2c-d91f-485b-a1f2-59653720785b",
+    "captureTime": 784398316,
+    "responseTime": 784573466.622,
+    "inferenceTimeMs": 175150622,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705516.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "182accb3-ca19-4ff9-a6df-475ed57b5b0d",
+    "captureTime": 784398331,
+    "responseTime": 784573467.655,
+    "inferenceTimeMs": 175136655,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705531.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "91fdb63d-d761-408e-8fb3-64eff2891984",
+    "captureTime": 784398346,
+    "responseTime": 784573468.569,
+    "inferenceTimeMs": 175122569,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705546.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "ea1928a1-fbf6-4e1f-9f17-01e66d585412",
+    "captureTime": 784398361,
+    "responseTime": 784573469.5280001,
+    "inferenceTimeMs": 175108528,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705561.jpg",
+    "modelOutput": "Reading",
+    "formattedOutput": {
+      "activityLabel": "reading"
+    }
+  },
+  {
+    "id": "6075cc4d-6eb5-4ffb-9e4f-91fcd2d158a1",
+    "captureTime": 784398376,
+    "responseTime": 784573470.5220001,
+    "inferenceTimeMs": 175094522,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705576.jpg",
+    "modelOutput": "studying.",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "91c6880a-a0f9-4c98-8b4a-5f74c1346085",
+    "captureTime": 784398391,
+    "responseTime": 784573471.3440001,
+    "inferenceTimeMs": 175080344,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705591.jpg",
+    "modelOutput": "studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "4cca4b08-abd6-4fe5-a169-ccc4ce9e768b",
+    "captureTime": 784398406,
+    "responseTime": 784573472.3840001,
+    "inferenceTimeMs": 175066384,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705606.jpg",
+    "modelOutput": "Studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "04b997f2-24f8-4010-a6ac-605b27524a7e",
+    "captureTime": 784398421,
+    "responseTime": 784573473.269,
+    "inferenceTimeMs": 175052269,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705621.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "2eb322fe-7db7-4e75-8934-ce01789a8ad6",
+    "captureTime": 784398436,
+    "responseTime": 784573474.224,
+    "inferenceTimeMs": 175038224,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705636.jpg",
+    "modelOutput": "Working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "5719ff18-074c-4d6a-94d0-37283749b280",
+    "captureTime": 784398451,
+    "responseTime": 784573475.197,
+    "inferenceTimeMs": 175024197,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705651.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "bcb34942-6014-4400-b050-69a9e21221df",
+    "captureTime": 784398466,
+    "responseTime": 784573476.122,
+    "inferenceTimeMs": 175010122,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705666.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "5aaff8ec-fa6f-4217-853d-c33562eed218",
+    "captureTime": 784398481,
+    "responseTime": 784573477.0929999,
+    "inferenceTimeMs": 174996093,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705681.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "ea65d413-8835-4762-a395-fc5701d1768d",
+    "captureTime": 784398496,
+    "responseTime": 784573478.013,
+    "inferenceTimeMs": 174982013,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705696.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "fa2d99ca-44ae-47ae-a424-ce0191244d5a",
+    "captureTime": 784398511,
+    "responseTime": 784573479.302,
+    "inferenceTimeMs": 174968302,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705711.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "2eb8fd8c-27d1-42ac-bdee-0c366a303478",
+    "captureTime": 784398526,
+    "responseTime": 784573482.148,
+    "inferenceTimeMs": 174956148,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705726.jpg",
+    "modelOutput": "Studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "3ee9def1-c67d-4edd-9b75-e5efa068db2f",
+    "captureTime": 784398541,
+    "responseTime": 784573483.2360001,
+    "inferenceTimeMs": 174942236,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705741.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "1b8cb9ba-5d84-4754-a137-7aa8c703664b",
+    "captureTime": 784398556,
+    "responseTime": 784573484.3640001,
+    "inferenceTimeMs": 174928364,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705756.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "5bd3573e-0674-4585-8df6-bf86ec6e8a44",
+    "captureTime": 784398571,
+    "responseTime": 784573485.3970001,
+    "inferenceTimeMs": 174914397,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705771.jpg",
+    "modelOutput": "studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "7b8f2288-8650-4995-a40f-6867127f6932",
+    "captureTime": 784398586,
+    "responseTime": 784573486.6370001,
+    "inferenceTimeMs": 174900637,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705786.jpg",
+    "modelOutput": "studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "8a1ded24-761a-4a17-9300-edfcd156fbc6",
+    "captureTime": 784398601,
+    "responseTime": 784573487.5869999,
+    "inferenceTimeMs": 174886587,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705801.jpg",
+    "modelOutput": "studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "50da7c64-ab50-4984-bdeb-baafe2b60135",
+    "captureTime": 784398616,
+    "responseTime": 784573488.5179999,
+    "inferenceTimeMs": 174872518,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705816.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "08083dbd-4951-4d3b-b036-2e41635b1928",
+    "captureTime": 784398631,
+    "responseTime": 784573489.474,
+    "inferenceTimeMs": 174858474,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705831.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "82e56745-8b19-4c3c-9d21-dab8fac11ca4",
+    "captureTime": 784398646,
+    "responseTime": 784573490.5280001,
+    "inferenceTimeMs": 174844528,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705846.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "885cabc8-55fb-4d2c-87a0-3b33175d6a93",
+    "captureTime": 784398661,
+    "responseTime": 784573491.2349999,
+    "inferenceTimeMs": 174830235,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705861.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "a337f935-2737-48a0-8be8-bda30c437b51",
+    "captureTime": 784398676,
+    "responseTime": 784573492.2160001,
+    "inferenceTimeMs": 174816216,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705876.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "57dbaa6f-b6f6-4208-b68a-dd6e6591ca84",
+    "captureTime": 784398691,
+    "responseTime": 784573493.2119999,
+    "inferenceTimeMs": 174802212,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705891.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "aa168ba8-551d-4199-89ec-837481fd45ff",
+    "captureTime": 784398706,
+    "responseTime": 784573494.108,
+    "inferenceTimeMs": 174788108,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705906.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "5a1f8528-2ede-4c48-9e01-f05c77c03dc7",
+    "captureTime": 784398721,
+    "responseTime": 784573494.947,
+    "inferenceTimeMs": 174773947,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705921.jpg",
+    "modelOutput": "Studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "67e2da61-418d-4e52-964b-81173f236524",
+    "captureTime": 784398736,
+    "responseTime": 784573495.963,
+    "inferenceTimeMs": 174759963,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705936.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "f5056577-0210-4cae-a820-5a209aa9e315",
+    "captureTime": 784398751,
+    "responseTime": 784573497.013,
+    "inferenceTimeMs": 174746013,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705951.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "fa53adb1-7f0a-42fe-b437-0d20182f121d",
+    "captureTime": 784398766,
+    "responseTime": 784573498.063,
+    "inferenceTimeMs": 174732063,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705966.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "f2734b3d-557e-4f20-9e16-2f52fa0ab373",
+    "captureTime": 784398781,
+    "responseTime": 784573499.108,
+    "inferenceTimeMs": 174718108,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705981.jpg",
+    "modelOutput": "Coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "1bce951c-7883-4bbd-80b2-917b99825512",
+    "captureTime": 784398796,
+    "responseTime": 784573500.583,
+    "inferenceTimeMs": 174704583,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762705996.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "b01cd4a6-e725-459c-8842-95f6ac670fe6",
+    "captureTime": 784398811,
+    "responseTime": 784573501.625,
+    "inferenceTimeMs": 174690625,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706011.jpg",
+    "modelOutput": "Programming",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "8d408188-9b49-4560-8317-b11230892562",
+    "captureTime": 784398826,
+    "responseTime": 784573502.792,
+    "inferenceTimeMs": 174676792,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706026.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "68bc0788-bb41-4a59-a65c-cc286fe08abd",
+    "captureTime": 784398841,
+    "responseTime": 784573503.829,
+    "inferenceTimeMs": 174662829,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706041.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "d1ec2504-82cc-42f6-936f-87a33a3db6de",
+    "captureTime": 784398856,
+    "responseTime": 784573504.875,
+    "inferenceTimeMs": 174648875,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706056.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "a812b857-e278-40a1-addf-14ee46828470",
+    "captureTime": 784398871,
+    "responseTime": 784573506.1159999,
+    "inferenceTimeMs": 174635116,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706071.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "6af8c7c7-5373-4cbb-8f46-5144ecdc4641",
+    "captureTime": 784398886,
+    "responseTime": 784573507.2019999,
+    "inferenceTimeMs": 174621202,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706086.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "6ab8dd29-c46e-4f47-8308-b51b10a8ee7c",
+    "captureTime": 784398901,
+    "responseTime": 784573508.3959999,
+    "inferenceTimeMs": 174607396,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706101.jpg",
+    "modelOutput": "Studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "968fd730-baea-400d-80be-b2b42b9cc2f6",
+    "captureTime": 784398916,
+    "responseTime": 784573515.711,
+    "inferenceTimeMs": 174599711,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706116.jpg",
+    "modelOutput": "Coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "e342776c-14cf-4f06-9f1e-b25b1ca24822",
+    "captureTime": 784398931,
+    "responseTime": 784573516.674,
+    "inferenceTimeMs": 174585674,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706131.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "25041425-7784-4cd9-b326-70fc749d235f",
+    "captureTime": 784398946,
+    "responseTime": 784573517.7019999,
+    "inferenceTimeMs": 174571702,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706146.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "262d913a-3e8b-4b69-bab8-64a651308e91",
+    "captureTime": 784398961,
+    "responseTime": 784573520.606,
+    "inferenceTimeMs": 174559606,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706161.jpg",
+    "modelOutput": "Coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "2d27908f-fdd9-4f95-8aab-1bc4be2fd2a6",
+    "captureTime": 784398976,
+    "responseTime": 784573521.655,
+    "inferenceTimeMs": 174545655,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706176.jpg",
+    "modelOutput": "noticing",
+    "formattedOutput": {
+      "activityLabel": "noticing"
+    }
+  },
+  {
+    "id": "19c5560d-d62d-4adf-b6b8-2c14fc345945",
+    "captureTime": 784398991,
+    "responseTime": 784573522.589,
+    "inferenceTimeMs": 174531589,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706191.jpg",
+    "modelOutput": "Working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "e2f9f130-cd7b-4a09-af4c-773b7742b542",
+    "captureTime": 784399006,
+    "responseTime": 784573523.5840001,
+    "inferenceTimeMs": 174517584,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706206.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "f2a7b9a0-44c5-4f68-a7c8-2a9e4ec677c6",
+    "captureTime": 784399021,
+    "responseTime": 784573524.81,
+    "inferenceTimeMs": 174503810,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706221.jpg",
+    "modelOutput": "Coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "cddc25b7-044d-4638-b895-2b8043c66b4a",
+    "captureTime": 784399036,
+    "responseTime": 784573525.895,
+    "inferenceTimeMs": 174489895,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706236.jpg",
+    "modelOutput": "programming",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "70d06600-783c-4586-97a7-53c55dcc51af",
+    "captureTime": 784399051,
+    "responseTime": 784573526.941,
+    "inferenceTimeMs": 174475941,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706251.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "9e7823d9-8c4e-4602-a66c-a15b1c455178",
+    "captureTime": 784399066,
+    "responseTime": 784573527.8510001,
+    "inferenceTimeMs": 174461851,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706266.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "79689a41-ee1c-42a0-92d5-d5d49556bc09",
+    "captureTime": 784399081,
+    "responseTime": 784573529.0810001,
+    "inferenceTimeMs": 174448081,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706281.jpg",
+    "modelOutput": "Working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "0f3d51cf-bd0f-4068-8a3b-057f4445df2f",
+    "captureTime": 784399096,
+    "responseTime": 784573530.1400001,
+    "inferenceTimeMs": 174434140,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706296.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "68805fac-a8b7-4409-9e44-18542cd12598",
+    "captureTime": 784399111,
+    "responseTime": 784573531.0999999,
+    "inferenceTimeMs": 174420100,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706311.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "9194b139-41d9-46f5-83f0-16d56a017d21",
+    "captureTime": 784399126,
+    "responseTime": 784573532.118,
+    "inferenceTimeMs": 174406118,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706326.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "580bd2cb-d106-4bb1-aac6-f280e4397e2b",
+    "captureTime": 784399141,
+    "responseTime": 784573533.175,
+    "inferenceTimeMs": 174392175,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706341.jpg",
+    "modelOutput": "Programming.",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "02d0bb78-7239-4953-958b-8826fb1466ec",
+    "captureTime": 784399156,
+    "responseTime": 784573534.23,
+    "inferenceTimeMs": 174378230,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706356.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "90a15095-24cf-4d33-bc6e-fafe81ecbeb2",
+    "captureTime": 784399171,
+    "responseTime": 784573535.1630001,
+    "inferenceTimeMs": 174364163,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706371.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "317655b8-82ad-4c05-aff6-258da088fd5f",
+    "captureTime": 784399186,
+    "responseTime": 784573536.279,
+    "inferenceTimeMs": 174350279,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706386.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "b0440e79-4975-438a-8d8c-7ee91971f5f3",
+    "captureTime": 784399201,
+    "responseTime": 784573537.336,
+    "inferenceTimeMs": 174336336,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706401.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "cb589a5a-96e1-429f-a5e5-d89e3635c27d",
+    "captureTime": 784399216,
+    "responseTime": 784573538.523,
+    "inferenceTimeMs": 174322523,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706416.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "30fde094-a7f0-46c3-ae73-15707b72d8e5",
+    "captureTime": 784399231,
+    "responseTime": 784573539.5550001,
+    "inferenceTimeMs": 174308555,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706431.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "0b8d697e-836f-47e8-994c-79f9cc03f6fd",
+    "captureTime": 784399246,
+    "responseTime": 784573540.5120001,
+    "inferenceTimeMs": 174294512,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706446.jpg",
+    "modelOutput": "Coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "599ef474-b2b2-4170-bb31-d82925b44562",
+    "captureTime": 784399261,
+    "responseTime": 784573541.6949999,
+    "inferenceTimeMs": 174280695,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706461.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "61976fcb-7a4a-4a5e-a082-f3e4223178b2",
+    "captureTime": 784399276,
+    "responseTime": 784573542.717,
+    "inferenceTimeMs": 174266717,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706476.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "530b8ede-d708-4835-b18a-3d66f20651cc",
+    "captureTime": 784399291,
+    "responseTime": 784573543.6860001,
+    "inferenceTimeMs": 174252686,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706491.jpg",
+    "modelOutput": "Programming.",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "77f01ddb-d51b-4b16-bf74-c16f9e25a2e4",
+    "captureTime": 784399306,
+    "responseTime": 784573544.6340001,
+    "inferenceTimeMs": 174238634,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706506.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "609ef795-6871-4ac1-bfd9-f6421b0129ed",
+    "captureTime": 784399321,
+    "responseTime": 784573545.7579999,
+    "inferenceTimeMs": 174224758,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706521.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "09aa8e6d-97cb-4a5a-9ddb-c8ff15806114",
+    "captureTime": 784399336,
+    "responseTime": 784573546.9449999,
+    "inferenceTimeMs": 174210945,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706536.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "881e7133-d279-4b4f-8c8e-afa5cdae1265",
+    "captureTime": 784399351,
+    "responseTime": 784573547.9070001,
+    "inferenceTimeMs": 174196907,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706551.jpg",
+    "modelOutput": "Coding.",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "b26d9314-814c-45f4-9c79-9d9ef97bb525",
+    "captureTime": 784399366,
+    "responseTime": 784573548.8540001,
+    "inferenceTimeMs": 174182854,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706566.jpg",
+    "modelOutput": "studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "f8dde700-7906-4056-ad09-a72503988e5f",
+    "captureTime": 784399381,
+    "responseTime": 784573549.8429999,
+    "inferenceTimeMs": 174168843,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706581.jpg",
+    "modelOutput": "Working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "44026713-8869-47ed-9ae9-8eca98bf8e54",
+    "captureTime": 784399396,
+    "responseTime": 784573550.7620001,
+    "inferenceTimeMs": 174154762,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706596.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "1bf2cc0e-2c5f-4836-bae9-991f5d9d4ea7",
+    "captureTime": 784399411,
+    "responseTime": 784573551.7409999,
+    "inferenceTimeMs": 174140741,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706611.jpg",
+    "modelOutput": "programming",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "41d9172f-533c-44f3-b079-4f144ede761e",
+    "captureTime": 784399426,
+    "responseTime": 784573552.7809999,
+    "inferenceTimeMs": 174126781,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706626.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "ba3045b2-6ba1-44c9-8754-c2a0d9682872",
+    "captureTime": 784399441,
+    "responseTime": 784573553.589,
+    "inferenceTimeMs": 174112589,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706641.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "71b1b077-7c93-475b-aa6c-289e1a948057",
+    "captureTime": 784399456,
+    "responseTime": 784573554.549,
+    "inferenceTimeMs": 174098549,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706656.jpg",
+    "modelOutput": "Working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "7ad583eb-ad28-428c-b87b-94b6ad9a9a6a",
+    "captureTime": 784399471,
+    "responseTime": 784573555.635,
+    "inferenceTimeMs": 174084635,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706671.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "c9d1e4d2-af1d-4d32-9d2e-404fdfe7ebdb",
+    "captureTime": 784399486,
+    "responseTime": 784573556.6800001,
+    "inferenceTimeMs": 174070680,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706686.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "3dbdaf6e-693b-4f11-bc81-4e6fdef6090b",
+    "captureTime": 784399501,
+    "responseTime": 784573557.7420001,
+    "inferenceTimeMs": 174056742,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706701.jpg",
+    "modelOutput": "Writing...",
+    "formattedOutput": {
+      "activityLabel": "writing"
+    }
+  },
+  {
+    "id": "34828035-17f4-4559-994f-142111a9dfe0",
+    "captureTime": 784399516,
+    "responseTime": 784573559.2509999,
+    "inferenceTimeMs": 174043251,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706716.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "cf278ef9-185b-4056-af56-ef0ce5d27fdd",
+    "captureTime": 784399531,
+    "responseTime": 784573560.2679999,
+    "inferenceTimeMs": 174029268,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706731.jpg",
+    "modelOutput": "Writing",
+    "formattedOutput": {
+      "activityLabel": "writing"
+    }
+  },
+  {
+    "id": "0075f0cd-b0cd-4a02-81b4-b9db05c44422",
+    "captureTime": 784399546,
+    "responseTime": 784573561.6359999,
+    "inferenceTimeMs": 174015636,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706746.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "c8871f0a-23ba-47c5-a51d-5f47ecde002a",
+    "captureTime": 784399561,
+    "responseTime": 784573562.602,
+    "inferenceTimeMs": 174001602,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706761.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "b8192252-16fd-4801-9d15-3eac4da4410d",
+    "captureTime": 784399576,
+    "responseTime": 784573563.7,
+    "inferenceTimeMs": 173987700,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706776.jpg",
+    "modelOutput": "Studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "e93ce35b-e4ba-4b05-98b5-d94bd4a0f6c6",
+    "captureTime": 784399591,
+    "responseTime": 784573564.6259999,
+    "inferenceTimeMs": 173973626,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706791.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "323bcc89-12a0-40d8-9a43-c08f2ff21c93",
+    "captureTime": 784399606,
+    "responseTime": 784573565.7839999,
+    "inferenceTimeMs": 173959784,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706806.jpg",
+    "modelOutput": "studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "6feb21a3-6ac2-46ba-95ca-d83322aee7ac",
+    "captureTime": 784399621,
+    "responseTime": 784573567.1010001,
+    "inferenceTimeMs": 173946101,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706821.jpg",
+    "modelOutput": "Studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "af969344-00c2-44ed-9bb7-6abdddcd1df2",
+    "captureTime": 784399636,
+    "responseTime": 784573568.125,
+    "inferenceTimeMs": 173932125,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706836.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "2d177e97-0b4a-4c96-ac86-ba4983850f8d",
+    "captureTime": 784399651,
+    "responseTime": 784573569.276,
+    "inferenceTimeMs": 173918276,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706851.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "e623d5ec-e247-464a-93ac-cf84d661c0b6",
+    "captureTime": 784399666,
+    "responseTime": 784573570.2780001,
+    "inferenceTimeMs": 173904278,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706866.jpg",
+    "modelOutput": "programming",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "1814fe0d-746e-4db3-8075-4f6fcdf6e2c6",
+    "captureTime": 784399681,
+    "responseTime": 784573572.9679999,
+    "inferenceTimeMs": 173891968,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706881.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "3348a763-d54a-4aa0-8641-2a1b124834c0",
+    "captureTime": 784399696,
+    "responseTime": 784573574.0380001,
+    "inferenceTimeMs": 173878038,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706896.jpg",
+    "modelOutput": "Coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "62a4f329-c172-4036-8d7c-96f461610dc8",
+    "captureTime": 784399711,
+    "responseTime": 784573575.1010001,
+    "inferenceTimeMs": 173864101,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706911.jpg",
+    "modelOutput": "programming",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "adbbaaf7-668a-4681-a483-2c3b7b350ff2",
+    "captureTime": 784399726,
+    "responseTime": 784573576.1140001,
+    "inferenceTimeMs": 173850114,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706926.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "1dfb88d9-ad46-43ba-9480-12fec86d630b",
+    "captureTime": 784399741,
+    "responseTime": 784573577.0380001,
+    "inferenceTimeMs": 173836038,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706941.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "30826e9e-d253-44a6-be38-42262bc4b6b9",
+    "captureTime": 784399756,
+    "responseTime": 784573577.957,
+    "inferenceTimeMs": 173821957,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706956.jpg",
+    "modelOutput": "programming",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "511b056a-9f68-471b-b545-ec4bd8f41b87",
+    "captureTime": 784399771,
+    "responseTime": 784573578.95,
+    "inferenceTimeMs": 173807950,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706971.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "c7cb6c92-ecbe-4b47-af3c-d3f929d666c7",
+    "captureTime": 784399786,
+    "responseTime": 784573580.007,
+    "inferenceTimeMs": 173794007,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762706986.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "a83f12b1-9e6a-40ec-974f-fcb25ec08f78",
+    "captureTime": 784399801,
+    "responseTime": 784573580.879,
+    "inferenceTimeMs": 173779879,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707001.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "59a46562-540c-4bd6-ab07-ea1dfba92882",
+    "captureTime": 784399816,
+    "responseTime": 784573581.8959999,
+    "inferenceTimeMs": 173765896,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707016.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "230dc079-dde1-42f5-b7a5-fc98a4b1db00",
+    "captureTime": 784399831,
+    "responseTime": 784573582.8740001,
+    "inferenceTimeMs": 173751874,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707031.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "b3b8b497-2977-4a4f-8957-9ca954704c2b",
+    "captureTime": 784399846,
+    "responseTime": 784573583.7590001,
+    "inferenceTimeMs": 173737759,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707046.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "1bec1db3-22d6-4280-8eb3-5bb42ed77c26",
+    "captureTime": 784399861,
+    "responseTime": 784573584.8399999,
+    "inferenceTimeMs": 173723840,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707061.jpg",
+    "modelOutput": "Coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "cf3529d2-4cb7-4a72-8a47-33f84d852b16",
+    "captureTime": 784399876,
+    "responseTime": 784573585.7609999,
+    "inferenceTimeMs": 173709761,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707076.jpg",
+    "modelOutput": "programming",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "a8144a74-2450-43d5-bebd-a8beac557251",
+    "captureTime": 784399891,
+    "responseTime": 784573586.7160001,
+    "inferenceTimeMs": 173695716,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707091.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "08d06aef-973e-4ca7-98c3-38a1a97163fa",
+    "captureTime": 784399906,
+    "responseTime": 784573587.6789999,
+    "inferenceTimeMs": 173681679,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707106.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "7a00b4d0-8f56-4c2c-b6ae-e1434b679a0c",
+    "captureTime": 784399921,
+    "responseTime": 784573588.9389999,
+    "inferenceTimeMs": 173667939,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707121.jpg",
+    "modelOutput": "programming",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "0089b6d8-2951-4915-a77d-9775de8acb57",
+    "captureTime": 784399936,
+    "responseTime": 784573589.937,
+    "inferenceTimeMs": 173653937,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707136.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "81d0e1e6-fd6f-4b9c-8784-f7eb14f6eed7",
+    "captureTime": 784399951,
+    "responseTime": 784573590.8410001,
+    "inferenceTimeMs": 173639841,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707151.jpg",
+    "modelOutput": "programming",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "b6288605-df73-4b8d-8857-81ec3e1b0ec2",
+    "captureTime": 784399966,
+    "responseTime": 784573591.882,
+    "inferenceTimeMs": 173625882,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707166.jpg",
+    "modelOutput": "studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "ecad1d40-4aa2-480d-b77a-f2f0b00b9479",
+    "captureTime": 784399981,
+    "responseTime": 784573592.79,
+    "inferenceTimeMs": 173611790,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707181.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "6fb01434-06b0-418a-b399-39383bedcda4",
+    "captureTime": 784399996,
+    "responseTime": 784573593.767,
+    "inferenceTimeMs": 173597767,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707196.jpg",
+    "modelOutput": "Writing",
+    "formattedOutput": {
+      "activityLabel": "writing"
+    }
+  },
+  {
+    "id": "029dc475-6f1e-47b3-b5ed-d0bef3208d9a",
+    "captureTime": 784400011,
+    "responseTime": 784573594.7360001,
+    "inferenceTimeMs": 173583736,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707211.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "ad32e1f8-847d-4c62-b1f7-8563c051ad63",
+    "captureTime": 784400026,
+    "responseTime": 784573596.083,
+    "inferenceTimeMs": 173570083,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707226.jpg",
+    "modelOutput": "programming",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "ad2abee3-8b2e-4d2a-ac38-e964f6864a29",
+    "captureTime": 784400041,
+    "responseTime": 784573597.0020001,
+    "inferenceTimeMs": 173556002,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707241.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "6946a8c4-8042-43ed-8675-e9e43f485a52",
+    "captureTime": 784400056,
+    "responseTime": 784573597.9360001,
+    "inferenceTimeMs": 173541936,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707256.jpg",
+    "modelOutput": "programming",
+    "formattedOutput": {
+      "activityLabel": "programming"
+    }
+  },
+  {
+    "id": "125d7f1d-3480-4819-8b1f-0702cb18e55c",
+    "captureTime": 784400071,
+    "responseTime": 784573598.9749999,
+    "inferenceTimeMs": 173527975,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707271.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "a4a67a0d-2c29-46c2-90db-7b5026e32aff",
+    "captureTime": 784400086,
+    "responseTime": 784573600.177,
+    "inferenceTimeMs": 173514177,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707286.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "0dddad0c-4151-43bd-812b-922e55e5aded",
+    "captureTime": 784400101,
+    "responseTime": 784573601.2030001,
+    "inferenceTimeMs": 173500203,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707301.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "c3242734-79d1-42c4-9861-219d34a2811c",
+    "captureTime": 784400116,
+    "responseTime": 784573602.3469999,
+    "inferenceTimeMs": 173486347,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707316.jpg",
+    "modelOutput": "Coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "c0047138-3332-4117-aab0-ea3b02a44d6b",
+    "captureTime": 784400131,
+    "responseTime": 784573603.355,
+    "inferenceTimeMs": 173472355,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707331.jpg",
+    "modelOutput": "coding",
+    "formattedOutput": {
+      "activityLabel": "coding"
+    }
+  },
+  {
+    "id": "c23f59f3-3274-4234-a92e-8c047000633a",
+    "captureTime": 784400146,
+    "responseTime": 784573604.323,
+    "inferenceTimeMs": 173458323,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707346.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "970a3f9f-5909-4eb4-8adc-1ffddfc9d200",
+    "captureTime": 784400161,
+    "responseTime": 784573605.333,
+    "inferenceTimeMs": 173444333,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707361.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "3d66a1b2-8fe4-46cc-95a5-3f2fcb3b4d76",
+    "captureTime": 784400176,
+    "responseTime": 784573606.0139999,
+    "inferenceTimeMs": 173430014,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707376.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "08cd61e1-a8ab-4a8b-b101-c8b60fdab16a",
+    "captureTime": 784400191,
+    "responseTime": 784573607.2160001,
+    "inferenceTimeMs": 173416216,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707391.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "d0329cfc-017d-42af-82af-b191f9b04130",
+    "captureTime": 784400206,
+    "responseTime": 784573608.2249999,
+    "inferenceTimeMs": 173402225,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707406.jpg",
+    "modelOutput": "Typing.",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "1a33898e-95ef-45d7-8cac-de473c3fada6",
+    "captureTime": 784400221,
+    "responseTime": 784573609.197,
+    "inferenceTimeMs": 173388197,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707421.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "2ae358bd-e540-4561-9380-30497c657679",
+    "captureTime": 784400236,
+    "responseTime": 784573610.2119999,
+    "inferenceTimeMs": 173374212,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707436.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "aff7650d-c16f-455b-b75f-c5832bfa1ada",
+    "captureTime": 784400251,
+    "responseTime": 784573611.1489999,
+    "inferenceTimeMs": 173360149,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707451.jpg",
+    "modelOutput": "Working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "265487af-4388-4a76-a222-fcf4343e3656",
+    "captureTime": 784400266,
+    "responseTime": 784573612.231,
+    "inferenceTimeMs": 173346231,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707466.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "fc0bb27f-b03e-418b-8430-633d95f196be",
+    "captureTime": 784400281,
+    "responseTime": 784573613.287,
+    "inferenceTimeMs": 173332287,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707481.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "cb829866-692e-4855-9abe-7e74938b6bed",
+    "captureTime": 784400296,
+    "responseTime": 784573615.537,
+    "inferenceTimeMs": 173319537,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707496.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "ece781d4-9553-41ce-9642-c397f33b2901",
+    "captureTime": 784400311,
+    "responseTime": 784573616.6329999,
+    "inferenceTimeMs": 173305633,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707511.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "e44ff788-d99f-492d-90b1-f39129aceea1",
+    "captureTime": 784400326,
+    "responseTime": 784573617.5780001,
+    "inferenceTimeMs": 173291578,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707526.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "57d8a101-26a0-4bc4-9a47-4f83567ca307",
+    "captureTime": 784400341,
+    "responseTime": 784573618.5009999,
+    "inferenceTimeMs": 173277501,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707541.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "88df6694-4733-4dc0-9a37-900beb447d0f",
+    "captureTime": 784400356,
+    "responseTime": 784573619.533,
+    "inferenceTimeMs": 173263533,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707556.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "d739a2ad-22ba-4aba-a681-22f6b17b200b",
+    "captureTime": 784400371,
+    "responseTime": 784573620.579,
+    "inferenceTimeMs": 173249579,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707571.jpg",
+    "modelOutput": "WorkInging",
+    "formattedOutput": {
+      "activityLabel": "workinging"
+    }
+  },
+  {
+    "id": "923bf1b2-fba0-4dbd-9f02-9b4271b0a1bd",
+    "captureTime": 784400386,
+    "responseTime": 784573621.5810001,
+    "inferenceTimeMs": 173235581,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707586.jpg",
+    "modelOutput": "Typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "b2fd2064-5377-40df-8668-b5d13a1bfba0",
+    "captureTime": 784400401,
+    "responseTime": 784573622.674,
+    "inferenceTimeMs": 173221674,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707601.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "b1f6a531-3240-468b-9201-d2b214d4d8ce",
+    "captureTime": 784400416,
+    "responseTime": 784573623.757,
+    "inferenceTimeMs": 173207757,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707616.jpg",
+    "modelOutput": "Working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "4d839587-66f9-47ed-b541-f2afe12abdd6",
+    "captureTime": 784400431,
+    "responseTime": 784573624.6989999,
+    "inferenceTimeMs": 173193699,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707631.jpg",
+    "modelOutput": "writing",
+    "formattedOutput": {
+      "activityLabel": "writing"
+    }
+  },
+  {
+    "id": "c15ff2e4-6734-4ec6-9bfc-5e8ab9135e4a",
+    "captureTime": 784400446,
+    "responseTime": 784573625.7090001,
+    "inferenceTimeMs": 173179709,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707646.jpg",
+    "modelOutput": "Studying.",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "c0106711-6db7-4e7c-a6d0-fd6c85e05836",
+    "captureTime": 784400461,
+    "responseTime": 784573626.497,
+    "inferenceTimeMs": 173165497,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707661.jpg",
+    "modelOutput": "working",
+    "formattedOutput": {
+      "activityLabel": "working"
+    }
+  },
+  {
+    "id": "1ec1bce3-dc6e-4720-9b5b-128157332d32",
+    "captureTime": 784400476,
+    "responseTime": 784573627.5179999,
+    "inferenceTimeMs": 173151518,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707676.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "8ff0aff7-406f-4c7c-9c99-4c570069797c",
+    "captureTime": 784400491,
+    "responseTime": 784573628.622,
+    "inferenceTimeMs": 173137622,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707691.jpg",
+    "modelOutput": "typing",
+    "formattedOutput": {
+      "activityLabel": "typing"
+    }
+  },
+  {
+    "id": "4c20487b-ed8f-408c-8408-4d2bfbbc9c75",
+    "captureTime": 784400506,
+    "responseTime": 784573629.668,
+    "inferenceTimeMs": 173123668,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707706.jpg",
+    "modelOutput": "Studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "a5c8f90a-2bdf-4f01-9ade-92a658a0498f",
+    "captureTime": 784400521,
+    "responseTime": 784573630.6170001,
+    "inferenceTimeMs": 173109617,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707721.jpg",
+    "modelOutput": "studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "a1299663-4796-4eb4-9dcd-65b41065a1c7",
+    "captureTime": 784400536,
+    "responseTime": 784573631.579,
+    "inferenceTimeMs": 173095579,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762707736.jpg",
+    "modelOutput": "studying",
+    "formattedOutput": {
+      "activityLabel": "studying"
+    }
+  },
+  {
+    "id": "945a63e6-ee41-44e7-bfd6-de47d1d2a335",
+    "captureTime": 784408799,
+    "responseTime": 784573633.4189999,
+    "inferenceTimeMs": 164834419,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762715999.jpg",
+    "modelOutput": "workings.",
+    "formattedOutput": {
+      "activityLabel": "workings"
+    }
+  },
+  {
+    "id": "e45148d6-0af2-47c9-bbd1-d5cd96b7c8c6",
+    "captureTime": 784408814,
+    "responseTime": 784573634.5350001,
+    "inferenceTimeMs": 164820535,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716014.jpg",
+    "modelOutput": "peeking",
+    "formattedOutput": {
+      "activityLabel": "peeking"
+    }
+  },
+  {
+    "id": "20f7c4e8-9749-478c-9a54-27d967273061",
+    "captureTime": 784408829,
+    "responseTime": 784573635.388,
+    "inferenceTimeMs": 164806388,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716029.jpg",
+    "modelOutput": "Cleaning",
+    "formattedOutput": {
+      "activityLabel": "cleaning"
+    }
+  },
+  {
+    "id": "87e65ed8-fccd-4af7-8c05-d85fffae119b",
+    "captureTime": 784408844,
+    "responseTime": 784573636.325,
+    "inferenceTimeMs": 164792325,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716044.jpg",
+    "modelOutput": "brushing牙齿",
+    "formattedOutput": {
+      "activityLabel": "brushing"
+    }
+  },
+  {
+    "id": "055dca06-7446-4d10-aee9-988725274fd7",
+    "captureTime": 784408859,
+    "responseTime": 784573637.276,
+    "inferenceTimeMs": 164778276,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716059.jpg",
+    "modelOutput": "Taking selfie",
+    "formattedOutput": {
+      "activityLabel": "taking"
+    }
+  },
+  {
+    "id": "3e748b3b-357f-4f1b-9c78-5a08d163166c",
+    "captureTime": 784409020,
+    "responseTime": 784573642.4690001,
+    "inferenceTimeMs": 164622469,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716220.jpg",
+    "modelOutput": "Selfie-posing",
+    "formattedOutput": {
+      "activityLabel": "selfieposing"
+    }
+  },
+  {
+    "id": "3ab56250-e649-49d5-9921-c5478be5293d",
+    "captureTime": 784409113,
+    "responseTime": 784573644.3199999,
+    "inferenceTimeMs": 164531320,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716313.jpg",
+    "modelOutput": "shaving",
+    "formattedOutput": {
+      "activityLabel": "shaving"
+    }
+  },
+  {
+    "id": "636af277-f2f2-4d8d-bab0-54938d55221e",
+    "captureTime": 784409128,
+    "responseTime": 784573645.338,
+    "inferenceTimeMs": 164517338,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716328.jpg",
+    "modelOutput": "scrolling",
+    "formattedOutput": {
+      "activityLabel": "scrolling"
+    }
+  },
+  {
+    "id": "42f4b9a1-5328-4618-be7c-694b875951e1",
+    "captureTime": 784409143,
+    "responseTime": 784573646.26,
+    "inferenceTimeMs": 164503260,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716343.jpg",
+    "modelOutput": "Smiling",
+    "formattedOutput": {
+      "activityLabel": "smiling"
+    }
+  },
+  {
+    "id": "3fba2d4f-0851-43c3-90e6-ecd26580b1a6",
+    "captureTime": 784409158,
+    "responseTime": 784573647.299,
+    "inferenceTimeMs": 164489299,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716358.jpg",
+    "modelOutput": "texting",
+    "formattedOutput": {
+      "activityLabel": "texting"
+    }
+  },
+  {
+    "id": "9795aec3-7ed2-4d8f-a012-6b90a5aa66b5",
+    "captureTime": 784409173,
+    "responseTime": 784573648.2219999,
+    "inferenceTimeMs": 164475222,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716373.jpg",
+    "modelOutput": "cleaning",
+    "formattedOutput": {
+      "activityLabel": "cleaning"
+    }
+  },
+  {
+    "id": "cf1f4644-821e-44e1-b7f5-e2c6b2fbab87",
+    "captureTime": 784409188,
+    "responseTime": 784573649.2579999,
+    "inferenceTimeMs": 164461258,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716388.jpg",
+    "modelOutput": "Refrigerating",
+    "formattedOutput": {
+      "activityLabel": "refrigerating"
+    }
+  },
+  {
+    "id": "25c51ec9-d95c-438d-b16f-208f66fabef7",
+    "captureTime": 784409203,
+    "responseTime": 784573650.2639999,
+    "inferenceTimeMs": 164447264,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716403.jpg",
+    "modelOutput": "exiting",
+    "formattedOutput": {
+      "activityLabel": "exiting"
+    }
+  },
+  {
+    "id": "fac5e642-094e-4e86-96be-af0ac78dcdf5",
+    "captureTime": 784409218,
+    "responseTime": 784573651.368,
+    "inferenceTimeMs": 164433368,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716418.jpg",
+    "modelOutput": "Walking",
+    "formattedOutput": {
+      "activityLabel": "walking"
+    }
+  },
+  {
+    "id": "889a585d-a953-42d1-8334-923557472adb",
+    "captureTime": 784409233,
+    "responseTime": 784573652.3889999,
+    "inferenceTimeMs": 164419389,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716433.jpg",
+    "modelOutput": "Unloading\n",
+    "formattedOutput": {
+      "activityLabel": "unloading"
+    }
+  },
+  {
+    "id": "fdc26d8e-bd21-4036-8ff9-1528b12c95ed",
+    "captureTime": 784409248,
+    "responseTime": 784573653.3280001,
+    "inferenceTimeMs": 164405328,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716448.jpg",
+    "modelOutput": "unloading",
+    "formattedOutput": {
+      "activityLabel": "unloading"
+    }
+  },
+  {
+    "id": "5061ca77-dab2-4a27-8c75-21e91d2451ed",
+    "captureTime": 784409263,
+    "responseTime": 784573654.299,
+    "inferenceTimeMs": 164391299,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716463.jpg",
+    "modelOutput": "organizing",
+    "formattedOutput": {
+      "activityLabel": "organizing"
+    }
+  },
+  {
+    "id": "515f0db7-5865-48b5-9c31-8a28d2dac664",
+    "captureTime": 784409278,
+    "responseTime": 784573655.171,
+    "inferenceTimeMs": 164377171,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716478.jpg",
+    "modelOutput": "Opening",
+    "formattedOutput": {
+      "activityLabel": "opening"
+    }
+  },
+  {
+    "id": "9680b1b4-aedd-45fd-a248-8ff7f304bc08",
+    "captureTime": 784409293,
+    "responseTime": 784573656.089,
+    "inferenceTimeMs": 164363089,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716493.jpg",
+    "modelOutput": "stacking",
+    "formattedOutput": {
+      "activityLabel": "stacking"
+    }
+  },
+  {
+    "id": "f0e1b791-eb55-4e22-abca-513a6451b616",
+    "captureTime": 784409308,
+    "responseTime": 784573656.9619999,
+    "inferenceTimeMs": 164348962,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716508.jpg",
+    "modelOutput": "packing",
+    "formattedOutput": {
+      "activityLabel": "packing"
+    }
+  },
+  {
+    "id": "2d2c17aa-45a6-4603-a082-ce16409312b5",
+    "captureTime": 784409323,
+    "responseTime": 784573657.838,
+    "inferenceTimeMs": 164334838,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716523.jpg",
+    "modelOutput": "preparing food",
+    "formattedOutput": {
+      "activityLabel": "preparing"
+    }
+  },
+  {
+    "id": "4dab4787-5251-44d9-838c-cfebff6ab15c",
+    "captureTime": 784409338,
+    "responseTime": 784573658.661,
+    "inferenceTimeMs": 164320661,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716538.jpg",
+    "modelOutput": "cooking",
+    "formattedOutput": {
+      "activityLabel": "cooking"
+    }
+  },
+  {
+    "id": "00bf5daa-5613-4046-92a1-e4a7b339b63f",
+    "captureTime": 784409353,
+    "responseTime": 784573659.5699999,
+    "inferenceTimeMs": 164306570,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716553.jpg",
+    "modelOutput": "Microwaving",
+    "formattedOutput": {
+      "activityLabel": "microwaving"
+    }
+  },
+  {
+    "id": "bf74b755-dc4f-4a19-9b53-64e481f83704",
+    "captureTime": 784409368,
+    "responseTime": 784573660.4990001,
+    "inferenceTimeMs": 164292499,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716568.jpg",
+    "modelOutput": "washing",
+    "formattedOutput": {
+      "activityLabel": "washing"
+    }
+  },
+  {
+    "id": "8bd5476b-a95a-4086-97fc-c1ab4b85bd22",
+    "captureTime": 784409383,
+    "responseTime": 784573661.7219999,
+    "inferenceTimeMs": 164278722,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716583.jpg",
+    "modelOutput": "cleaning",
+    "formattedOutput": {
+      "activityLabel": "cleaning"
+    }
+  },
+  {
+    "id": "1bd8eeec-9011-4576-ba4a-dac9affedd3d",
+    "captureTime": 784409398,
+    "responseTime": 784573666.6029999,
+    "inferenceTimeMs": 164268603,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716598.jpg",
+    "modelOutput": "peeling",
+    "formattedOutput": {
+      "activityLabel": "peeling"
+    }
+  },
+  {
+    "id": "1c246e67-660d-443b-a20e-4ced7cdd133d",
+    "captureTime": 784409413,
+    "responseTime": 784573667.6240001,
+    "inferenceTimeMs": 164254624,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716613.jpg",
+    "modelOutput": "washing",
+    "formattedOutput": {
+      "activityLabel": "washing"
+    }
+  },
+  {
+    "id": "f0b71c9d-9254-442a-8b43-d22b93776596",
+    "captureTime": 784409428,
+    "responseTime": 784573668.6470001,
+    "inferenceTimeMs": 164240647,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716628.jpg",
+    "modelOutput": "washing",
+    "formattedOutput": {
+      "activityLabel": "washing"
+    }
+  },
+  {
+    "id": "ae44d68c-6fba-43d3-a157-a52761c5d94d",
+    "captureTime": 784409443,
+    "responseTime": 784573669.622,
+    "inferenceTimeMs": 164226622,
+    "isSuccess": true,
+    "imagePath": "/Users/chriswu/Documents/GitHub/SpaceSelfLog/Data/2025-11-09_11-01-25/Images/analysis_1762716643.jpg",
+    "modelOutput": "Chopping",
+    "formattedOutput": {
+      "activityLabel": "chopping"
+    }
+  }
+]

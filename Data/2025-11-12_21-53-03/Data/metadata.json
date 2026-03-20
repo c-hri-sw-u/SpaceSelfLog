@@ -1,0 +1,9 @@
+{
+  "prompt" : "Analyze the image and return STRICT JSON with keys: objects (JSON array of strings; list all identifiable objects, use [] if none), location (select from [bedroom, kitchen, bathroom, living room, dining room, storeroom]), handsInTheView (boolean), activityLabel (a single English -ing word). Return only raw JSON (do NOT use code fences like ```json), no extra text. Example: {\"objects\": [\"knife\", \"tomato\"], \"location\": \"kitchen\", \"handsInTheView\": true, \"activityLabel\": \"cutting\"}.",
+  "apiProvider" : "OpenRouter",
+  "intervalSeconds" : 10,
+  "experimentNumber" : 3,
+  "model" : "@preset\/space-self-log",
+  "experimentStartTime" : "2025-11-13T02:53:03Z",
+  "sessionId" : "2025-11-12_21-53-03"
+}

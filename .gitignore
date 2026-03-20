@@ -1,0 +1,4 @@
+# Secrets for SpaceSelfLogVisualizer offline tools
+SpaceSelfLogVisualizer/.openrouter_key
+SpaceSelfLogVisualizer/.gemini_key
+SpaceSelfLogVisualizer/.env

@@ -1,32 +1,23 @@
-//
-//  SpaceSelfLogApp.swift
-//  SpaceSelfLog
-//
-//  Created by Chris Wu on 10/29/25.
-//
-
 import SwiftUI
-import SwiftData
 
 @main
 struct SpaceSelfLogApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    @StateObject private var viewModel = AppViewModel()
+    @StateObject private var notificationManager = NotificationManager.shared
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(viewModel: viewModel)
+                .onAppear {
+                    // Request notification permission
+                    notificationManager.requestPermission()
+                    
+                    viewModel.startServerIfNeeded()
+                    // Start camera with saved selection
+                    if let selectedCamera = viewModel.selectedCamera {
+                        viewModel.switchCamera(to: selectedCamera)
+                    }
+                }
         }
-        .modelContainer(sharedModelContainer)
     }
 }

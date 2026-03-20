@@ -1,0 +1,8 @@
+{
+  "sessionId": "2025-11-09_11-01-25",
+  "experimentStartTime": "2025-11-09T16:01:57Z",
+  "intervalSeconds": 15.0,
+  "apiProvider": "OpenRouter",
+  "model": "@preset/space-self-log",
+  "prompt": "This ia an egocentic view. What am I doing based on this image? Respond with a single English word with -ing."
+}

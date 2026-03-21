@@ -24,7 +24,6 @@ final class StreamServer {
     var onUpdateAudioConfig: ((_ vadSensitivity: String, _ transcriptionEnabled: Bool) -> Bool)?
     var onUpdateIMUConfig: ((_ sustainedMotionThreshold: Int, _ varianceLow: Double, _ varianceHigh: Double) -> Bool)?
     var onUpdateBatchConfig: ((_ firstBatchWindow: Int, _ maxWindow: Int, _ ssimThreshold: Double, _ ssimDedupThreshold: Double, _ kDensityPerMin: Double, _ kMin: Int, _ kMax: Int, _ scoreThreshold: Double) -> Bool)?
-    var onUpdateInferenceConfig: ((_ provider: String) -> Bool)?
     var onUpdateOutboxConfig: ((_ endpoint: String) -> Bool)?
     
     init(port: UInt16 = 8080) {
@@ -177,12 +176,6 @@ final class StreamServer {
                     let kMax               = json["kMax"]               as? Int    ?? 12
                     let scoreThreshold     = json["scoreThreshold"]     as? Double ?? 0.50
                     let success = self?.onUpdateBatchConfig?(firstBatchWindow, maxWindow, ssimThreshold, ssimDedupThreshold, kDensityPerMin, kMin, kMax, scoreThreshold) ?? false
-                    return (success, success ? nil : "Not implemented")
-                }
-            case "/update-inference-config":
-                self.handleJSONPost(connection, leftover: leftoverBody, request: request) { [weak self] json in
-                    let provider = json["provider"] as? String ?? "claude"
-                    let success = self?.onUpdateInferenceConfig?(provider) ?? false
                     return (success, success ? nil : "Not implemented")
                 }
             case "/update-outbox-config":

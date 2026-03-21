@@ -183,6 +183,7 @@ final class AppViewModel: ObservableObject {
                     "outboxQueueSize": self.outboxManager.queueSize,
                     "outboxLastUploadStatus": self.outboxManager.lastUploadStatus,
                     "outboxFailureCount": self.outboxManager.failureCount,
+                    "outboxLastSummary": self.outboxManager.lastSummary as Any,
                     "outboxEndpoint": self.outboxEndpoint
                 ]
             }
@@ -375,6 +376,7 @@ final class AppViewModel: ObservableObject {
     var outboxQueueSize: Int        { outboxManager.queueSize }
     var outboxUploadStatus: String  { outboxManager.lastUploadStatus }
     var outboxFailureCount: Int     { outboxManager.failureCount }
+    var outboxLastSummary: String?  { outboxManager.lastSummary }
     var batchPendingFrames: Int     { batchProcessor.pendingFrameCount }
     var batchTotalProcessed: Int    { batchProcessor.totalBatchesProcessed }
 

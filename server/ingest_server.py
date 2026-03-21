@@ -269,7 +269,7 @@ def ingest():
 
     if error_msg:
         return jsonify({"error": error_msg}), 500
-    return jsonify({"ok": True, "batch_id": batch_id, "summary_chars": len(summary or "")})
+    return jsonify({"ok": True, "batch_id": batch_id, "summary": summary})
 
 
 # ---------------------------------------------------------------------------

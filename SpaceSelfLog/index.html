@@ -664,26 +664,10 @@
             <div class="section-save-row">
                 <button class="settings-button" onclick="saveOutboxConfig(event)">Save</button>
             </div>
+            <div class="settings-label" style="margin-top:10px;">Last result</div>
+            <div class="settings-status" id="outboxLastSummary" style="white-space:pre-wrap;line-height:1.4;">–</div>
         </div>
 
-        <!-- Inference -->
-        <div class="settings-section">
-            <div class="settings-section-title">Inference</div>
-            <div class="settings-label">VLM Provider</div>
-            <div class="segment-control" id="vlmProvider">
-                <button class="segment-option active" data-value="claude" onclick="selectSegment('vlmProvider','claude',this)">Claude</button>
-                <button class="segment-option" data-value="openrouter" onclick="selectSegment('vlmProvider','openrouter',this)">OpenRouter</button>
-            </div>
-            <div class="settings-label" style="margin-top:10px;">API Key</div>
-            <div class="api-key-row">
-                <input type="password" class="settings-input" id="apiKeyDisplay" placeholder="••••••••••••••••" disabled>
-                <button class="settings-button" id="testApiBtn" onclick="testApiKey()">Test</button>
-            </div>
-            <div class="settings-status" id="apiKeyStatus">Loading...</div>
-            <div class="section-save-row" style="margin-top:10px;">
-                <button class="settings-button" onclick="saveInferenceConfig(event)">Save</button>
-            </div>
-        </div>
     </div>
 
     <!-- ── Main Content ── -->
@@ -1156,42 +1140,7 @@
                 endpoint: document.getElementById('outboxEndpointInput').value.trim()
             }, e.target);
         }
-        function saveInferenceConfig(e) {
-            saveConfig('/update-inference-config', {
-                provider: getSegmentValue('vlmProvider')
-            }, e.target);
-        }
-
-        function testApiKey() {
-            const btn = document.getElementById('testApiBtn'), orig = btn.textContent;
-            btn.disabled = true; btn.textContent = 'Testing...';
-            fetch('/test-api-key').then(r => r.json()).then(d => {
-                const el = document.getElementById('apiKeyStatus');
-                el.textContent = d.success ? '✓ API key valid' : `✗ ${d.error || 'Failed'}`;
-                el.style.color = d.success ? '#4CAF50' : '#f44336';
-            }).catch(() => {
-                const el = document.getElementById('apiKeyStatus');
-                el.textContent = '✗ Request failed'; el.style.color = '#f44336';
-            }).finally(() => { btn.disabled = false; btn.textContent = orig; });
-        }
-
         function updateSettingsPanel(s) {
-            // API key
-            const statusEl = document.getElementById('apiKeyStatus');
-            const displayEl = document.getElementById('apiKeyDisplay');
-            const testBtn   = document.getElementById('testApiBtn');
-            if (s.hasApiKey) {
-                displayEl.placeholder = '•'.repeat(Math.min(s.apiKeyLength || 16, 20));
-                if (!statusEl.textContent.startsWith('✓') && !statusEl.textContent.startsWith('✗')) {
-                    statusEl.textContent = `Configured (${s.apiKeyLength || '?'} chars)`;
-                    statusEl.style.color = '#4CAF50';
-                }
-                testBtn.disabled = false;
-            } else {
-                displayEl.placeholder = 'Set in mobile app';
-                statusEl.textContent = 'No API key found'; statusEl.style.color = '#f44336';
-                testBtn.disabled = true;
-            }
             // Sync config (skip if input is focused)
             const active = document.activeElement;
             const minEl = document.getElementById('minIntervalInput');
@@ -1230,7 +1179,6 @@
             if (s.kMin               != null && active !== kmEl) kmEl.value = s.kMin;
             if (s.kMax               != null && active !== kxEl) kxEl.value = s.kMax;
             if (s.scoreThreshold     != null && active !== stEl) stEl.value = s.scoreThreshold;
-            if (s.vlmProvider) syncSegment('vlmProvider', s.vlmProvider);
             // Outbox
             const epEl = document.getElementById('outboxEndpointInput');
             if (s.outboxEndpoint != null && active !== epEl) epEl.value = s.outboxEndpoint;
@@ -1244,6 +1192,11 @@
                 if (fails > 0) txt += ` · ${fails} failure(s)`;
                 outboxStatusEl.textContent = txt;
                 outboxStatusEl.style.color = status === 'ok' ? '#4CAF50' : status === 'idle' ? '#888' : '#f44336';
+            }
+            const summaryEl = document.getElementById('outboxLastSummary');
+            if (summaryEl && s.outboxLastSummary) {
+                summaryEl.textContent = s.outboxLastSummary;
+                summaryEl.style.color = '#ccc';
             }
         }
 

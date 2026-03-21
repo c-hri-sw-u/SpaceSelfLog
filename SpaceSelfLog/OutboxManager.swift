@@ -37,6 +37,7 @@ final class OutboxManager {
     private(set) var lastUploadAt: Date?
     private(set) var lastUploadStatus: String = "idle"
     private(set) var failureCount: Int = 0
+    private(set) var lastSummary: String?
 
     // MARK: - Private
 
@@ -143,12 +144,13 @@ final class OutboxManager {
 
         for var entry in due {
             do {
-                try uploadSync(entry: entry, endpoint: endpoint)
+                let summary = try uploadSync(entry: entry, endpoint: endpoint)
                 removeEntry(entry)
                 DispatchQueue.main.async {
                     self.lastUploadAt = Date()
                     self.lastUploadStatus = "ok"
                     self.queueSize = self.entries.count
+                    if let summary { self.lastSummary = summary }
                 }
                 print("OutboxManager: uploaded \(entry.batchId)")
             } catch {
@@ -176,7 +178,7 @@ final class OutboxManager {
 
     // MARK: - HTTP upload (synchronous, called on drainQueue)
 
-    private func uploadSync(entry: OutboxEntry, endpoint: URL) throws {
+    private func uploadSync(entry: OutboxEntry, endpoint: URL) throws -> String? {
         // Build manifest + inline base64 frames.
         guard
             let manifestData = try? Data(contentsOf: entry.dataURL.appendingPathComponent("manifest.json")),
@@ -204,18 +206,28 @@ final class OutboxManager {
         request.httpBody = body
 
         var uploadError: Error?
+        var responseData: Data?
         let semaphore = DispatchSemaphore(value: 0)
-        URLSession.shared.dataTask(with: request) { _, response, error in
+        URLSession.shared.dataTask(with: request) { data, response, error in
             if let error {
                 uploadError = error
             } else if let http = response as? HTTPURLResponse, http.statusCode >= 400 {
                 uploadError = URLError(.badServerResponse)
+            } else {
+                responseData = data
             }
             semaphore.signal()
         }.resume()
         semaphore.wait()
 
         if let err = uploadError { throw err }
+
+        if let data = responseData,
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let summary = json["summary"] as? String {
+            return summary
+        }
+        return nil
     }
 
     // MARK: - Entry helpers

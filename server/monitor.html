@@ -77,6 +77,22 @@
 
   .field { display: flex; flex-direction: column; gap: 5px; }
   .field label { font-size: 12px; color: var(--muted); }
+  .field textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 12px;
+    font-family: ui-monospace, "SF Mono", monospace;
+    padding: 7px 10px;
+    outline: none;
+    width: 100%;
+    resize: vertical;
+    min-height: 140px;
+    line-height: 1.5;
+    transition: border-color .15s;
+  }
+  .field textarea:focus { border-color: var(--accent); }
   .field input, .field select {
     background: var(--bg);
     border: 1px solid var(--border);
@@ -264,9 +280,17 @@
 
     <div id="test-result"></div>
 
+    <div class="field">
+      <label>System Prompt</label>
+      <textarea id="prompt" spellcheck="false"></textarea>
+    </div>
+
     <div class="btn-row">
-      <button class="btn-ghost" id="btn-test">Test</button>
+      <button class="btn-ghost" id="btn-reset-prompt">Reset</button>
       <button class="btn-primary" id="btn-save">Save</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-ghost" id="btn-test">Test Connection</button>
     </div>
 
     <hr class="divider">
@@ -320,6 +344,7 @@ async function loadConfig() {
     document.getElementById("model").value         = cfg.model || "";
     document.getElementById("openclaw-dir").value  = cfg.openclaw_memory_dir || "";
     document.getElementById("frames-dir").value    = cfg.frames_dir || "";
+    document.getElementById("prompt").value        = cfg.prompt || "";
     updateModelRowVisibility();
     configLoaded = true;
   } catch(e) { console.error("loadConfig:", e); }
@@ -339,6 +364,7 @@ async function saveConfig() {
   const body = {
     provider: document.getElementById("provider").value,
     model:    document.getElementById("model").value.trim(),
+    prompt:   document.getElementById("prompt").value,
   };
   if (key) body.api_key = key;
   try {
@@ -397,9 +423,24 @@ async function testConnection() {
   btn.disabled = false;
 }
 
+async function resetPrompt() {
+  try {
+    const r   = await fetch("/api/config");
+    const cfg = await r.json();
+    // Ask server for the default by sending empty string, then reload
+    await fetch("/api/config", { method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({prompt: ""}) });
+    const r2   = await fetch("/api/config");
+    const cfg2 = await r2.json();
+    document.getElementById("prompt").value = cfg2.prompt || "";
+  } catch(e) { alert("Reset failed: " + e); }
+}
+
 document.getElementById("btn-save").addEventListener("click", saveConfig);
 document.getElementById("btn-save-dirs").addEventListener("click", saveDirs);
 document.getElementById("btn-test").addEventListener("click", testConnection);
+document.getElementById("btn-reset-prompt").addEventListener("click", resetPrompt);
 
 // ── Feed ──
 function formatTime(isoStr) {

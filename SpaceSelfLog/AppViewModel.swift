@@ -183,7 +183,7 @@ final class AppViewModel: ObservableObject {
                     "outboxQueueSize": self.outboxManager.queueSize,
                     "outboxLastUploadStatus": self.outboxManager.lastUploadStatus,
                     "outboxFailureCount": self.outboxManager.failureCount,
-                    "outboxLastSummary": self.outboxManager.lastSummary as Any,
+                    "outboxLastSummary": self.outboxManager.lastSummary ?? "",
                     "outboxEndpoint": self.outboxEndpoint
                 ]
             }

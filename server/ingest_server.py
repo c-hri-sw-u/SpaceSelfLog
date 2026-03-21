@@ -54,6 +54,31 @@ log = logging.getLogger("ingest")
 # Config management
 # ---------------------------------------------------------------------------
 
+_DEFAULT_PROMPT = """\
+You are an egocentric perception system analyzing first-person video frames \
+from a smartphone worn on the body. Your role is to surface information that \
+a personal AI agent should know about its user — not just "what is happening" \
+but "what does this reveal about the user's habits, preferences, environment, \
+and current activity?"
+
+Output exactly these fields. Mark any field "not observed" if the frames and \
+sensor tags do not provide sufficient evidence — do not guess.
+
+activity: <current action or task, e.g. "cooking", "desk work", "walking outside">
+location: <environment or place type, e.g. "home kitchen", "office", "outdoors">
+objects: <notable objects relevant to the user's context or habits>
+social_context: <alone / with others; if others, describe visible interaction>
+notable_events: <transitions, significant actions, or moments worth remembering>
+observation: <one paragraph, 4–6 sentences, past tense, third person — \
+faithful description first, then interpretive annotation relevant to personalization>
+
+Guidelines:
+- Use IMU and audio tags to ground your interpretation \
+(e.g. stationary + speech detected → likely in conversation).
+- If you cannot determine something, write "not observed" rather than guessing.
+- Do not repeat the prior summary verbatim; only reference it for continuity.\
+"""
+
 _DEFAULTS: dict = {
     "provider":            "openrouter",
     "api_key":             os.environ.get("OPENROUTER_API_KEY")
@@ -62,6 +87,7 @@ _DEFAULTS: dict = {
     "openclaw_memory_dir": os.environ.get("OPENCLAW_MEMORY_DIR", ""),
     "frames_dir":          os.environ.get("FRAMES_DIR",
                                str(Path("~/.spaceselflog/frames").expanduser())),
+    "prompt":              _DEFAULT_PROMPT,
 }
 
 
@@ -148,7 +174,7 @@ def post_config():
     global _config, _client
     body = request.get_json(force=True, silent=True) or {}
     # Merge into current config; ignore unknown keys
-    allowed = {"provider", "api_key", "model", "openclaw_memory_dir", "frames_dir"}
+    allowed = {"provider", "api_key", "model", "openclaw_memory_dir", "frames_dir", "prompt"}
     for k in allowed:
         if k in body:
             _config[k] = body[k]
@@ -219,6 +245,12 @@ def ingest():
         data     = base64.b64decode(f["jpeg_base64"])
         (batch_dir / filename).write_bytes(data)
         frame_paths.append((filename, data))
+
+    # Save manifest (payload minus the heavy base64 frames array)
+    manifest = {k: v for k, v in payload.items() if k != "frames"}
+    (batch_dir / "manifest.json").write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False)
+    )
 
     # 2. Load prior context
     prior_summary = _load_prior_context(session_id)
@@ -297,19 +329,8 @@ def serve_frame(session_id: str, batch_id: str, filename: str):
 # VLM inference
 # ---------------------------------------------------------------------------
 
-SYSTEM_PROMPT = """\
-You are an egocentric perception system analyzing first-person video frames \
-from a smartphone worn on the body. Your task is to generate a concise, \
-factual observation about the wearer's physical context and activities.
-
-Guidelines:
-- Write exactly one paragraph of 4–6 sentences.
-- Use past tense, third person ("the wearer").
-- Be specific: environment, objects, people, actions.
-- Note social context and any transitions.
-- Do not speculate beyond what the frames and sensor tags show.
-- Do not repeat the prior summary verbatim; only reference it for continuity.\
-"""
+def _system_prompt() -> str:
+    return _config.get("prompt") or _DEFAULT_PROMPT
 
 
 def _build_preamble(frames_meta: list[dict], batch_created: datetime,
@@ -325,21 +346,29 @@ def _build_preamble(frames_meta: list[dict], batch_created: datetime,
 
     text = (f"Batch captured at {batch_created.strftime('%Y-%m-%d %H:%M')} UTC"
             f"{duration_hint}. "
-            f"{frame_count} key frames selected from {input_frames} total.\n")
+            f"{frame_count} key frames selected from {input_frames} total, "
+            f"presented in chronological order.\n")
     if prior_summary:
         text += f"\nPrior batch summary (for continuity):\n{prior_summary}\n"
-    text += "\nFrames follow, each annotated with sensor tags:\n"
+    text += "\nFrames follow, each labeled with its index, relative timestamp, and sensor tags:\n"
     return text
 
 
-def _frame_annotation(filename: str, meta: dict) -> str:
-    audio = meta.get("audio_tags", {})
-    imu   = meta.get("imu_tags", {})
-    return (f"[{filename}  t={meta.get('captured_at','')}  "
+def _frame_annotation(idx: int, total: int, meta: dict, t0: datetime) -> str:
+    audio    = meta.get("audio_tags", {})
+    imu      = meta.get("imu_tags", {})
+    ts_str   = meta.get("captured_at", "")
+    rel_secs = 0
+    if ts_str:
+        try:
+            t = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+            rel_secs = max(0, int((t - t0).total_seconds()))
+        except ValueError:
+            pass
+    return (f"[Frame {idx + 1}/{total}  +{rel_secs}s  "
             f"motion={imu.get('motion_state','?')}  "
             f"speech={audio.get('speech_detected','?')}  "
-            f"noise={audio.get('noise_level','?')}  "
-            f"score={meta.get('score_total','')}]")
+            f"noise={audio.get('noise_level','?')}]")
 
 
 def _run_vlm(frames: list[tuple[str, bytes]], frames_meta: list[dict],
@@ -349,45 +378,56 @@ def _run_vlm(frames: list[tuple[str, bytes]], frames_meta: list[dict],
     preamble     = _build_preamble(frames_meta, batch_created, input_frames,
                                    len(frames), prior_summary)
 
+    # Compute t0 from the first frame's captured_at (fallback: batch_created)
+    times = [m.get("captured_at") for m in frames_meta if m.get("captured_at")]
+    t0 = batch_created
+    if times:
+        try:
+            t0 = datetime.fromisoformat(times[0].replace("Z", "+00:00"))
+        except ValueError:
+            pass
+
     if _config.get("provider") == "anthropic":
-        return _run_vlm_anthropic(frames, meta_by_file, preamble)
-    return _run_vlm_openrouter(frames, meta_by_file, preamble)
+        return _run_vlm_anthropic(frames, meta_by_file, preamble, t0)
+    return _run_vlm_openrouter(frames, meta_by_file, preamble, t0)
 
 
-def _run_vlm_openrouter(frames, meta_by_file, preamble) -> str:
+def _run_vlm_openrouter(frames, meta_by_file, preamble, t0) -> str:
+    total   = len(frames)
     content: list[dict] = [{"type": "text", "text": preamble}]
-    for filename, jpeg_bytes in frames:
+    for idx, (filename, jpeg_bytes) in enumerate(frames):
         meta = meta_by_file.get(filename, {})
-        content.append({"type": "text", "text": _frame_annotation(filename, meta)})
+        content.append({"type": "text", "text": _frame_annotation(idx, total, meta, t0)})
         content.append({
             "type": "image_url",
             "image_url": {"url": f"data:image/jpeg;base64,{base64.b64encode(jpeg_bytes).decode()}"},
         })
-    content.append({"type": "text", "text": "Write your one-paragraph observation now."})
+    content.append({"type": "text", "text": "Write your structured observation now, following the output format exactly."})
 
     r = _client.chat.completions.create(
         model=_config["model"], max_tokens=512,
-        messages=[{"role": "system", "content": SYSTEM_PROMPT},
+        messages=[{"role": "system", "content": _system_prompt()},
                   {"role": "user",   "content": content}],
     )
     return r.choices[0].message.content.strip()
 
 
-def _run_vlm_anthropic(frames, meta_by_file, preamble) -> str:
+def _run_vlm_anthropic(frames, meta_by_file, preamble, t0) -> str:
+    total   = len(frames)
     content: list[dict] = [{"type": "text", "text": preamble}]
-    for filename, jpeg_bytes in frames:
+    for idx, (filename, jpeg_bytes) in enumerate(frames):
         meta = meta_by_file.get(filename, {})
-        content.append({"type": "text", "text": _frame_annotation(filename, meta)})
+        content.append({"type": "text", "text": _frame_annotation(idx, total, meta, t0)})
         content.append({
             "type": "image",
             "source": {"type": "base64", "media_type": "image/jpeg",
                        "data": base64.b64encode(jpeg_bytes).decode()},
         })
-    content.append({"type": "text", "text": "Write your one-paragraph observation now."})
+    content.append({"type": "text", "text": "Write your structured observation now, following the output format exactly."})
 
     r = _client.messages.create(
         model=_config["model"], max_tokens=512,
-        system=SYSTEM_PROMPT,
+        system=_system_prompt(),
         messages=[{"role": "user", "content": content}],
     )
     return r.content[0].text.strip()

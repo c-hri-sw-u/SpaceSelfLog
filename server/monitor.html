@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpaceSelfLog Monitor</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0f1117;
+    --surface: #1a1d27;
+    --border:  #2a2d3a;
+    --text:    #e2e4ed;
+    --muted:   #6b7280;
+    --accent:  #6366f1;
+    --green:   #22c55e;
+    --red:     #ef4444;
+    --yellow:  #f59e0b;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  header h1 { font-size: 15px; font-weight: 600; letter-spacing: .02em; }
+  #dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--muted); flex-shrink: 0;
+  }
+  #dot.ok     { background: var(--green); }
+  #dot.error  { background: var(--red); }
+  #header-meta { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+  /* ── Layout ── */
+  main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ── */
+  aside {
+    width: 300px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  aside h2 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; color: var(--muted); }
+  .field input, .field select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 13px;
+    padding: 7px 10px;
+    outline: none;
+    width: 100%;
+    transition: border-color .15s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+
+  #model-row { display: none; }
+
+  .btn-row { display: flex; gap: 8px; }
+  button {
+    flex: 1;
+    padding: 8px 0;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  button:hover { opacity: .85; }
+  button:disabled { opacity: .4; cursor: default; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-ghost   { background: var(--border); color: var(--text); }
+
+  #test-result {
+    font-size: 12px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    display: none;
+  }
+  #test-result.ok    { background: #16331e; color: var(--green); }
+  #test-result.error { background: #2d1414; color: var(--red); }
+
+  .divider { border: none; border-top: 1px solid var(--border); }
+
+  /* ── Feed ── */
+  section {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .feed-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .feed-header h2 { font-size: 13px; font-weight: 600; }
+  #batch-count {
+    font-size: 11px;
+    background: var(--border);
+    padding: 2px 8px;
+    border-radius: 99px;
+    color: var(--muted);
+  }
+  #refresh-indicator {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  #empty-state {
+    color: var(--muted);
+    text-align: center;
+    padding: 60px 20px;
+    font-size: 13px;
+  }
+
+  /* ── Batch card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+  }
+  .badge.ok    { background: #16331e; color: var(--green); }
+  .badge.error { background: #2d1414; color: var(--red); }
+  .badge.processing { background: #1e2a14; color: var(--yellow); }
+
+  .card-time   { font-size: 12px; color: var(--muted); }
+  .card-id     { font-size: 12px; font-family: monospace; color: var(--text); }
+  .card-meta   { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+  .card-frames {
+    display: flex;
+    gap: 6px;
+    padding: 10px 14px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-frames img {
+    height: 80px;
+    width: auto;
+    border-radius: 5px;
+    object-fit: cover;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .card-frames img:hover { opacity: .8; }
+
+  .card-summary {
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  .card-summary.error { color: var(--red); }
+  .card-summary.muted { color: var(--muted); font-style: italic; }
+
+  /* ── Lightbox ── */
+  #lightbox {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.85);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  #lightbox.open { display: flex; }
+  #lightbox img  { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
+  #lightbox-close {
+    position: fixed; top: 20px; right: 24px;
+    font-size: 28px; color: #fff; cursor: pointer; line-height: 1;
+    background: none; border: none; padding: 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div id="dot"></div>
+  <h1>SpaceSelfLog Monitor</h1>
+  <span id="header-meta">connecting…</span>
+</header>
+
+<main>
+  <!-- ── Config sidebar ── -->
+  <aside>
+    <h2>Configuration</h2>
+
+    <div class="field">
+      <label>Provider</label>
+      <select id="provider">
+        <option value="openrouter">OpenRouter</option>
+        <option value="anthropic">Anthropic</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>API Key</label>
+      <input id="api-key" type="password" placeholder="sk-or-… / sk-ant-…">
+    </div>
+
+    <div class="field" id="model-row">
+      <label>Model</label>
+      <input id="model" type="text" placeholder="anthropic/claude-sonnet-4-6">
+    </div>
+
+    <div id="test-result"></div>
+
+    <div class="btn-row">
+      <button class="btn-ghost" id="btn-test">Test</button>
+      <button class="btn-primary" id="btn-save">Save</button>
+    </div>
+
+    <hr class="divider">
+    <h2>Directories</h2>
+
+    <div class="field">
+      <label>OpenClaw memory/</label>
+      <input id="openclaw-dir" type="text" placeholder="/path/to/openclaw/memory">
+    </div>
+
+    <div class="field">
+      <label>Frames dir</label>
+      <input id="frames-dir" type="text" placeholder="~/.spaceselflog/frames">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" id="btn-save-dirs">Save Dirs</button>
+    </div>
+  </aside>
+
+  <!-- ── Batch feed ── -->
+  <section>
+    <div class="feed-header">
+      <h2>Batch Feed</h2>
+      <span id="batch-count">0</span>
+      <span id="refresh-indicator">–</span>
+    </div>
+    <div id="feed"></div>
+    <div id="empty-state">No batches received yet.<br>Start recording on your iPhone.</div>
+  </section>
+</main>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <button id="lightbox-close">×</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+// ── State ──
+let knownBatchIds = new Set();
+let configLoaded  = false;
+
+// ── Config ──
+async function loadConfig() {
+  try {
+    const r   = await fetch("/api/config");
+    const cfg = await r.json();
+    document.getElementById("provider").value      = cfg.provider || "openrouter";
+    document.getElementById("api-key").placeholder = cfg.api_key_masked || "";
+    document.getElementById("model").value         = cfg.model || "";
+    document.getElementById("openclaw-dir").value  = cfg.openclaw_memory_dir || "";
+    document.getElementById("frames-dir").value    = cfg.frames_dir || "";
+    updateModelRowVisibility();
+    configLoaded = true;
+  } catch(e) { console.error("loadConfig:", e); }
+}
+
+function updateModelRowVisibility() {
+  const provider = document.getElementById("provider").value;
+  document.getElementById("model-row").style.display =
+    provider === "openrouter" ? "flex" : "none";
+}
+document.getElementById("provider").addEventListener("change", updateModelRowVisibility);
+
+async function saveConfig() {
+  const btn = document.getElementById("btn-save");
+  btn.disabled = true;
+  const key = document.getElementById("api-key").value.trim();
+  const body = {
+    provider: document.getElementById("provider").value,
+    model:    document.getElementById("model").value.trim(),
+  };
+  if (key) body.api_key = key;
+  try {
+    await fetch("/api/config", { method: "POST",
+      headers: {"Content-Type": "application/json"}, body: JSON.stringify(body) });
+    btn.textContent = "Saved ✓";
+    setTimeout(() => { btn.textContent = "Save"; btn.disabled = false; }, 1500);
+  } catch(e) { btn.disabled = false; alert("Save failed: " + e); }
+}
+
+async function saveDirs() {
+  const btn  = document.getElementById("btn-save-dirs");
+  btn.disabled = true;
+  const body = {
+    openclaw_memory_dir: document.getElementById("openclaw-dir").value.trim(),
+    frames_dir:          document.getElementById("frames-dir").value.trim(),
+  };
+  try {
+    await fetch("/api/config", { method: "POST",
+      headers: {"Content-Type": "application/json"}, body: JSON.stringify(body) });
+    btn.textContent = "Saved ✓";
+    setTimeout(() => { btn.textContent = "Save Dirs"; btn.disabled = false; }, 1500);
+  } catch(e) { btn.disabled = false; alert("Save failed: " + e); }
+}
+
+async function testConnection() {
+  const btn = document.getElementById("btn-test");
+  const el  = document.getElementById("test-result");
+  btn.disabled = true;
+  el.className = ""; el.style.display = "none";
+
+  const key   = document.getElementById("api-key").value.trim();
+  const body  = {
+    provider: document.getElementById("provider").value,
+    model:    document.getElementById("model").value.trim(),
+  };
+  if (key) body.api_key = key;
+
+  try {
+    const r   = await fetch("/api/test", { method: "POST",
+      headers: {"Content-Type": "application/json"}, body: JSON.stringify(body) });
+    const data = await r.json();
+    el.style.display = "block";
+    if (data.ok) {
+      el.className   = "ok";
+      el.textContent = `✓ Connected — model replied: "${data.reply}"`;
+    } else {
+      el.className   = "error";
+      el.textContent = `✗ ${data.error}`;
+    }
+  } catch(e) {
+    el.style.display = "block";
+    el.className     = "error";
+    el.textContent   = `✗ ${e}`;
+  }
+  btn.disabled = false;
+}
+
+document.getElementById("btn-save").addEventListener("click", saveConfig);
+document.getElementById("btn-save-dirs").addEventListener("click", saveDirs);
+document.getElementById("btn-test").addEventListener("click", testConnection);
+
+// ── Feed ──
+function formatTime(isoStr) {
+  const d = new Date(isoStr);
+  return d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"});
+}
+
+function makeCard(b) {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.dataset.batchId = b.batch_id;
+
+  const statusClass = b.status === "ok" ? "ok"
+    : b.status === "error" ? "error" : "processing";
+
+  // Header
+  const hdr = document.createElement("div");
+  hdr.className = "card-header";
+  hdr.innerHTML = `
+    <span class="card-time">${formatTime(b.received_at)}</span>
+    <span class="card-id">${b.batch_id.slice(0, 24)}</span>
+    <span class="badge ${statusClass}">${b.status || "…"}</span>
+    <span class="card-meta">${b.frame_count}/${b.input_frames} frames · ${b.session_id.slice(0,12)}</span>
+  `;
+  card.appendChild(hdr);
+
+  // Frames
+  if (b.filenames && b.filenames.length > 0) {
+    const framesDiv = document.createElement("div");
+    framesDiv.className = "card-frames";
+    b.filenames.forEach(fn => {
+      const img = document.createElement("img");
+      img.src   = `/api/frames/${b.session_id}/${b.batch_id}/${fn}`;
+      img.alt   = fn;
+      img.addEventListener("click", () => openLightbox(img.src));
+      framesDiv.appendChild(img);
+    });
+    card.appendChild(framesDiv);
+  }
+
+  // Summary
+  const summaryDiv = document.createElement("div");
+  summaryDiv.className = "card-summary";
+  if (b.summary) {
+    summaryDiv.textContent = b.summary;
+  } else if (b.error) {
+    summaryDiv.className += " error";
+    summaryDiv.textContent = "Error: " + b.error;
+  } else {
+    summaryDiv.className += " muted";
+    summaryDiv.textContent = "Processing…";
+  }
+  card.appendChild(summaryDiv);
+
+  return card;
+}
+
+async function pollBatches() {
+  const indicator = document.getElementById("refresh-indicator");
+  try {
+    const r       = await fetch("/api/batches");
+    const batches = await r.json();
+    const feed    = document.getElementById("feed");
+    const empty   = document.getElementById("empty-state");
+    document.getElementById("batch-count").textContent = batches.length;
+
+    if (batches.length === 0) {
+      empty.style.display = "block";
+    } else {
+      empty.style.display = "none";
+      batches.forEach(b => {
+        if (!knownBatchIds.has(b.batch_id)) {
+          knownBatchIds.add(b.batch_id);
+          feed.insertBefore(makeCard(b), feed.firstChild);
+        }
+      });
+    }
+
+    // Update header status
+    const dot  = document.getElementById("dot");
+    const meta = document.getElementById("header-meta");
+    dot.className  = "ok";
+    meta.textContent = batches.length > 0
+      ? `Last batch: ${formatTime(batches[0].received_at)}`
+      : "No batches yet";
+    indicator.textContent = "↻ " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  } catch(e) {
+    document.getElementById("dot").className = "error";
+    document.getElementById("header-meta").textContent = "Server unreachable";
+    indicator.textContent = "–";
+  }
+}
+
+// ── Lightbox ──
+function openLightbox(src) {
+  document.getElementById("lightbox-img").src = src;
+  document.getElementById("lightbox").classList.add("open");
+}
+document.getElementById("lightbox").addEventListener("click", e => {
+  if (e.target === document.getElementById("lightbox") ||
+      e.target === document.getElementById("lightbox-close")) {
+    document.getElementById("lightbox").classList.remove("open");
+  }
+});
+
+// ── Init ──
+loadConfig();
+pollBatches();
+setInterval(pollBatches, 3000);
+</script>
+</body>
+</html>

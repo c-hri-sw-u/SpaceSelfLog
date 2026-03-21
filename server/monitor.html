@@ -77,6 +77,22 @@
 
   .field { display: flex; flex-direction: column; gap: 5px; }
   .field label { font-size: 12px; color: var(--muted); }
+  .field textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.5;
+    padding: 7px 10px;
+    outline: none;
+    width: 100%;
+    resize: vertical;
+    transition: border-color .15s;
+  }
+  .field textarea:focus { border-color: var(--accent); }
+
   .field input, .field select {
     background: var(--bg);
     border: 1px solid var(--border);
@@ -285,6 +301,19 @@
     <div class="btn-row">
       <button class="btn-primary" id="btn-save-dirs">Save Dirs</button>
     </div>
+
+    <hr class="divider">
+    <h2>System Prompt</h2>
+
+    <div class="field">
+      <label>VLM instruction sent with each batch</label>
+      <textarea id="system-prompt" rows="10"></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-ghost"   id="btn-reset-prompt">Reset</button>
+      <button class="btn-primary" id="btn-save-prompt">Save</button>
+    </div>
   </aside>
 
   <!-- ── Batch feed ── -->
@@ -307,8 +336,9 @@
 
 <script>
 // ── State ──
-let knownBatchIds = new Set();
-let configLoaded  = false;
+let knownBatchIds    = new Set();
+let configLoaded     = false;
+let defaultPromptText = "";
 
 // ── Config ──
 async function loadConfig() {
@@ -320,6 +350,10 @@ async function loadConfig() {
     document.getElementById("model").value         = cfg.model || "";
     document.getElementById("openclaw-dir").value  = cfg.openclaw_memory_dir || "";
     document.getElementById("frames-dir").value    = cfg.frames_dir || "";
+    if (cfg.system_prompt) {
+      document.getElementById("system-prompt").value = cfg.system_prompt;
+      if (!defaultPromptText) defaultPromptText = cfg.system_prompt;
+    }
     updateModelRowVisibility();
     configLoaded = true;
   } catch(e) { console.error("loadConfig:", e); }
@@ -397,9 +431,25 @@ async function testConnection() {
   btn.disabled = false;
 }
 
+async function savePrompt() {
+  const btn  = document.getElementById("btn-save-prompt");
+  btn.disabled = true;
+  const body = { system_prompt: document.getElementById("system-prompt").value };
+  try {
+    await fetch("/api/config", { method: "POST",
+      headers: {"Content-Type": "application/json"}, body: JSON.stringify(body) });
+    btn.textContent = "Saved ✓";
+    setTimeout(() => { btn.textContent = "Save"; btn.disabled = false; }, 1500);
+  } catch(e) { btn.disabled = false; alert("Save failed: " + e); }
+}
+
 document.getElementById("btn-save").addEventListener("click", saveConfig);
 document.getElementById("btn-save-dirs").addEventListener("click", saveDirs);
 document.getElementById("btn-test").addEventListener("click", testConnection);
+document.getElementById("btn-save-prompt").addEventListener("click", savePrompt);
+document.getElementById("btn-reset-prompt").addEventListener("click", () => {
+  if (defaultPromptText) document.getElementById("system-prompt").value = defaultPromptText;
+});
 
 // ── Feed ──
 function formatTime(isoStr) {

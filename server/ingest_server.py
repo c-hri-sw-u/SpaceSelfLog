@@ -54,6 +54,20 @@ log = logging.getLogger("ingest")
 # Config management
 # ---------------------------------------------------------------------------
 
+SYSTEM_PROMPT_DEFAULT = """\
+You are an egocentric perception system analyzing first-person video frames \
+from a smartphone worn on the body. Your task is to generate a concise, \
+factual observation about the wearer's physical context and activities.
+
+Guidelines:
+- Write exactly one paragraph of 4–6 sentences.
+- Use past tense, third person ("the wearer").
+- Be specific: environment, objects, people, actions.
+- Note social context and any transitions.
+- Do not speculate beyond what the frames and sensor tags show.
+- Do not repeat the prior summary verbatim; only reference it for continuity.\
+"""
+
 _DEFAULTS: dict = {
     "provider":            "openrouter",
     "api_key":             os.environ.get("OPENROUTER_API_KEY")
@@ -62,6 +76,7 @@ _DEFAULTS: dict = {
     "openclaw_memory_dir": os.environ.get("OPENCLAW_MEMORY_DIR", ""),
     "frames_dir":          os.environ.get("FRAMES_DIR",
                                str(Path("~/.spaceselflog/frames").expanduser())),
+    "system_prompt":       SYSTEM_PROMPT_DEFAULT,
 }
 
 
@@ -148,7 +163,7 @@ def post_config():
     global _config, _client
     body = request.get_json(force=True, silent=True) or {}
     # Merge into current config; ignore unknown keys
-    allowed = {"provider", "api_key", "model", "openclaw_memory_dir", "frames_dir"}
+    allowed = {"provider", "api_key", "model", "openclaw_memory_dir", "frames_dir", "system_prompt"}
     for k in allowed:
         if k in body:
             _config[k] = body[k]
@@ -297,20 +312,6 @@ def serve_frame(session_id: str, batch_id: str, filename: str):
 # VLM inference
 # ---------------------------------------------------------------------------
 
-SYSTEM_PROMPT = """\
-You are an egocentric perception system analyzing first-person video frames \
-from a smartphone worn on the body. Your task is to generate a concise, \
-factual observation about the wearer's physical context and activities.
-
-Guidelines:
-- Write exactly one paragraph of 4–6 sentences.
-- Use past tense, third person ("the wearer").
-- Be specific: environment, objects, people, actions.
-- Note social context and any transitions.
-- Do not speculate beyond what the frames and sensor tags show.
-- Do not repeat the prior summary verbatim; only reference it for continuity.\
-"""
-
 
 def _build_preamble(frames_meta: list[dict], batch_created: datetime,
                     input_frames: int, frame_count: int,
@@ -355,6 +356,7 @@ def _run_vlm(frames: list[tuple[str, bytes]], frames_meta: list[dict],
 
 
 def _run_vlm_openrouter(frames, meta_by_file, preamble) -> str:
+    system_prompt = _config.get("system_prompt", SYSTEM_PROMPT_DEFAULT)
     content: list[dict] = [{"type": "text", "text": preamble}]
     for filename, jpeg_bytes in frames:
         meta = meta_by_file.get(filename, {})
@@ -367,13 +369,14 @@ def _run_vlm_openrouter(frames, meta_by_file, preamble) -> str:
 
     r = _client.chat.completions.create(
         model=_config["model"], max_tokens=512,
-        messages=[{"role": "system", "content": SYSTEM_PROMPT},
+        messages=[{"role": "system", "content": system_prompt},
                   {"role": "user",   "content": content}],
     )
     return r.choices[0].message.content.strip()
 
 
 def _run_vlm_anthropic(frames, meta_by_file, preamble) -> str:
+    system_prompt = _config.get("system_prompt", SYSTEM_PROMPT_DEFAULT)
     content: list[dict] = [{"type": "text", "text": preamble}]
     for filename, jpeg_bytes in frames:
         meta = meta_by_file.get(filename, {})
@@ -387,7 +390,7 @@ def _run_vlm_anthropic(frames, meta_by_file, preamble) -> str:
 
     r = _client.messages.create(
         model=_config["model"], max_tokens=512,
-        system=SYSTEM_PROMPT,
+        system=system_prompt,
         messages=[{"role": "user", "content": content}],
     )
     return r.content[0].text.strip()

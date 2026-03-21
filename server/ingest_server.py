@@ -61,21 +61,21 @@ a personal AI agent should know about its user — not just "what is happening" 
 but "what does this reveal about the user's habits, preferences, environment, \
 and current activity?"
 
-Output exactly these fields. Mark any field "not observed" if the frames and \
-sensor tags do not provide sufficient evidence — do not guess.
-
-activity: <current action or task, e.g. "cooking", "desk work", "walking outside">
-location: <environment or place type, e.g. "home kitchen", "office", "outdoors">
-objects: <notable objects relevant to the user's context or habits>
-social_context: <alone / with others; if others, describe visible interaction>
-notable_events: <transitions, significant actions, or moments worth remembering>
-observation: <one paragraph, 4–6 sentences, past tense, third person — \
-faithful description first, then interpretive annotation relevant to personalization>
+Respond with a single JSON object and nothing else:
+{
+  "activity": "<current action or task, e.g. 'cooking', 'desk work', 'walking outside'>",
+  "location": "<environment or place type, e.g. 'home kitchen', 'office', 'outdoors'>",
+  "objects": "<notable objects relevant to the user's context or habits>",
+  "social_context": "<alone / with others; if others, describe visible interaction>",
+  "notable_events": "<transitions, significant actions, or moments worth remembering>",
+  "observation": "<one paragraph, 4–6 sentences, past tense, third person — faithful description first, then interpretive annotation relevant to personalization>"
+}
 
 Guidelines:
 - Use IMU and audio tags to ground your interpretation \
 (e.g. stationary + speech detected → likely in conversation).
-- If you cannot determine something, write "not observed" rather than guessing.
+- Set any field to "not observed" if the frames and sensor tags do not provide \
+sufficient evidence — do not guess.
 - Do not repeat the prior summary verbatim; only reference it for continuity.\
 """
 
@@ -402,7 +402,7 @@ def _run_vlm_openrouter(frames, meta_by_file, preamble, t0) -> str:
             "type": "image_url",
             "image_url": {"url": f"data:image/jpeg;base64,{base64.b64encode(jpeg_bytes).decode()}"},
         })
-    content.append({"type": "text", "text": "Write your structured observation now, following the output format exactly."})
+    content.append({"type": "text", "text": "Write your JSON observation now. Output only the JSON object, no markdown fences or extra text."})
 
     r = _client.chat.completions.create(
         model=_config["model"], max_tokens=512,
@@ -423,7 +423,7 @@ def _run_vlm_anthropic(frames, meta_by_file, preamble, t0) -> str:
             "source": {"type": "base64", "media_type": "image/jpeg",
                        "data": base64.b64encode(jpeg_bytes).decode()},
         })
-    content.append({"type": "text", "text": "Write your structured observation now, following the output format exactly."})
+    content.append({"type": "text", "text": "Write your JSON observation now. Output only the JSON object, no markdown fences or extra text."})
 
     r = _client.messages.create(
         model=_config["model"], max_tokens=512,
@@ -479,9 +479,20 @@ def _write_physical_log(batch_id, session_id, batch_created,
     log_file = logs_dir / f"{date_str}.md"
     time_str = batch_created.strftime("%H:%M")
 
-    entry = (f"\n## {time_str}  `{batch_id}`\n"
-             f"<!-- session={session_id}  frames={frame_count}/{input_frames} -->\n\n"
-             f"{summary}\n")
+    # Parse JSON output from VLM; fall back to raw text if malformed
+    try:
+        data = json.loads(summary)
+        fields = ["activity", "location", "objects", "social_context", "notable_events"]
+        meta   = "  |  ".join(f"**{f}:** {data[f]}" for f in fields if data.get(f) and data[f] != "not observed")
+        body   = data.get("observation", summary)
+        entry  = (f"\n## {time_str}  `{batch_id}`\n"
+                  f"<!-- session={session_id}  frames={frame_count}/{input_frames} -->\n\n"
+                  f"{meta}\n\n{body}\n")
+    except (json.JSONDecodeError, KeyError):
+        log.warning("VLM output was not valid JSON — writing raw text")
+        entry  = (f"\n## {time_str}  `{batch_id}`\n"
+                  f"<!-- session={session_id}  frames={frame_count}/{input_frames} -->\n\n"
+                  f"{summary}\n")
 
     if not log_file.exists():
         log_file.write_text(f"# Physical Log — {date_str}\n")

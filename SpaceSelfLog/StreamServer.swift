@@ -18,13 +18,14 @@ final class StreamServer {
     var onSwitch: ((CameraType) -> Void)?
     var onRotate: (() -> Void)?
     var onResolution: ((ResolutionPreset) -> Void)?
-    var onAIAutoToggle: (() -> Void)?
     var onStatus: (() -> [String: Any])?
     var onTestAPIKey: (() -> (success: Bool, error: String?))?
-    var onUpdateInterval: ((Int) -> Bool)?
-    var onUpdatePrompt: ((String) -> Bool)?
-    var onResetPrompt: (() -> String?)?
-    var onUpdateExperiment: ((Int) -> Bool)?
+    var onUpdateCaptureConfig: ((_ minInterval: Int, _ maxInterval: Int, _ rampRatio: Double) -> Bool)?
+    var onUpdateAudioConfig: ((_ vadSensitivity: String, _ transcriptionEnabled: Bool) -> Bool)?
+    var onUpdateIMUConfig: ((_ sustainedMotionThreshold: Int, _ varianceLow: Double, _ varianceHigh: Double) -> Bool)?
+    var onUpdateBatchConfig: ((_ firstBatchWindow: Int, _ maxWindow: Int, _ ssimThreshold: Double, _ ssimDedupThreshold: Double, _ kDensityPerMin: Double, _ kMin: Int, _ kMax: Int, _ scoreThreshold: Double) -> Bool)?
+    var onUpdateInferenceConfig: ((_ provider: String) -> Bool)?
+    var onUpdateOutboxConfig: ((_ endpoint: String) -> Bool)?
     
     init(port: UInt16 = 8080) {
         self.port = port
@@ -133,138 +134,63 @@ final class StreamServer {
                 } else {
                     self.simpleBadRequest(connection, body: "missing preset")
                 }
-            case "/ai-auto-toggle":
-                self.onAIAutoToggle?()
-                self.simpleOK(connection, body: "ai-auto-toggled")
             case "/status":
                 let dict = self.onStatus?() ?? [:]
                 let data = try? JSONSerialization.data(withJSONObject: dict, options: [])
                 self.simpleOK(connection, contentType: "application/json", bodyData: data)
-            case "/ai-analysis":
-                let dict = self.onStatus?() ?? [:]
-                let aiData = [
-                    "isAIAnalysisEnabled": dict["isAIAnalysisEnabled"] ?? false,
-                    "aiAnalysisInterval": dict["aiAnalysisInterval"] ?? 30.0,
-                    "latestAnalysisResult": dict["latestAnalysisResult"] ?? [:],
-                    "analysisHistory": dict["analysisHistory"] ?? []
-                ]
-                let data = try? JSONSerialization.data(withJSONObject: aiData, options: [])
-                self.simpleOK(connection, contentType: "application/json", bodyData: data)
             case "/test-api-key":
                 let result = self.onTestAPIKey?() ?? (success: false, error: "Not implemented")
-                let responseData = [
-                    "success": result.success,
-                    "error": result.error ?? ""
-                ]
+                let responseData: [String: Any] = ["success": result.success, "error": result.error ?? ""]
                 let data = try? JSONSerialization.data(withJSONObject: responseData, options: [])
                 self.simpleOK(connection, contentType: "application/json", bodyData: data)
-            case "/update-interval":
-                let contentLength = self.parseContentLength(from: request)
-                let alreadyRead = leftoverBody
-                // 如果已读的数据足够，直接使用；否则继续读取剩余部分
-                self.handlePostRequest(connection, contentLength: contentLength, initialData: alreadyRead) { [weak self] bodyData in
-                    print("DEBUG: Received update-interval request")
-                    print("DEBUG: Content-Length: \(contentLength ?? -1)")
-                    print("DEBUG: Body data: \(bodyData?.count ?? 0) bytes")
-                    
-                    guard let bodyData = bodyData else {
-                        print("DEBUG: No body data received")
-                        let errorResponse = ["success": false, "error": "No body data"]
-                        let data = try? JSONSerialization.data(withJSONObject: errorResponse, options: [])
-                        self?.simpleOK(connection, contentType: "application/json", bodyData: data)
-                        return
-                    }
-                    
-                    print("DEBUG: Body string: \(String(data: bodyData, encoding: .utf8) ?? "nil")")
-                    
-                    guard let json = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any] else {
-                        print("DEBUG: Failed to parse JSON")
-                        let errorResponse = ["success": false, "error": "Invalid JSON data"]
-                        let data = try? JSONSerialization.data(withJSONObject: errorResponse, options: [])
-                        self?.simpleOK(connection, contentType: "application/json", bodyData: data)
-                        return
-                    }
-                    
-                    print("DEBUG: Parsed JSON: \(json)")
-                    
-                    guard let interval = json["interval"] as? Int else {
-                        print("DEBUG: Failed to extract interval from JSON")
-                        let errorResponse = ["success": false, "error": "Invalid interval data"]
-                        let data = try? JSONSerialization.data(withJSONObject: errorResponse, options: [])
-                        self?.simpleOK(connection, contentType: "application/json", bodyData: data)
-                        return
-                    }
-                    
-                    print("DEBUG: Extracted interval: \(interval)")
-                    let success = self?.onUpdateInterval?(interval) ?? false
-                    print("DEBUG: Update result: \(success)")
-                    
-                    let response = ["success": success, "error": success ? "" : "Failed to update interval"]
-                    let data = try? JSONSerialization.data(withJSONObject: response, options: [])
-                    self?.simpleOK(connection, contentType: "application/json", bodyData: data)
+            case "/update-capture-config":
+                self.handleJSONPost(connection, leftover: leftoverBody, request: request) { [weak self] json in
+                    let minInterval = json["minInterval"] as? Int    ?? 3
+                    let maxInterval = json["maxInterval"] as? Int    ?? 20
+                    let rampRatio   = json["rampRatio"]   as? Double ?? 1.67
+                    let success = self?.onUpdateCaptureConfig?(minInterval, maxInterval, rampRatio) ?? false
+                    return (success, success ? nil : "Not implemented")
                 }
-            case "/update-prompt":
-                let contentLength = self.parseContentLength(from: request)
-                let alreadyRead = leftoverBody
-                self.handlePostRequest(connection, contentLength: contentLength, initialData: alreadyRead) { [weak self] bodyData in
-                    print("DEBUG: Received update-prompt request")
-                    print("DEBUG: Content-Length: \(contentLength ?? -1)")
-                    print("DEBUG: Body data: \(bodyData?.count ?? 0) bytes")
-                
-                guard let bodyData = bodyData else {
-                    print("DEBUG: No body data received")
-                    let errorResponse = ["success": false, "error": "No body data"]
-                    let data = try? JSONSerialization.data(withJSONObject: errorResponse, options: [])
-                    self?.simpleOK(connection, contentType: "application/json", bodyData: data)
-                    return
+            case "/update-audio-config":
+                self.handleJSONPost(connection, leftover: leftoverBody, request: request) { [weak self] json in
+                    let vadSensitivity       = json["vadSensitivity"]       as? String ?? "medium"
+                    let transcriptionEnabled = json["transcriptionEnabled"] as? Bool   ?? false
+                    let success = self?.onUpdateAudioConfig?(vadSensitivity, transcriptionEnabled) ?? false
+                    return (success, success ? nil : "Not implemented")
                 }
-                
-                print("DEBUG: Body string: \(String(data: bodyData, encoding: .utf8) ?? "nil")")
-                    
-                    guard let json = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any] else {
-                        print("DEBUG: Failed to parse JSON")
-                        let errorResponse = ["success": false, "error": "Invalid JSON data"]
-                        let data = try? JSONSerialization.data(withJSONObject: errorResponse, options: [])
-                        self?.simpleOK(connection, contentType: "application/json", bodyData: data)
-                        return
-                    }
-                    
-                    print("DEBUG: Parsed JSON: \(json)")
-                    
-                    guard let prompt = json["prompt"] as? String else {
-                        print("DEBUG: Failed to extract prompt from JSON")
-                        let errorResponse = ["success": false, "error": "Invalid prompt data"]
-                        let data = try? JSONSerialization.data(withJSONObject: errorResponse, options: [])
-                        self?.simpleOK(connection, contentType: "application/json", bodyData: data)
-                        return
-                    }
-                    
-                    print("DEBUG: Extracted prompt: \(prompt)")
-                    let success = self?.onUpdatePrompt?(prompt) ?? false
-                    print("DEBUG: Update result: \(success)")
-                    
-                    let response = ["success": success, "error": success ? "" : "Failed to update prompt"]
-                    let data = try? JSONSerialization.data(withJSONObject: response, options: [])
-                    self?.simpleOK(connection, contentType: "application/json", bodyData: data)
+            case "/update-imu-config":
+                self.handleJSONPost(connection, leftover: leftoverBody, request: request) { [weak self] json in
+                    let threshold     = json["sustainedMotionThreshold"] as? Int    ?? 6
+                    let varianceLow   = json["varianceLow"]              as? Double ?? 0.006
+                    let varianceHigh  = json["varianceHigh"]             as? Double ?? 0.012
+                    let success = self?.onUpdateIMUConfig?(threshold, varianceLow, varianceHigh) ?? false
+                    return (success, success ? nil : "Not implemented")
                 }
-            case "/update-experiment":
-                if let numberStr = path.query["number"], let number = Int(numberStr) {
-                    let success = self.onUpdateExperiment?(number) ?? false
-                    let response = ["success": success, "error": success ? "" : "Failed to update experiment"]
-                    let data = try? JSONSerialization.data(withJSONObject: response, options: [])
-                    self.simpleOK(connection, contentType: "application/json", bodyData: data)
-                } else {
-                    self.simpleBadRequest(connection, body: "missing number")
+            case "/update-batch-config":
+                self.handleJSONPost(connection, leftover: leftoverBody, request: request) { [weak self] json in
+                    let firstBatchWindow   = json["firstBatchWindow"]   as? Int    ?? 120
+                    let maxWindow          = json["maxWindow"]          as? Int    ?? 600
+                    let ssimThreshold      = json["ssimThreshold"]      as? Double ?? 0.85
+                    let ssimDedupThreshold = json["ssimDedupThreshold"] as? Double ?? 0.92
+                    let kDensityPerMin     = json["kDensityPerMin"]     as? Double ?? 1.0
+                    let kMin               = json["kMin"]               as? Int    ?? 2
+                    let kMax               = json["kMax"]               as? Int    ?? 12
+                    let scoreThreshold     = json["scoreThreshold"]     as? Double ?? 0.50
+                    let success = self?.onUpdateBatchConfig?(firstBatchWindow, maxWindow, ssimThreshold, ssimDedupThreshold, kDensityPerMin, kMin, kMax, scoreThreshold) ?? false
+                    return (success, success ? nil : "Not implemented")
                 }
-            case "/reset-prompt":
-                let defaultPrompt = self.onResetPrompt?() ?? nil
-                let response: [String: Any] = [
-                    "success": defaultPrompt != nil,
-                    "defaultPrompt": defaultPrompt ?? "",
-                    "error": defaultPrompt == nil ? "Failed to reset prompt" : ""
-                ]
-                let data = try? JSONSerialization.data(withJSONObject: response, options: [])
-                self.simpleOK(connection, contentType: "application/json", bodyData: data)
+            case "/update-inference-config":
+                self.handleJSONPost(connection, leftover: leftoverBody, request: request) { [weak self] json in
+                    let provider = json["provider"] as? String ?? "claude"
+                    let success = self?.onUpdateInferenceConfig?(provider) ?? false
+                    return (success, success ? nil : "Not implemented")
+                }
+            case "/update-outbox-config":
+                self.handleJSONPost(connection, leftover: leftoverBody, request: request) { [weak self] json in
+                    let endpoint = json["endpoint"] as? String ?? ""
+                    let success = self?.onUpdateOutboxConfig?(endpoint) ?? false
+                    return (success, success ? nil : "Not implemented")
+                }
             case "/":
                 let html = self.indexHTML()
                 self.simpleOK(connection, contentType: "text/html; charset=utf-8", body: html)
@@ -386,6 +312,29 @@ final class StreamServer {
         conn.send(content: data, completion: .contentProcessed { _ in conn.cancel() })
     }
     
+    // Generic JSON POST handler: parses body, calls handler, returns {success, error} JSON
+    private func handleJSONPost(
+        _ connection: NWConnection,
+        leftover: Data,
+        request: String,
+        handler: @escaping ([String: Any]) -> (Bool, String?)
+    ) {
+        let contentLength = self.parseContentLength(from: request)
+        self.readPostBody(on: connection, expectedLength: contentLength, initialData: leftover) { [weak self] bodyData in
+            guard let bodyData = bodyData,
+                  let json = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any] else {
+                let err: [String: Any] = ["success": false, "error": "Invalid JSON"]
+                let data = try? JSONSerialization.data(withJSONObject: err, options: [])
+                self?.simpleOK(connection, contentType: "application/json", bodyData: data)
+                return
+            }
+            let (success, errorMsg) = handler(json)
+            let response: [String: Any] = ["success": success, "error": errorMsg ?? ""]
+            let data = try? JSONSerialization.data(withJSONObject: response, options: [])
+            self?.simpleOK(connection, contentType: "application/json", bodyData: data)
+        }
+    }
+
     private func handlePostRequest(_ connection: NWConnection, contentLength: Int?, initialData: Data?, completion: @escaping (Data?) -> Void) {
         self.readPostBody(on: connection, expectedLength: contentLength, initialData: initialData) { bodyData in
             completion(bodyData)

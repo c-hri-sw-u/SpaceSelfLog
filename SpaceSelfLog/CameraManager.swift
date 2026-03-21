@@ -589,21 +589,24 @@ final class CameraManager: NSObject {
         }
     }
     
-    // MARK: - Photo Capture for AI Analysis
+    // MARK: - Photo Capture
     func capturePhoto(completion: @escaping (Data?) -> Void) {
         guard isSessionRunning else {
             completion(nil)
             return
         }
-        
-        // Set the completion handler to capture the next frame
-        capturePhotoCompletion = completion
-        
-        // If no frame comes within 2 seconds, timeout
+
+        // Confine all access to capturePhotoCompletion to outputQueue to avoid data races.
+        outputQueue.async { [weak self] in
+            self?.capturePhotoCompletion = completion
+        }
+
+        // Timeout: also clear on outputQueue so there's no concurrent access.
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
-            if self?.capturePhotoCompletion != nil {
+            self?.outputQueue.async {
+                guard let pending = self?.capturePhotoCompletion else { return }
                 self?.capturePhotoCompletion = nil
-                completion(nil)
+                pending(nil)
             }
         }
     }

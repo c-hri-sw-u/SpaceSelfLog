@@ -23,91 +23,26 @@ extension Font {
 struct ContentView: View {
     @ObservedObject var viewModel: AppViewModel
     @State private var showResolutionMenu = false
-    @State private var showAISettings = false
-    @State private var tempAPIKey = ""
-    @State private var tempPrompt = ""
-    @State private var tempInterval: Double = 30.0
-    @State private var isTestingAPIKey = false
+    @State private var showExperimentSettings = false
 
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
             VStack(spacing: 24) {
-                // Title / version
-                VStack(spacing: 8) {
+                // Title
+                HStack {
                     Text("SpaceSelfLog")
                         .font(.regularText)
                         .fontWeight(.semibold)
                         .foregroundColor(.primaryText)
+                    Spacer()
+                    Button(action: { showExperimentSettings.toggle() }) {
+                        Image(systemName: "gear")
+                            .font(.regularText)
+                            .foregroundColor(.primaryText)
+                    }
                 }
                 .padding(.top, 32)
-                
-                // AI Analysis Section
-                VStack(spacing: 12) {
-                    HStack {
-                        Text("AI Smart Analysis")
-                            .font(.regularText)
-                            .fontWeight(.medium)
-                            .foregroundColor(.primaryText)
-                        Spacer()
-                        Button(action: { showAISettings.toggle() }) {
-                            Image(systemName: "gear")
-                                .font(.regularText)
-                                .foregroundColor(.primaryText)
-                        }
-                    }
-                    
-                    HStack(spacing: 12) {
-                        // AI Analysis Auto Mode Toggle
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text("Auto Analysis on Record")
-                                    .font(.smallText)
-                                    .foregroundColor(.primaryText)
-                                Spacer()
-                                Toggle("", isOn: Binding(
-                                    get: { viewModel.aiAnalysisAutoMode },
-                                    set: { _ in viewModel.toggleAIAnalysisAutoMode() }
-                                ))
-                                .disabled(viewModel.geminiAPIKey.isEmpty)
-                            }
-                        }
-                        Spacer()
-                    }
-                    
-                    // Current Analysis Status
-                    if viewModel.isAIAnalysisEnabled {
-                        HStack {
-                            Text("AI Analysis Running")
-                                .font(.smallText)
-                                .foregroundColor(.accentColor)
-                            Spacer()
-                        }
-                    }
-                    
-                    // Latest Result Display
-                    if let result = viewModel.latestAnalysisResult {
-                        VStack(alignment: .leading, spacing: 4) {
-            Text("Latest Result: \(result.formattedOutput.activityLabel)")
-                                .font(.smallText)
-                                .foregroundColor(.primaryText)
-                            Text(DateFormatter.shortTime.string(from: result.captureTime))
-                                .font(.smallText)
-                                .foregroundColor(.secondaryText)
-                        }
-                    }
-                    
-                    // Error Display
-                    if let error = viewModel.aiAnalysisError {
-                        Text(error)
-                            .font(.smallText)
-                            .foregroundColor(.red)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.red.opacity(0.1))
-                            .cornerRadius(6)
-                    }
-                }
 
                 // Camera selection
                 VStack(spacing: 12) {
@@ -239,6 +174,29 @@ struct ContentView: View {
                                 .font(.regularText)
                                 .fontWeight(.bold)
                                 .foregroundColor(.primaryText)
+
+                            // Batch / outbox status
+                            HStack(spacing: 12) {
+                                Label(
+                                    "\(viewModel.batchTotalProcessed) batches",
+                                    systemImage: "square.stack"
+                                )
+                                .font(.caption)
+                                .foregroundColor(.secondaryText)
+
+                                if viewModel.outboxQueueSize > 0 {
+                                    Label(
+                                        "\(viewModel.outboxQueueSize) queued",
+                                        systemImage: "arrow.up.circle"
+                                    )
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                                } else if viewModel.outboxUploadStatus == "ok" {
+                                    Label("uploaded", systemImage: "checkmark.circle")
+                                        .font(.caption)
+                                        .foregroundColor(.accentColor)
+                                }
+                            }
                         }
                         // Pause/Resume button
                         Button(action: {
@@ -288,38 +246,8 @@ struct ContentView: View {
                 }
             }
         }
-        .sheet(isPresented: $showAISettings) {
-            AISettingsView(
-                viewModel: viewModel,
-                tempAPIKey: $tempAPIKey,
-                tempPrompt: $tempPrompt,
-                tempInterval: $tempInterval,
-                isTestingAPIKey: $isTestingAPIKey
-            )
-        }
-        .onAppear {
-            // Initialize temp values with current settings
-            tempAPIKey = viewModel.geminiAPIKey
-            tempPrompt = viewModel.aiAnalysisPrompt
-            tempInterval = viewModel.aiAnalysisInterval
-        }
-        .onChange(of: viewModel.aiAnalysisInterval) { newInterval in
-            // Update temp interval when ViewModel changes (e.g., from web interface)
-            if !showAISettings {
-                tempInterval = newInterval
-            }
-        }
-        .onChange(of: viewModel.aiAnalysisPrompt) { newPrompt in
-            // Update temp prompt when ViewModel changes (e.g., from web interface)
-            if !showAISettings {
-                tempPrompt = newPrompt
-            }
-        }
-        .onChange(of: viewModel.geminiAPIKey) { newAPIKey in
-            // Update temp API key when ViewModel changes
-            if !showAISettings {
-                tempAPIKey = newAPIKey
-            }
+        .sheet(isPresented: $showExperimentSettings) {
+            ExperimentSettingsView(viewModel: viewModel)
         }
     }
 

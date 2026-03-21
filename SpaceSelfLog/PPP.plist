@@ -22,6 +22,10 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>用于录像与局域网实时监控</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>用于音频采集、语音活动检测与语音转录</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>用于将语音片段转为文字并嵌入帧元数据</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>用于在同一局域网内提供监控画面访问</string>
 	<key>UIApplicationSceneManifest</key>

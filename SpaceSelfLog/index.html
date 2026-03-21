@@ -5,19 +5,18 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>SpaceSelfLog Monitor</title>
     <style>
-        body { 
-            background:#111; 
-            color:#eee; 
-            font-family: -apple-system, BlinkMacSystemFont, Helvetica, Arial; 
+        body {
+            background: #111;
+            color: #eee;
+            font-family: -apple-system, BlinkMacSystemFont, Helvetica, Arial;
             margin: 0;
-            padding-top: 60px; /* 为固定header留出空间 */
+            padding-top: 60px;
             font-size: 14px;
+            overflow-x: hidden;
         }
         .header {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             background: #1a1a1a;
             border-bottom: 1px solid #333;
             padding: 10px 20px;
@@ -28,363 +27,519 @@
             height: 40px;
             box-sizing: border-box;
         }
-        .header h3 {
-            margin: 0;
-            font-size: 16px;
-            color: #eee;
-        }
-        .runtime-timer {
-            font-family: Menlo, monospace;
-            font-size: 14px;
-            color: #ccc;
-            font-weight: bold;
-        }
-        .timer-info {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 15px;
-        }
-        .time-title {
-            font-family: Menlo, monospace;
-            font-size: 14px;
-            color: #888;
-            font-weight: bold;
-        }
-        .time-title span {
-            color: #ccc;
-        }
-        .main-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            position: relative;
-            padding: 0 20px;
-        }
-        .main-section {
-            display: flex;
-            flex-direction: column;
-            align-items: column;
-            width: 100%;
-        }
-        .row { 
-            margin: 10px 0; 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 10px; 
-            align-items: center; 
-            justify-content: center;
-        }
-        .ai-panel {
-            width: 300px;
+        .header h3 { margin: 0; font-size: 16px; color: #eee; }
+        .timer-info { display: flex; flex-direction: row; align-items: center; gap: 15px; }
+        .time-title { font-family: Menlo, monospace; font-size: 14px; color: #888; font-weight: bold; }
+        .time-title span { color: #ccc; }
+
+        /* ── Settings Panel (left) ── */
+        .settings-panel {
+            width: 280px;
             background: #1a1a1a;
             border: 1px solid #333;
             border-radius: 8px;
             padding: 15px;
             position: fixed;
-            top: 64px;
-            right: 20px;
-            max-height: calc(100vh - 40px);
+            top: 64px; left: 20px;
+            max-height: calc(100vh - 84px);
             overflow-y: auto;
             z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-        .ai-panel h5 {
-            margin: 0 0 10px 0;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .ai-status {
-            background: #222;
-            border: 1px solid #333;
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 15px;
-            font-size: 12px;
-        }
-        .ai-status-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 6px;
-            font-size: 12px;
-        }
-        .ai-status-active { background: #4CAF50; }
-        .ai-status-inactive { background: #666; }
-        .ai-latest {
-            background: #222;
-            border: 1px solid #333;
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 15px;
-            font-size: 12px;
-        }
-        .ai-history {
-            background: #222;
-            border: 1px solid #333;
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 15px;
-            font-size: 12px;
-            max-height: 300px; /* ~4 items visible, rest via scroll */
-            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             scrollbar-width: thin;
             scrollbar-color: #555 #222;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
         }
-        .ai-history::-webkit-scrollbar {
-            width: 6px;
-        }
-        .ai-history::-webkit-scrollbar-track {
-            background: #222;
-        }
-        .ai-history::-webkit-scrollbar-thumb {
-            background: #555;
-            border-radius: 3px;
-        }
-        .ai-history::-webkit-scrollbar-thumb:hover {
-            background: #666;
-        }
-        .ai-history-item {
-            background: #333;
-            border: 1px solid #555;
-            border-radius: 4px;
-            padding: 8px;
-            margin: 6px 0;
-            font-size: 12px;
-        }
-        .ai-time {
-            color: #888;
-            font-size: 11px;
-            font-family: Menlo, monospace;
-        }
-        .ai-result {
-            color: #4CAF50;
-            font-weight: bold;
-            margin: 4px 0;
-        }
-        .ai-result-failed {
-            color: #f44336 !important; /* 红色 */
-        }
-        .ai-no-data {
-            color: #666;
-            font-style: italic;
-            text-align: center;
-            padding: 10px;
-            font-size: 12px;
-        }
-        
-        /* Settings Panel Styles */
-        .settings-panel {
-            width: 300px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 15px;
-            position: fixed;
-            top: 64px;
-            left: 20px;
-            max-height: calc(100vh - 40px);
-            overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-        .settings-panel h5 {
-            margin: 0 0 10px 0;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .settings-panel::-webkit-scrollbar { width: 6px; }
+        .settings-panel::-webkit-scrollbar-track { background: #1a1a1a; }
+        .settings-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+        .settings-panel h5 { margin: 0 0 12px 0; font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.8px; }
+
         .settings-section {
             background: #222;
             border: 1px solid #333;
             border-radius: 6px;
             padding: 12px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             font-size: 12px;
         }
+        .settings-section-title {
+            font-weight: bold;
+            color: #aaa;
+            margin-bottom: 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .settings-label {
+            display: block;
+            margin: 8px 0 3px;
+            color: #777;
+            font-size: 11px;
+        }
+        .settings-label:first-of-type { margin-top: 0; }
         .settings-input {
             width: 100%;
             background: #333;
             border: 1px solid #555;
             border-radius: 4px;
-            padding: 8px;
+            padding: 6px 8px;
             color: white;
             font-size: 12px;
-            margin: 6px 0;
             box-sizing: border-box;
         }
-        .settings-input:disabled {
-            background: #2a2a2a;
-            color: #888;
+        .settings-input:disabled { background: #2a2a2a; color: #666; }
+        .settings-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin: 4px 0;
         }
-        /* Textarea: allow manual vertical resize with a taller default */
-        textarea.settings-input {
-            resize: vertical;
-            overflow: auto;
-            min-height: 120px;
-        }
-        .settings-input.auto-resize {
-            resize: none;
-            overflow: hidden;
-            min-height: 40px;
-            line-height: 1.4;
-        }
+        .settings-row .settings-input { margin: 0; }
+        .settings-row label { color: #777; font-size: 11px; white-space: nowrap; }
         .settings-button {
             background: #333;
             border: 1px solid #555;
             border-radius: 4px;
-            padding: 8px 12px;
+            padding: 5px 10px;
             color: #eee;
             font-size: 11px;
             cursor: pointer;
-            margin: 4px 2px;
-            transition: all 0.3s ease;
+            white-space: nowrap;
+            transition: background 0.2s;
         }
-        .settings-button:hover {
-            background: #444;
-        }
-        .settings-button:disabled {
-            background: #666;
-            cursor: not-allowed;
-        }
-        .api-key-container {
+        .settings-button:hover { background: #444; }
+        .settings-button:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
+        .section-save-row {
             display: flex;
-            align-items: center;
-            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 10px;
         }
-        .api-key-input {
-            flex: 1;
-            font-family: monospace;
-            letter-spacing: 2px;
-        }
-        .settings-label {
-            display: block;
-            margin-bottom: 4px;
-            font-weight: bold;
-            color: #ccc;
-        }
-        button { 
-            padding:8px 12px; 
-            margin-right:8px; 
-            background: #333; 
-            color: #eee; 
-            border: 1px solid #555; 
-            border-radius: 4px; 
-            cursor: pointer;
-            transition: all 0.3s ease;
-            height: 36px;
-            box-sizing: border-box;
-            vertical-align: top;
-            font-size: inherit;
-        }
-        button:hover { background: #444; }
-        button.active { 
-            background: rgba(51, 51, 51, 0.5); 
-            opacity: 0.5; 
-            border-color: #777;
-        }
-        button.recording { 
-            background: rgba(51, 51, 51, 0.5); 
-            border-color: #777;
-        }
-        .toggle-container {
-            display: inline-flex;
-            align-items: center;
-            margin-right: 8px;
-            padding: 8px 12px;
+        .segment-control {
+            display: flex;
             background: #333;
             border: 1px solid #555;
             border-radius: 4px;
-            color: #eee;
-            font-size: inherit;
-            height: 36px;
-            box-sizing: border-box;
-            vertical-align: top;
+            overflow: hidden;
+            margin: 4px 0;
         }
-        .toggle-switch {
-            position: relative;
-            width: 38px;
-            height: 18px;
-            background: #666;
-            border-radius: 10px;
-            margin-left: 8px;
+        .segment-option {
+            flex: 1;
+            padding: 5px 4px;
+            text-align: center;
             cursor: pointer;
-            transition: background 0.3s ease;
+            font-size: 11px;
+            color: #777;
+            border: none;
+            background: none;
+            height: auto;
+            transition: all 0.15s;
+            margin: 0;
         }
-        .toggle-switch.active {
-            background: #4CAF50;
+        .segment-option.active { background: #555; color: #eee; }
+        .segment-option:hover:not(.active) { background: #3a3a3a; color: #ccc; }
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 8px 0 2px;
         }
-        .toggle-slider {
+        .toggle-label { color: #777; font-size: 11px; }
+        .mini-toggle {
+            position: relative;
+            width: 34px;
+            height: 16px;
+            background: #444;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .mini-toggle.active { background: #4CAF50; }
+        .mini-toggle-slider {
             position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 14px;
-            height: 14px;
+            top: 2px; left: 2px;
+            width: 12px; height: 12px;
             background: white;
             border-radius: 50%;
-            transition: transform 0.3s ease;
+            transition: transform 0.2s;
         }
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(20px);
+        .mini-toggle.active .mini-toggle-slider { transform: translateX(18px); }
+        .api-key-row { display: flex; gap: 6px; align-items: center; }
+        .api-key-row .settings-input { flex: 1; font-family: monospace; letter-spacing: 2px; }
+        .settings-status { font-size: 10px; margin-top: 5px; color: #777; }
+
+        /* ── Pipeline Panel (right) ── */
+        .pipeline-panel {
+            width: 280px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            position: fixed;
+            top: 64px; right: 20px;
+            max-height: calc(100vh - 84px);
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            scrollbar-width: thin;
+            scrollbar-color: #555 #222;
         }
-        .video-container { 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            background: #000; 
-            width: 600px; 
-            height: 600px; 
+        .pipeline-panel::-webkit-scrollbar { width: 6px; }
+        .pipeline-panel::-webkit-scrollbar-track { background: #1a1a1a; }
+        .pipeline-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+        .pipeline-panel h5 { margin: 0 0 12px 0; font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.8px; }
+
+        .pipeline-section {
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        .section-title {
+            font-size: 10px;
+            color: #666;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .sensor-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 3px 0;
+        }
+        .sensor-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: #3a3a3a;
+        }
+        .sensor-dot.active { background: #4CAF50; }
+        .sensor-dot.speech { background: #FF9800; }
+        .sensor-dot.moving { background: #42A5F5; }
+
+        /* IMU monitor */
+        .imu-toggle-btn {
+            margin-left: auto;
+            background: none;
+            border: 1px solid #333;
+            color: #555;
+            font-size: 13px;
+            line-height: 1;
+            width: 18px; height: 18px;
+            border-radius: 3px;
+            cursor: pointer;
+            padding: 0;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            transition: color 0.15s, border-color 0.15s, transform 0.2s;
+        }
+        .imu-toggle-btn:hover { color: #42A5F5; border-color: #42A5F5; }
+        .imu-toggle-btn.open { color: #42A5F5; border-color: #42A5F5; transform: rotate(90deg); }
+        .imu-monitor-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease, opacity 0.25s ease;
+            opacity: 0;
+        }
+        .imu-monitor-panel.open {
+            max-height: 185px;
+            opacity: 1;
+        }
+        .imu-chart-canvas {
+            display: block;
+            width: 100%;
+            height: 100px;
+            margin-top: 8px;
+            border-radius: 4px;
+            background: #111;
+        }
+        /* sustained-motion timer bar */
+        .imu-sustained-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 5px;
+        }
+        .imu-sustained-label {
+            font-family: Menlo, monospace;
+            font-size: 9px;
+            color: #555;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: 90px;
+        }
+        .imu-sustained-track {
+            flex: 1;
+            height: 4px;
+            background: #222;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .imu-sustained-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 2px;
+            background: #546E7A;
+            transition: width 0.4s linear, background 0.3s;
+        }
+        .imu-sustained-fill.charging { background: #42A5F5; }
+        .imu-sustained-fill.full     { background: #42A5F5; box-shadow: 0 0 4px #42A5F5; }
+
+        .imu-chart-legend {
+            display: flex;
+            gap: 10px;
+            margin-top: 4px;
+            margin-bottom: 2px;
+            font-family: Menlo, monospace;
+            font-size: 9px;
+            color: #555;
+        }
+        .imu-legend-item { display: flex; align-items: center; gap: 4px; }
+        .imu-legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+        /* Audio (VAD / Noise) monitor panels */
+        .audio-monitor-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease, opacity 0.25s ease;
+            opacity: 0;
+        }
+        .audio-monitor-panel.open {
+            max-height: 145px;
+            opacity: 1;
+        }
+        .audio-chart-canvas {
+            display: block;
+            width: 100%;
+            height: 100px;
+            margin-top: 8px;
+            border-radius: 4px;
+            background: #111;
+        }
+        .audio-chart-legend {
+            display: flex;
+            gap: 10px;
+            margin-top: 4px;
+            font-family: Menlo, monospace;
+            font-size: 9px;
+            color: #555;
+        }
+
+        .sensor-label {
+            color: #666;
+            width: 68px;
+            flex-shrink: 0;
+            font-family: Menlo, monospace;
+            font-size: 11px;
+        }
+        .sensor-value { color: #ccc; font-family: Menlo, monospace; font-size: 11px; }
+        .sensor-value.dim { color: #444; }
+        .sensor-divider { border: none; border-top: 1px solid #2a2a2a; margin: 6px 0; }
+
+        .batch-output {
+            font-family: Menlo, monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #bbb;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .batch-output.empty { color: #444; font-style: italic; }
+
+        .batch-history-list {
+            max-height: 260px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #555 #222;
+        }
+        .batch-history-list::-webkit-scrollbar { width: 4px; }
+        .batch-history-list::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
+        .batch-item {
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 8px;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+        .batch-item:hover { border-color: #444; }
+        .batch-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .batch-item-time { font-family: Menlo, monospace; font-size: 10px; color: #777; }
+        .batch-trigger-tag {
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 3px;
+            background: #333;
+            color: #777;
+            font-family: Menlo, monospace;
+        }
+        .batch-trigger-tag.vad    { background: #1a3a2a; color: #4CAF50; }
+        .batch-trigger-tag.imu    { background: #1a2a3a; color: #42A5F5; }
+        .batch-trigger-tag.window { background: #2a2a1a; color: #FFA726; }
+        .batch-item-text {
+            font-size: 11px;
+            color: #888;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .batch-item.expanded .batch-item-text {
+            display: block;
+            -webkit-line-clamp: unset;
+        }
+        .batch-frames { font-size: 10px; color: #555; margin-top: 4px; }
+        .no-data { color: #444; font-style: italic; font-size: 11px; text-align: center; padding: 8px 0; }
+
+        /* Ramp ladder */
+        .ramp-ladder {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 3px;
+            margin-top: 8px;
+            min-height: 20px;
+        }
+        .ramp-step {
+            background: #2a2a2a;
+            border: 1px solid #383838;
+            border-radius: 3px;
+            padding: 2px 6px;
+            color: #666;
+            font-family: Menlo, monospace;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+        .ramp-step.active {
+            background: #1a3a1a;
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+        .ramp-arrow { color: #383838; font-size: 10px; }
+        input[type=range].ramp-slider {
+            flex: 1;
+            accent-color: #4CAF50;
+            height: 3px;
+            cursor: pointer;
+        }
+
+        /* ── Layer 1 Frame JSON ── */
+        .frame-json-block {
+            background: #161616;
+            border: 1px solid #2a2a2a;
+            border-radius: 4px;
+            padding: 8px 10px;
+            font-family: Menlo, monospace;
+            font-size: 10px;
+            line-height: 1.6;
+            color: #bbb;
+            white-space: pre;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #444 #1a1a1a;
+        }
+        .frame-json-block::-webkit-scrollbar { height: 4px; }
+        .frame-json-block::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+        .frame-json-block.dim { color: #3a3a3a; }
+        .json-key   { color: #7b9fbf; }
+        .json-str   { color: #a8c8a0; }
+        .json-num   { color: #d4a87a; }
+        .json-bool  { color: #c792ea; }
+        .json-null  { color: #555; }
+
+        /* ── Center ── */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+            width: 100%;
+            padding: 0 310px;
+        }
+        .row {
+            margin: 10px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+        .video-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            width: 540px;
+            height: 540px;
+            flex-shrink: 0;
             margin: 0 auto;
             overflow: hidden;
             position: relative;
         }
         .video-overlay {
             position: absolute;
-            bottom: 8px;
-            left: 8px;
-            background: rgba(0, 0, 0, 0.1);
+            bottom: 8px; left: 8px;
+            background: rgba(0,0,0,0.1);
             color: white;
-            padding: 4px 4px;
+            padding: 4px;
             border-radius: 2px;
-            font-family: -apple-system, BlinkMacSystemFont, Helvetica, Arial;
             font-size: 11px;
             line-height: 1.4;
             z-index: 10;
             pointer-events: none;
         }
-        img { 
-            max-width: 600px; 
-            max-height: 600px; 
-            width: auto; 
-            height: auto; 
-            object-fit: contain; 
-            background: #000; 
+        img { width: 100%; height: 100%; object-fit: contain; background: #000; display: block; }
+
+        button {
+            padding: 8px 12px;
+            background: #333; color: #eee;
+            border: 1px solid #555; border-radius: 4px;
+            cursor: pointer; transition: all 0.2s;
+            height: 36px; box-sizing: border-box;
+            vertical-align: top; font-size: inherit;
         }
-        .mono { 
-            font-family: Menlo, monospace; 
+        button:hover { background: #444; }
+        button.active { background: rgba(51,51,51,0.5); opacity: 0.5; border-color: #777; }
+        button.recording { background: rgba(51,51,51,0.5); border-color: #777; }
+
+        .dropdown-menu {
+            display: none; position: absolute; top: 100%; left: 0;
+            background: #333; border: 1px solid #555;
+            border-radius: 4px; min-width: 120px; z-index: 1000;
         }
-        .status-display {
-            max-width: calc(100vw - 40px);
-            word-wrap: break-word;
-            word-break: break-all;
-            white-space: pre-wrap;
-            background: #222;
+        .dropdown-menu button {
+            display: block; width: 100%; text-align: left;
+            background: none; border: none; color: #eee;
+            padding: 8px 12px; height: auto; border-radius: 0;
+        }
+        .dropdown-menu button:hover { background: #555; }
+
+        .status-bar {
+            font-family: Menlo, monospace;
+            font-size: 12px;
+            color: #888;
+            background: #1a1a1a;
             border: 1px solid #333;
             border-radius: 4px;
-            padding: 10px;
-            margin-top: 10px;
-            margin-left: 20px;
-            margin-right: 20px;
-            font-size: 12px;
-            /* overflow-x: auto; */
+            padding: 8px 20px;
+            margin: 4px 0 10px;
+            display: flex;
+            gap: 28px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
+        .status-bar-item { display: flex; gap: 7px; }
+        .status-bar-label { color: #555; }
+        .status-bar-value { color: #bbb; }
     </style>
 </head>
 <body>
@@ -394,857 +549,1077 @@
             <div class="time-title" id="startTime" style="display: none;">
                 Started: <span id="startTimeValue">--:--:--</span>
             </div>
-            <div class="time-title" id="runtimeTitle">
+            <div class="time-title">
                 Runtime: <span id="runtimeTimer">00:00:00</span>
             </div>
         </div>
     </div>
-    <div class="main-container">
-        <div class="main-section">
-            <div class="row">
-                <div class="video-container">
-                    <img src="/stream" alt="stream">
-                    <div class="video-overlay" id="videoOverlay">
-                        <div>Camera: <span id="cameraInfo">-</span></div>
-                        <div>Angle: <span id="angleInfo">-</span>°</div>
-                        <div>Resolution: <span id="resolutionInfo">-</span></div>
-                        <div>Battery: <span id="batteryInfo">-</span></div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <button id="startBtn" onclick="fetch('/start')">🟢 Start</button>
-                <button id="pauseBtn" onclick="handlePauseResume()" disabled>⏸ Pause</button>
-                <button id="stopBtn" onclick="fetch('/stop')">🔴 Stop</button>
-                <button id="wideBtn" onclick="fetch('/switch?camera=wide')">📐 Wide 1x</button>
-                <button id="ultraBtn" onclick="fetch('/switch?camera=ultra')">📐 Ultra Wide 0.5x</button>
-                <button id="rotateBtn" onclick="fetch('/rotate')">🔄 Rotate 90°</button>
-                <div style="position: relative; display: inline-block;">
-                    <button onclick="toggleResolutionMenu()" id="resolutionBtn">📹 Resolution ▼</button>
-                    <div id="resolutionMenu" style="display: none; position: absolute; top: 100%; left: 0; background: #333; border: 1px solid #555; border-radius: 4px; min-width: 120px; z-index: 1000;">
-                        <button onclick="selectResolution('low')" style="display: block; width: 100%; text-align: left; background: none; border: none; color: #eee; padding: 8px 12px; cursor: pointer;" onmouseover="this.style.background='#555'" onmouseout="this.style.background='none'">Low</button>
-                        <button onclick="selectResolution('medium')" style="display: block; width: 100%; text-align: left; background: none; border: none; color: #eee; padding: 8px 12px; cursor: pointer;" onmouseover="this.style.background='#555'" onmouseout="this.style.background='none'">Medium</button>
-                        <button onclick="selectResolution('high')" style="display: block; width: 100%; text-align: left; background: none; border: none; color: #eee; padding: 8px 12px; cursor: pointer;" onmouseover="this.style.background='#555'" onmouseout="this.style.background='none'">High</button>
-                        <button onclick="selectResolution('ultra')" style="display: block; width: 100%; text-align: left; background: none; border: none; color: #eee; padding: 8px 12px; cursor: pointer;" onmouseover="this.style.background='#555'" onmouseout="this.style.background='none'">Ultra</button>
-                    </div>
-                </div>
-                <div class="toggle-container">
-                    <span>🤖 AI Auto</span>
-                    <div class="toggle-switch" id="aiAutoToggle" onclick="toggleAIAuto()">
-                        <div class="toggle-slider"></div>
-                    </div>
-                </div>
-                <div style="position: relative; display: inline-block; margin-left: 8px;">
-<button onclick="toggleExperimentMenu()" id="experimentBtn">🧪 Experiment ▼</button>
-<div id="experimentMenu" style="display: none; position: absolute; top: 100%; left: 0; background: #333; border: 1px solid #555; border-radius: 4px; min-width: 140px; z-index: 1000;"></div>
-                </div>
-            </div>
-            <div class="mono status-display" id="status"></div>
-        </div>
-    </div>
-    
-    <!-- AI Panel - 悬浮在右上角 -->
-    <!-- Settings Panel -->
+
+    <!-- ── Settings Panel ── -->
     <div class="settings-panel">
         <h5>Settings</h5>
-        
-        <!-- API Key Section -->
+
+        <!-- Capture -->
         <div class="settings-section">
-            <label class="settings-label">API Key</label>
-            <div class="api-key-container">
-                <input type="password" class="settings-input api-key-input" id="apiKeyDisplay" 
-                       placeholder="••••••••••••••••" disabled>
+            <div class="settings-section-title">Capture Interval</div>
+            <div class="settings-row">
+                <label>Min</label>
+                <input type="number" class="settings-input" id="minIntervalInput" min="1" max="30" value="3" oninput="updateRampLadder()">
+                <label>s</label>
+            </div>
+            <div class="settings-row">
+                <label>Max</label>
+                <input type="number" class="settings-input" id="maxIntervalInput" min="5" max="60" value="20" oninput="updateRampLadder()">
+                <label>s</label>
+            </div>
+            <div class="settings-label">Ramp Ratio <span id="rampRatioDisplay" style="color:#ccc;float:right">1.67</span></div>
+            <div class="settings-row">
+                <input type="range" class="ramp-slider" id="rampRatioSlider" min="1.1" max="3.0" step="0.05" value="1.67" oninput="onRampRatioChange(this.value)">
+            </div>
+            <div class="ramp-ladder" id="rampLadder"></div>
+            <div class="section-save-row">
+                <button class="settings-button" onclick="saveCaptureConfig(event)">Save</button>
+            </div>
+        </div>
+
+        <!-- Audio -->
+        <div class="settings-section">
+            <div class="settings-section-title">Audio</div>
+            <div class="settings-label">VAD Sensitivity</div>
+            <div class="segment-control" id="vadSensitivity">
+                <button class="segment-option" data-value="Low" onclick="selectSegment('vadSensitivity','Low',this)">Low</button>
+                <button class="segment-option active" data-value="Med" onclick="selectSegment('vadSensitivity','Med',this)">Med</button>
+                <button class="segment-option" data-value="High" onclick="selectSegment('vadSensitivity','High',this)">High</button>
+            </div>
+            <div class="toggle-row">
+                <span class="toggle-label">Transcription</span>
+                <div class="mini-toggle" id="transcriptionToggle" onclick="this.classList.toggle('active')">
+                    <div class="mini-toggle-slider"></div>
+                </div>
+            </div>
+            <div class="section-save-row">
+                <button class="settings-button" onclick="saveAudioConfig(event)">Save</button>
+            </div>
+        </div>
+
+        <!-- IMU -->
+        <div class="settings-section">
+            <div class="settings-section-title">IMU</div>
+            <div class="settings-label">Sustained Motion Threshold</div>
+            <div class="settings-row">
+                <input type="number" class="settings-input" id="sustainedMotionInput" min="2" max="15" value="6">
+                <label>s</label>
+            </div>
+            <div class="settings-label" style="margin-top:8px">Variance Low Threshold <span style="color:#FFA726">●</span></div>
+            <div class="settings-row">
+                <input type="number" class="settings-input" id="varianceLowInput" min="0.001" max="0.1" step="0.001" value="0.006">
+                <label>g²</label>
+            </div>
+            <div class="settings-label" style="margin-top:4px">Variance High Threshold <span style="color:#f44336">●</span></div>
+            <div class="settings-row">
+                <input type="number" class="settings-input" id="varianceHighInput" min="0.001" max="0.1" step="0.001" value="0.012">
+                <label>g²</label>
+            </div>
+            <div class="section-save-row">
+                <button class="settings-button" onclick="saveIMUConfig(event)">Save</button>
+            </div>
+        </div>
+
+        <!-- Batch -->
+        <div class="settings-section">
+            <div class="settings-section-title">Batch</div>
+            <div class="settings-label">First Batch Window (s)</div>
+            <input type="number" class="settings-input" id="firstBatchWindowInput" min="30" max="600" step="30" value="120">
+            <div class="settings-label">Max Window (min)</div>
+            <input type="number" class="settings-input" id="maxWindowInput" min="1" max="120" step="1" value="10">
+            <div class="settings-label">SSIM Threshold (boundary)</div>
+            <input type="number" class="settings-input" id="ssimInput" min="0.1" max="0.99" step="0.05" value="0.85">
+            <div class="settings-label">Dedup SSIM Threshold</div>
+            <input type="number" class="settings-input" id="ssimDedupInput" min="0.80" max="1.00" step="0.01" value="0.92">
+            <div class="settings-label">K density (frames/min)</div>
+            <input type="number" class="settings-input" id="kDensityInput" min="0.5" max="3.0" step="0.5" value="1.0">
+            <div style="display:flex;gap:12px;margin-top:6px;">
+                <div style="flex:1">
+                    <div class="settings-label">K min</div>
+                    <input type="number" class="settings-input" id="kMinInput" min="1" max="30" value="2">
+                </div>
+                <div style="flex:1">
+                    <div class="settings-label">K max</div>
+                    <input type="number" class="settings-input" id="kMaxInput" min="1" max="30" value="12">
+                </div>
+            </div>
+            <div class="settings-label" style="margin-top:6px;">Score threshold (guaranteed)</div>
+            <input type="number" class="settings-input" id="scoreThresholdInput" min="0.30" max="0.80" step="0.05" value="0.50">
+            <div class="section-save-row">
+                <button class="settings-button" onclick="saveBatchConfig(event)">Save</button>
+            </div>
+        </div>
+
+        <!-- Outbox / Upload -->
+        <div class="settings-section">
+            <div class="settings-section-title">Outbox / Upload</div>
+            <div class="settings-label">Upload Endpoint</div>
+            <input type="text" class="settings-input" id="outboxEndpointInput" placeholder="http://100.x.x.x:8000/ingest" autocomplete="off">
+            <div class="settings-status" id="outboxStatus">–</div>
+            <div class="section-save-row">
+                <button class="settings-button" onclick="saveOutboxConfig(event)">Save</button>
+            </div>
+        </div>
+
+        <!-- Inference -->
+        <div class="settings-section">
+            <div class="settings-section-title">Inference</div>
+            <div class="settings-label">VLM Provider</div>
+            <div class="segment-control" id="vlmProvider">
+                <button class="segment-option active" data-value="claude" onclick="selectSegment('vlmProvider','claude',this)">Claude</button>
+                <button class="segment-option" data-value="openrouter" onclick="selectSegment('vlmProvider','openrouter',this)">OpenRouter</button>
+            </div>
+            <div class="settings-label" style="margin-top:10px;">API Key</div>
+            <div class="api-key-row">
+                <input type="password" class="settings-input" id="apiKeyDisplay" placeholder="••••••••••••••••" disabled>
                 <button class="settings-button" id="testApiBtn" onclick="testApiKey()">Test</button>
             </div>
-            <div style="margin-top: 6px; font-size: 11px; color: #888;" id="apiKeyStatus">
-                Loading API key status...
-            </div>
-        </div>
-        
-        <!-- Interval Setting -->
-        <div class="settings-section">
-            <label class="settings-label">Analysis Interval (seconds)</label>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <input type="number" class="settings-input" id="intervalInput" 
-                       min="1" max="300" value="30" style="flex: 1;">
-                <button class="settings-button" onclick="saveInterval()">Save</button>
-            </div>
-        </div>
-        
-        <!-- Prompt Setting -->
-        <div class="settings-section">
-            <label class="settings-label">Analysis Prompt</label>
-            <textarea class="settings-input" id="promptInput" rows="6" 
-                      placeholder="Enter your analysis prompt..."></textarea>
-            <div style="margin-top: 6px; display: flex; gap: 8px;">
-                <button class="settings-button" onclick="savePrompt()">Save</button>
-                <button class="settings-button" onclick="resetPrompt()">Reset to Default</button>
+            <div class="settings-status" id="apiKeyStatus">Loading...</div>
+            <div class="section-save-row" style="margin-top:10px;">
+                <button class="settings-button" onclick="saveInferenceConfig(event)">Save</button>
             </div>
         </div>
     </div>
 
-    <div class="ai-panel">
-        <h5>AI Analysis</h5>
-        <div class="ai-status" id="aiStatus">
-            <div>
-                <span class="ai-status-indicator ai-status-inactive" id="aiStatusIndicator"></span>
-                <span id="aiStatusText">Loading...</span>
-            </div>
-            <div style="margin-top: 8px; font-size: 12px;">
-                <strong>Interval:</strong> <span id="aiIntervalText">-</span>s
-            </div>
-            <div style="margin-top: 4px; font-size: 12px;">
-                <strong>Avg. Infer. Time:</strong> <span id="avgInferTimeText">-</span>ms
-            </div>
-            <div style="margin-top: 4px; font-size: 12px;">
-                <strong>Success Rate:</strong> <span id="successRateText">-</span>%
+    <!-- ── Main Content ── -->
+    <div class="main-container">
+        <div class="row">
+            <div class="video-container">
+                <img src="/stream" alt="stream">
+                <div class="video-overlay" id="videoOverlay">
+                    <div>Camera: <span id="cameraInfo">-</span></div>
+                    <div>Angle: <span id="angleInfo">-</span>°</div>
+                    <div>Resolution: <span id="resolutionInfo">-</span></div>
+                    <div>Battery: <span id="batteryInfo">-</span></div>
+                </div>
             </div>
         </div>
-        <div class="ai-latest" id="aiLatest">
-            <div style="font-weight: bold; margin-bottom: 6px;">Latest Result</div>
-            <div class="ai-no-data">No analysis results yet</div>
+        <div class="row">
+            <button id="startBtn" onclick="fetch('/start')">🟢 Start</button>
+            <button id="pauseBtn" onclick="handlePauseResume()" disabled>⏸ Pause</button>
+            <button id="stopBtn" onclick="fetch('/stop')">🔴 Stop</button>
+            <button id="wideBtn" onclick="fetch('/switch?camera=wide')">📐 Wide 1x</button>
+            <button id="ultraBtn" onclick="fetch('/switch?camera=ultra')">📐 Ultra 0.5x</button>
+            <button id="rotateBtn" onclick="fetch('/rotate')">🔄 Rotate 90°</button>
+            <div style="position: relative; display: inline-block;">
+                <button onclick="toggleResolutionMenu()" id="resolutionBtn">📹 Resolution ▼</button>
+                <div class="dropdown-menu" id="resolutionMenu">
+                    <button onclick="selectResolution('low')">Low</button>
+                    <button onclick="selectResolution('medium')">Medium</button>
+                    <button onclick="selectResolution('high')">High</button>
+                    <button onclick="selectResolution('ultra')">Ultra</button>
+                </div>
+            </div>
         </div>
-        <div class="ai-history" id="aiHistory">
-            <div style="font-weight: bold; margin-bottom: 12px;">Recent History</div>
-            <div class="ai-no-data">Loading history...</div>
+        <div class="status-bar">
+            <div class="status-bar-item">
+                <span class="status-bar-label">Frames</span>
+                <span class="status-bar-value" id="sbFrames">—</span>
+            </div>
+            <div class="status-bar-item">
+                <span class="status-bar-label">Batches</span>
+                <span class="status-bar-value" id="sbBatches">—</span>
+            </div>
+            <div class="status-bar-item">
+                <span class="status-bar-label">Storage</span>
+                <span class="status-bar-value" id="sbStorage">—</span>
+            </div>
         </div>
     </div>
+
+    <!-- ── Pipeline Panel ── -->
+    <div class="pipeline-panel">
+        <h5>Pipeline</h5>
+
+        <!-- Sensor States -->
+        <div class="pipeline-section">
+            <div class="sensor-row">
+                <div class="sensor-dot" id="captureDot"></div>
+                <span class="sensor-label">Interval</span>
+                <span class="sensor-value dim" id="captureIntervalVal">—</span>
+            </div>
+            <hr class="sensor-divider">
+            <div class="sensor-row">
+                <div class="sensor-dot" id="vadDot"></div>
+                <span class="sensor-label">VAD</span>
+                <span class="sensor-value dim" id="vadVal">—</span>
+                <button class="imu-toggle-btn" id="vadToggleBtn" onclick="toggleVADMonitor()" title="Toggle VAD monitor">›</button>
+            </div>
+            <div class="audio-monitor-panel" id="vadMonitorPanel">
+                <canvas id="vadChart" class="audio-chart-canvas"></canvas>
+                <div class="audio-chart-legend">
+                    <span style="color:#42A5F5">— rms</span>
+                    <span style="color:#FF9800">— threshold</span>
+                    <span style="color:rgba(255,152,0,0.25)">■ speech</span>
+                </div>
+            </div>
+            <div class="sensor-row">
+                <div class="sensor-dot" id="noiseDot"></div>
+                <span class="sensor-label">Noise</span>
+                <span class="sensor-value dim" id="noiseVal">—</span>
+                <button class="imu-toggle-btn" id="noiseToggleBtn" onclick="toggleNoiseMonitor()" title="Toggle Noise monitor">›</button>
+            </div>
+            <div class="audio-monitor-panel" id="noiseMonitorPanel">
+                <canvas id="noiseChart" class="audio-chart-canvas"></canvas>
+                <div class="audio-chart-legend">
+                    <span style="color:#4CAF50">— dB (smoothed)</span>
+                    <span style="color:#FFA726">— -50 quiet</span>
+                    <span style="color:#f44336">— -30 loud</span>
+                </div>
+            </div>
+            <hr class="sensor-divider">
+            <div class="sensor-row">
+                <div class="sensor-dot" id="imuDot"></div>
+                <span class="sensor-label">IMU</span>
+                <span class="sensor-value dim" id="imuVal">—</span>
+                <button class="imu-toggle-btn" id="imuToggleBtn" onclick="toggleIMUMonitor()" title="Toggle IMU monitor">›</button>
+            </div>
+            <div class="imu-monitor-panel" id="imuMonitorPanel">
+                <canvas id="imuChart" class="imu-chart-canvas"></canvas>
+                <div class="imu-sustained-bar-wrap">
+                    <span class="imu-sustained-label" id="imuSustainedLabel">sustained  0s / 6s</span>
+                    <div class="imu-sustained-track">
+                        <div class="imu-sustained-fill" id="imuSustainedFill"></div>
+                    </div>
+                </div>
+                <div class="imu-chart-legend">
+                    <span class="imu-legend-item"><span class="imu-legend-dot" style="background:#42A5F5"></span>variance</span>
+                    <span class="imu-legend-item" style="color:#FFA726">— low thr</span>
+                    <span class="imu-legend-item" style="color:#f44336">— high thr</span>
+                </div>
+            </div>
+            <hr class="sensor-divider">
+            <div class="sensor-row">
+                <span class="sensor-label">Buffer</span>
+                <span class="sensor-value dim" id="bufferVal">—</span>
+            </div>
+            <div class="sensor-row" style="margin-top: 2px;">
+                <span class="sensor-label">Last Batch</span>
+                <span class="sensor-value dim" id="lastBatchVal" style="font-size:10px;">—</span>
+            </div>
+        </div>
+
+        <!-- Latest Batch Output -->
+        <div class="pipeline-section">
+            <div class="section-title">Latest Batch Output</div>
+            <div class="batch-output empty" id="latestBatchOutput">No batches yet</div>
+        </div>
+
+        <!-- Batch History -->
+        <div class="pipeline-section">
+            <div class="section-title">Batch History</div>
+            <div class="batch-history-list" id="batchHistoryList">
+                <div class="no-data">No history yet</div>
+            </div>
+        </div>
+
+        <!-- Layer 1 Latest Frame -->
+        <div class="pipeline-section">
+            <div class="section-title">Layer 1 · Latest Frame</div>
+            <div class="frame-json-block dim" id="frameJsonBlock">— pipeline not active —</div>
+        </div>
+    </div>
+
     <script>
-        // Timer variables (using server-provided duration)
+        // ── Timer ──
         let recordingStartTime = null;
         let timerInterval = null;
         let lastDurationSeconds = 0;
-        
-        // Format time from seconds to HH:MM:SS
-        function formatTime(seconds) {
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const secs = seconds % 60;
-            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+        function formatTime(s) {
+            const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
         }
-        
-        // Update runtime timer display
         function updateRuntimeTimer() {
-            const runtimeTimer = document.getElementById('runtimeTimer');
-            if (runtimeTimer) runtimeTimer.textContent = formatTime(lastDurationSeconds);
+            const el = document.getElementById('runtimeTimer');
+            if (el) el.textContent = formatTime(lastDurationSeconds);
         }
-        
-        // Start the timer
-        function startTimer(startTimeTimestamp) {
-            recordingStartTime = startTimeTimestamp * 1000; // ms
-            const startTime = new Date(recordingStartTime);
-            const startTimeElement = document.getElementById('startTime');
-            const startTimeValue = document.getElementById('startTimeValue');
-            if (startTimeElement && startTimeValue) {
-                startTimeValue.textContent = startTime.toLocaleTimeString();
-                startTimeElement.style.display = 'block';
-            }
+        function startTimer(ts) {
+            recordingStartTime = ts * 1000;
+            const el = document.getElementById('startTime'), val = document.getElementById('startTimeValue');
+            if (el && val) { val.textContent = new Date(recordingStartTime).toLocaleTimeString(); el.style.display = 'block'; }
             if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(() => {
-                // Only increment locally when not paused; otherwise rely on server updates
-                const pauseBtn = document.getElementById('pauseBtn');
-                const isPaused = pauseBtn && pauseBtn.textContent.includes('Resume');
-                if (!isPaused) {
-                    lastDurationSeconds += 1;
-                }
+                const pb = document.getElementById('pauseBtn');
+                if (!(pb && pb.textContent.includes('Resume'))) lastDurationSeconds++;
                 updateRuntimeTimer();
             }, 1000);
             updateRuntimeTimer();
         }
-        
-        // Stop the timer
         function stopTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-            recordingStartTime = null;
-            lastDurationSeconds = 0;
-            
-            // Hide start time and reset runtime timer
-            const startTimeElement = document.getElementById('startTime');
-            const runtimeTimer = document.getElementById('runtimeTimer');
-            if (startTimeElement) {
-                startTimeElement.style.display = 'none';
-            }
-            if (runtimeTimer) {
-                runtimeTimer.textContent = '00:00:00';
-            }
+            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            recordingStartTime = null; lastDurationSeconds = 0;
+            const el = document.getElementById('startTime'); if (el) el.style.display = 'none';
+            const rt = document.getElementById('runtimeTimer'); if (rt) rt.textContent = '00:00:00';
         }
-        
+
+        // ── Resolution ──
         let currentResolution = 'high';
-let currentExperiment = 1;
-let availableExperimentIds = [1,2,3]; // Fallback; will be updated from /status
-        
         function toggleResolutionMenu() {
-            const menu = document.getElementById('resolutionMenu');
-            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+            const m = document.getElementById('resolutionMenu');
+            m.style.display = m.style.display === 'none' ? 'block' : 'none';
         }
-        
         function selectResolution(preset) {
-            fetch(`/resolution?preset=${preset}`)
-                .then(() => {
-                    currentResolution = preset;
-                    updateResolutionButton();
-                    document.getElementById('resolutionMenu').style.display = 'none';
-                })
-                .catch(e => console.log('Resolution change error:', e));
+            fetch(`/resolution?preset=${preset}`).then(() => {
+                currentResolution = preset; updateResolutionButton();
+                document.getElementById('resolutionMenu').style.display = 'none';
+            }).catch(e => console.log(e));
         }
-        
         function updateResolutionButton() {
-            const btn = document.getElementById('resolutionBtn');
-            const displayNames = {
-                'low': 'Low',
-                'medium': 'Medium', 
-                'high': 'High',
-                'ultra': 'Ultra'
-            };
-            btn.textContent = `📹 ${displayNames[currentResolution] || 'Resolution'} ▼`;
+            const names = { low:'Low', medium:'Medium', high:'High', ultra:'Ultra' };
+            document.getElementById('resolutionBtn').textContent = `📹 ${names[currentResolution]||'Resolution'} ▼`;
         }
-
-function toggleExperimentMenu() {
-    const menu = document.getElementById('experimentMenu');
-            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-        }
-
-function selectExperiment(number) {
-    fetch(`/update-experiment?number=${number}`)
-                .then(() => {
-                    currentExperiment = number;
-                    updateExperimentButton();
-                    document.getElementById('experimentMenu').style.display = 'none';
-                    // Immediately refresh to sync prompt and other server-driven UI
-                    if (typeof refresh === 'function') { refresh(); }
-                })
-    .catch(e => console.log('Experiment update error:', e));
-}
-
-function updateExperimentButton() {
-    const btn = document.getElementById('experimentBtn');
-    btn.textContent = `🧪 Experiment ${currentExperiment} ▼`;
-}
-
-function renderExperimentMenu() {
-    const menu = document.getElementById('experimentMenu');
-    if (!menu) return;
-    menu.innerHTML = '';
-    availableExperimentIds.forEach(id => {
-        const b = document.createElement('button');
-        b.textContent = `Experiment ${id}`;
-        b.style.display = 'block';
-        b.style.width = '100%';
-        b.style.textAlign = 'left';
-        b.style.background = 'none';
-        b.style.border = 'none';
-        b.style.color = '#eee';
-        b.style.padding = '8px 12px';
-        b.style.cursor = 'pointer';
-        b.onmouseover = () => { b.style.background = '#555'; };
-        b.onmouseout = () => { b.style.background = 'none'; };
-        b.onclick = () => { selectExperiment(id); };
-        menu.appendChild(b);
-    });
-}
-        
-        // Close menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const menu = document.getElementById('resolutionMenu');
-            const btn = document.getElementById('resolutionBtn');
-            if (!menu.contains(event.target) && event.target !== btn) {
-                menu.style.display = 'none';
-            }
-            const expMenu = document.getElementById('experimentMenu');
-            const expBtn = document.getElementById('experimentBtn');
-            if (!expMenu.contains(event.target) && event.target !== expBtn) {
-                expMenu.style.display = 'none';
-            }
+        document.addEventListener('click', e => {
+            const m = document.getElementById('resolutionMenu'), b = document.getElementById('resolutionBtn');
+            if (m && !m.contains(e.target) && e.target !== b) m.style.display = 'none';
         });
-        
-        function toggleAIAuto() {
-            fetch('/ai-auto-toggle')
-                .then(() => {
-                    // Status will be updated in the next refresh cycle
-                })
-                .catch(e => console.log('AI Auto toggle error:', e));
-        }
-        
-        function updateButtonStates(status) {
-            // Update recording state buttons
+
+        // ── Button States ──
+        function updateButtonStates(s) {
             const startBtn = document.getElementById('startBtn');
-            const stopBtn = document.getElementById('stopBtn');
+            const stopBtn  = document.getElementById('stopBtn');
             const pauseBtn = document.getElementById('pauseBtn');
-            
-            if (status.isRecording) {
-                startBtn.classList.add('active');
-                stopBtn.classList.remove('active');
-                startBtn.classList.add('recording');
-                stopBtn.classList.remove('recording');
-            } else {
-                startBtn.classList.remove('active', 'recording');
-                stopBtn.classList.add('active');
-            }
-            // Pause/Resume button
-            if (pauseBtn) {
-                pauseBtn.disabled = !status.isRecording;
-                pauseBtn.textContent = status.isPaused ? '▶ Resume' : '⏸ Pause';
-            }
-            
-            // Update camera buttons
-            const wideBtn = document.getElementById('wideBtn');
-            const ultraBtn = document.getElementById('ultraBtn');
-            
-            if (status.selectedCamera === 'wide') {
-                wideBtn.classList.add('active');
-                ultraBtn.classList.remove('active');
-            } else if (status.selectedCamera === 'ultra') {
-                ultraBtn.classList.add('active');
-                wideBtn.classList.remove('active');
-            } else {
-                wideBtn.classList.remove('active');
-                ultraBtn.classList.remove('active');
-            }
-            
-            // Resolution button stays always clickable like rotate button
-            
-            // Update AI auto toggle state
-            const aiAutoToggle = document.getElementById('aiAutoToggle');
-            if (status.aiAnalysisAutoMode) {
-                aiAutoToggle.classList.add('active');
-            } else {
-                aiAutoToggle.classList.remove('active');
-            }
+            if (s.isRecording) { startBtn.classList.add('active','recording'); stopBtn.classList.remove('active','recording'); }
+            else { startBtn.classList.remove('active','recording'); stopBtn.classList.add('active'); }
+            if (pauseBtn) { pauseBtn.disabled = !s.isRecording; pauseBtn.textContent = s.isPaused ? '▶ Resume' : '⏸ Pause'; }
+            const w = document.getElementById('wideBtn'), u = document.getElementById('ultraBtn');
+            if (s.selectedCamera === 'wide')  { w.classList.add('active'); u.classList.remove('active'); }
+            else if (s.selectedCamera === 'ultra') { u.classList.add('active'); w.classList.remove('active'); }
+            else { w.classList.remove('active'); u.classList.remove('active'); }
         }
         function handlePauseResume() {
-            const pauseBtn = document.getElementById('pauseBtn');
-            if (!pauseBtn) return;
-            const action = pauseBtn.textContent.includes('Resume') ? '/resume' : '/pause';
-            fetch(action).catch(e => console.log('Pause/Resume error:', e));
+            const pb = document.getElementById('pauseBtn'); if (!pb) return;
+            fetch(pb.textContent.includes('Resume') ? '/resume' : '/pause').catch(e => console.log(e));
         }
-        async function refresh(){
-            try {
-    const res = await fetch('/status');
-    const j = await res.json();
-                document.getElementById('status').textContent = JSON.stringify(j);
-                
-    // Update available experiments from status (if provided)
-    if (Array.isArray(j.availableExperimentIds) && j.availableExperimentIds.length > 0) {
-        availableExperimentIds = j.availableExperimentIds;
-        renderExperimentMenu();
-}
 
-// Initial render with fallback ids; will be refreshed after /status
-renderExperimentMenu();
-    // Update current resolution from status
-                if (j.selectedResolution && j.selectedResolution !== currentResolution) {
-                    currentResolution = j.selectedResolution;
-                    updateResolutionButton();
-                }
-                
-                // Update timer duration from server
-                if (typeof j.durationSeconds === 'number') {
-                    lastDurationSeconds = j.durationSeconds;
-                    updateRuntimeTimer();
-                }
-                // Update video overlay information
-                updateVideoOverlay(j);
-                
-                // Update button states
-                updateButtonStates(j);
-                
-                // Update AI panel
-                updateAIPanel(j);
-                
-                // Update Settings panel
-                updateSettingsPanel(j);
+        // ── Video Overlay ──
+        function setText(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+        function updateVideoOverlay(s) {
+            if (s.isRecording && s.recordingStartTime > 0) {
+                if (!recordingStartTime || recordingStartTime !== s.recordingStartTime * 1000) startTimer(s.recordingStartTime);
+            } else if (!s.isRecording) { stopTimer(); }
+            if (typeof s.durationSeconds === 'number') { lastDurationSeconds = s.durationSeconds; updateRuntimeTimer(); }
+            const camNames = { wide:'Wide 1x', ultra:'Ultra Wide 0.5x' };
+            const resNames = { low:'Low 480p', medium:'Medium 720p', high:'High 1080p', ultra:'Ultra 4K' };
+            setText('cameraInfo', camNames[s.selectedCamera] || s.selectedCamera || '-');
+            setText('angleInfo', s.currentRotation ?? '-');
+            setText('resolutionInfo', resNames[s.selectedResolution] || s.selectedResolution || '-');
+            if (s.batteryLevel !== undefined && s.batteryState) {
+                const pct = Math.round(s.batteryLevel * 100);
+                setText('batteryInfo', `${pct > 20 ? '🔋' : '🪫'} ${pct}% (${s.batteryState})`);
+            }
+            if (s.selectedResolution && s.selectedResolution !== currentResolution) {
+                currentResolution = s.selectedResolution; updateResolutionButton();
+            }
+        }
 
-                // Update experiment button from status
-    if (typeof j.experimentNumber === 'number' && j.experimentNumber !== currentExperiment) {
-        currentExperiment = j.experimentNumber;
-        updateExperimentButton();
-    }
-            } catch(e){ console.log(e) }
+        // ── Status Bar ──
+        function updateStatusBar(s) {
+            setText('sbFrames',  s.totalFramesCaptured    != null ? s.totalFramesCaptured.toLocaleString()    : '—');
+            setText('sbBatches', s.totalBatchesProcessed  != null ? s.totalBatchesProcessed.toLocaleString()  : '—');
+            setText('sbStorage', s.storageUsedMB          != null ? `${s.storageUsedMB.toFixed(1)} MB`        : '—');
         }
-        
-        function updateVideoOverlay(status) {
-            // Handle timer based on recording status
-            if (status.isRecording && status.recordingStartTime > 0) {
-                // Recording is active and we have a start time
-                if (!recordingStartTime || recordingStartTime !== status.recordingStartTime * 1000) {
-                    startTimer(status.recordingStartTime);
-                }
-            } else if (!status.isRecording) {
-                // Recording stopped
-                stopTimer();
-            }
-            
-            // Update camera info
-            const cameraInfo = document.getElementById('cameraInfo');
-            if (cameraInfo && status.selectedCamera) {
-                const cameraNames = {
-                    'wide': 'Wide 1x',
-                    'ultra': 'Ultra Wide 0.5x'
-                };
-                cameraInfo.textContent = cameraNames[status.selectedCamera] || status.selectedCamera;
-            }
-            
-            // Update angle info
-            const angleInfo = document.getElementById('angleInfo');
-            if (angleInfo && status.currentRotation !== undefined) {
-                angleInfo.textContent = status.currentRotation;
-            }
-            
-            // Update resolution info
-            const resolutionInfo = document.getElementById('resolutionInfo');
-            if (resolutionInfo && status.selectedResolution) {
-                const resolutionNames = {
-                    'low': 'Low 480p',
-                    'medium': 'Medium 720p',
-                    'high': 'High 1080p',
-                    'ultra': 'Ultra 4K'
-                };
-                resolutionInfo.textContent = resolutionNames[status.selectedResolution] || status.selectedResolution;
-            }
-            
-            // Update battery info
-            const batteryInfo = document.getElementById('batteryInfo');
-            if (batteryInfo && status.batteryLevel !== undefined && status.batteryState) {
-                const batteryPercent = Math.round(status.batteryLevel * 100);
-                const batteryIcon = batteryPercent > 20 ? '🔋' : '🪫';
-                batteryInfo.textContent = `${batteryIcon} ${batteryPercent}% (${status.batteryState})`;
-            }
-        }
-        
-        function updateAIPanel(status) {
-            // Update AI status indicator and text
-            const aiStatusIndicator = document.getElementById('aiStatusIndicator');
-            const aiStatusText = document.getElementById('aiStatusText');
-            const aiIntervalText = document.getElementById('aiIntervalText');
-            
-            if (aiStatusIndicator && aiStatusText) {
-                const isAnalyzing = status.isAIAnalysisEnabled || false;
-                const autoMode = status.aiAnalysisAutoMode || false;
-                
-                if (isAnalyzing) {
-                    aiStatusIndicator.className = 'ai-status-indicator ai-status-active';
-                    aiStatusText.textContent = 'Analyzing';
-                } else if (autoMode) {
-                    aiStatusIndicator.className = 'ai-status-indicator ai-status-active';
-                    aiStatusText.textContent = 'Auto Mode';
-                } else {
-                    aiStatusIndicator.className = 'ai-status-indicator ai-status-inactive';
-                    aiStatusText.textContent = 'Idle';
-                }
-            }
-            
-            // Update interval info
-            if (aiIntervalText && status.aiAnalysisInterval) {
-                aiIntervalText.textContent = status.aiAnalysisInterval;
-            }
-            
-            // Update statistics
-            const avgInferTimeText = document.getElementById('avgInferTimeText');
-            const successRateText = document.getElementById('successRateText');
-            
-            if (status.analysisStatistics) {
-                const stats = status.analysisStatistics;
-                
-                if (avgInferTimeText) {
-                    avgInferTimeText.textContent = stats.averageInferenceTime ? 
-                        Math.round(stats.averageInferenceTime).toString() : '-';
-                }
-                
-                if (successRateText) {
-                    successRateText.textContent = stats.successRate !== undefined ? 
-                        stats.successRate.toFixed(1) : '-';
-                }
-            } else {
-                if (avgInferTimeText) avgInferTimeText.textContent = '-';
-                if (successRateText) successRateText.textContent = '-';
-            }
-            
-            // Update latest result
-            const aiLatest = document.getElementById('aiLatest');
-            if (aiLatest) {
-                if (status.latestAnalysisResult && Object.keys(status.latestAnalysisResult).length > 0) {
-                    const result = status.latestAnalysisResult;
-                    const time = result.captureTime ? new Date(result.captureTime).toLocaleTimeString() : '';
-                    aiLatest.innerHTML = `
-                        <div style="font-weight: bold; margin-bottom: 6px;">Latest Result</div>
-                        <div class="ai-time">${time}</div>
-                        <div class="ai-result">${(typeof result.formattedOutput === 'object' && result.formattedOutput !== null ? (result.formattedOutput.activityLabel || '') : (result.formattedOutput || '')) || result.modelOutput || 'No result'}</div>
-                    `;
-                } else {
-                    aiLatest.innerHTML = `
-                        <div style="font-weight: bold; margin-bottom: 6px;">Latest Result</div>
-                        <div class="ai-no-data">No analysis results yet</div>
-                    `;
-                }
-            }
-            
-            // Update history
-            const aiHistory = document.getElementById('aiHistory');
-            if (aiHistory) {
-                if (status.analysisHistory && status.analysisHistory.length > 0) {
-                    const historyCount = status.analysisHistory.length;
-                    // Show all results; container height limits visible to ~4, inner scroll shows the rest
-                    const results = [...status.analysisHistory].reverse(); // latest first
 
-                    let historyHTML = `<div style="font-weight: bold; margin-bottom: 6px;">Recent History (${historyCount})</div>`;
+        // ── Pipeline Panel ──
+        function updatePipelinePanel(s) {
+            // Interval
+            const ci = document.getElementById('captureIntervalVal');
+            const cd = document.getElementById('captureDot');
+            if (s.captureInterval != null) {
+                const maxI = s.captureMaxInterval ?? s.maxInterval ?? '?';
+                ci.textContent = `${s.captureInterval}s → ${maxI}s max`;
+                ci.className = 'sensor-value'; cd.className = 'sensor-dot active';
+            } else { ci.textContent = '—'; ci.className = 'sensor-value dim'; cd.className = 'sensor-dot'; }
 
-                    results.forEach(result => {
-                        // 使用拍摄时间而不是timestamp
-                        const time = result.captureTime ? new Date(result.captureTime).toLocaleTimeString() : '';
-                        const formattedText = (typeof result.formattedOutput === 'object' && result.formattedOutput !== null)
-                            ? (result.formattedOutput.activityLabel || '')
-                            : (result.formattedOutput || '');
-                        const resultText = formattedText || result.modelOutput || 'No result';
-                        
-                        // 检查是否为失败或unknown结果
-                        const isFailedResult = resultText.toLowerCase().includes('failed') || 
-                                             resultText.toLowerCase().includes('unknown') ||
-                                             resultText.toLowerCase() === 'unknown';
-                        
-                        const resultClass = isFailedResult ? 'ai-result ai-result-failed' : 'ai-result';
-                        
-                        historyHTML += `
-                            <div class="ai-history-item">
-                                <div class="ai-time">${time}</div>
-                                <div class="${resultClass}">${resultText}</div>
-                            </div>
-                        `;
-                    });
-                    
-                    aiHistory.innerHTML = historyHTML;
-                } else {
-                    aiHistory.innerHTML = `
-                        <div style="font-weight: bold; margin-bottom: 6px;">Recent History</div>
-                        <div class="ai-no-data">Loading history...</div>
-                    `;
+            // VAD
+            const vv = document.getElementById('vadVal'), vd = document.getElementById('vadDot');
+            if (s.vadState != null) {
+                vv.textContent = s.vadState; vv.className = 'sensor-value';
+                vd.className = 'sensor-dot' + (s.vadState === 'speech' ? ' speech' : ' active');
+                if (s.vadRMS != null) {
+                    pushVADPoint(s.vadRMS, s.vadState === 'speech', s.vadThreshold ?? 0.02);
+                    if (vadChartOpen) drawVADChart();
                 }
-            }
-        }
-        
-        // Track if user is editing to prevent overwriting
-        let isEditingInterval = false;
-        let isEditingPrompt = false;
-        
-        // Settings Panel Functions
-        function updateSettingsPanel(status) {
-            // Update API Key status
-            if (status.hasApiKey !== undefined) {
-                const apiKeyDisplay = document.getElementById('apiKeyDisplay');
-                const apiKeyStatus = document.getElementById('apiKeyStatus');
-                const testBtn = document.getElementById('testApiBtn');
-                
-                if (status.hasApiKey) {
-                    const keyLength = status.apiKeyLength || 16;
-                    apiKeyDisplay.placeholder = '•'.repeat(Math.min(keyLength, 20));
-                    
-                    // Check if there's a test status from mobile app
-                    if (status.apiKeyTestStatus && status.apiKeyTestTimestamp) {
-                        const testTime = new Date(status.apiKeyTestTimestamp * 1000);
-                        const timeStr = testTime.toLocaleTimeString();
-                        
-                        switch (status.apiKeyTestStatus) {
-                            case 'testing':
-                                apiKeyStatus.textContent = `Testing API Key... (${timeStr})`;
-                                apiKeyStatus.style.color = '#FFA500';
-                                testBtn.disabled = true;
-                                testBtn.textContent = 'Testing...';
-                                break;
-                            case 'success':
-                                apiKeyStatus.textContent = `✓ API Key test successful (${timeStr})`;
-                                apiKeyStatus.style.color = '#4CAF50';
-                                testBtn.disabled = false;
-                                testBtn.textContent = 'Test';
-                                break;
-                            case 'failed':
-                                const errorMsg = status.apiKeyTestMessage || 'Unknown error';
-                                apiKeyStatus.textContent = `✗ API Key test failed: ${errorMsg} (${timeStr})`;
-                                apiKeyStatus.style.color = '#f44336';
-                                testBtn.disabled = false;
-                                testBtn.textContent = 'Test';
-                                break;
-                            default:
-                                apiKeyStatus.textContent = `API Key configured (${keyLength} characters)`;
-                                apiKeyStatus.style.color = '#4CAF50';
-                                testBtn.disabled = false;
-                                testBtn.textContent = 'Test';
-                        }
-                    } else {
-                        apiKeyStatus.textContent = `API Key configured (${keyLength} characters)`;
-                        apiKeyStatus.style.color = '#4CAF50';
-                        testBtn.disabled = false;
-                        testBtn.textContent = 'Test';
-                    }
-                } else {
-                    apiKeyDisplay.placeholder = 'No API Key configured';
-                    apiKeyStatus.textContent = 'No API Key found. Please configure in mobile app.';
-                    apiKeyStatus.style.color = '#f44336';
-                    testBtn.disabled = true;
-                    testBtn.textContent = 'Test';
+            } else { vv.textContent = '—'; vv.className = 'sensor-value dim'; vd.className = 'sensor-dot'; }
+
+            // Noise
+            const nv = document.getElementById('noiseVal'), nd = document.getElementById('noiseDot');
+            if (s.noiseLevel != null) {
+                nv.textContent = s.noiseLevel; nv.className = 'sensor-value';
+                nd.className = 'sensor-dot' + (s.noiseLevel === 'loud' ? ' speech' : s.noiseLevel === 'moderate' ? ' active' : '');
+                if (s.noiseDB != null) {
+                    pushNoisePoint(s.noiseDB, s.noiseQuietDB ?? -50, s.noiseLoudDB ?? -30);
+                    if (noiseChartOpen) drawNoiseChart();
                 }
-            }
-            
-            // Update interval only if user is not currently editing
-            const intervalInput = document.getElementById('intervalInput');
-            if (status.aiAnalysisInterval !== undefined && !isEditingInterval) {
-                // Display as integer, rounding the float value
-                intervalInput.value = Math.round(status.aiAnalysisInterval);
-            }
-            
-            // Always sync prompt from server on every refresh
-            const promptInput = document.getElementById('promptInput');
-            if (status.currentPrompt !== undefined) {
-                promptInput.value = status.currentPrompt;
-            }
+            } else { nv.textContent = '—'; nv.className = 'sensor-value dim'; nd.className = 'sensor-dot'; }
+
+            // IMU
+            const iv = document.getElementById('imuVal'), id_ = document.getElementById('imuDot');
+            const imuState = s.imu_tags?.motion_state ?? s.imuState ?? null;
+            const imuVariance  = s.imu_tags?.variance ?? null;
+            const imuElapsed   = s.imu_tags?.sustained_elapsed ?? 0;
+            const imuThreshold = s.imu_tags?.sustained_threshold ?? 6;
+            if (imuState != null) {
+                const moving = imuState === 'sustained_motion';
+                iv.textContent = imuState.replace('_', ' '); iv.className = 'sensor-value';
+                id_.className = 'sensor-dot' + (moving ? ' moving' : ' active');
+                if (imuVariance != null) {
+                    if (s.varianceLowThreshold  != null) IMU_LOW_THR  = s.varianceLowThreshold;
+                    if (s.varianceHighThreshold != null) IMU_HIGH_THR = s.varianceHighThreshold;
+                    pushIMUPoint(imuVariance, imuState, imuElapsed, imuThreshold);
+                    if (imuChartOpen) drawIMUChart();
+                }
+            } else { iv.textContent = '—'; iv.className = 'sensor-value dim'; id_.className = 'sensor-dot'; }
+
+            // Buffer
+            const bv = document.getElementById('bufferVal');
+            if (s.batchBufferCount != null) { bv.textContent = `${s.batchBufferCount} frames`; bv.className = 'sensor-value'; }
+            else { bv.textContent = '—'; bv.className = 'sensor-value dim'; }
+
+            // Last batch
+            const lb = document.getElementById('lastBatchVal');
+            if (s.lastBatchTime) {
+                lb.textContent = `${new Date(s.lastBatchTime * 1000).toLocaleTimeString()}  ·  ${s.lastBatchTrigger || ''}`;
+                lb.className = 'sensor-value';
+            } else { lb.textContent = '—'; lb.className = 'sensor-value dim'; }
+
+            // Latest batch output
+            const lo = document.getElementById('latestBatchOutput');
+            if (s.latestBatchOutput) { lo.textContent = s.latestBatchOutput; lo.className = 'batch-output'; }
+            else { lo.textContent = 'No batches yet'; lo.className = 'batch-output empty'; }
+
+            // Batch history
+            const hl = document.getElementById('batchHistoryList');
+            if (s.batchHistory && s.batchHistory.length > 0) {
+                hl.innerHTML = [...s.batchHistory].reverse().map(b => {
+                    const time = b.time ? new Date(b.time).toLocaleTimeString() : '';
+                    const trigger = b.trigger || '';
+                    const tc = trigger.toLowerCase().includes('vad')    ? 'vad'    :
+                               trigger.toLowerCase().includes('imu')    ? 'imu'    :
+                               trigger.toLowerCase().includes('window') ? 'window' : '';
+                    const frames = b.keyFrames != null ? `${b.keyFrames} key frames` : '';
+                    return `<div class="batch-item" onclick="this.classList.toggle('expanded')">
+                        <div class="batch-item-header">
+                            <span class="batch-item-time">${time}</span>
+                            <span class="batch-trigger-tag ${tc}">${trigger}</span>
+                        </div>
+                        <div class="batch-item-text">${b.output || 'No output'}</div>
+                        ${frames ? `<div class="batch-frames">${frames}</div>` : ''}
+                    </div>`;
+                }).join('');
+            } else { hl.innerHTML = '<div class="no-data">No history yet</div>'; }
         }
-        
+
+        // ── Layer 1 Frame JSON ──
+        function syntaxHighlight(obj) {
+            const raw = JSON.stringify(obj, null, 2);
+            return raw.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
+                if (/^"/.test(m)) {
+                    if (/:$/.test(m)) return `<span class="json-key">${m}</span>`;
+                    return `<span class="json-str">${m}</span>`;
+                }
+                if (/true|false/.test(m)) return `<span class="json-bool">${m}</span>`;
+                if (/null/.test(m))       return `<span class="json-null">${m}</span>`;
+                return `<span class="json-num">${m}</span>`;
+            });
+        }
+
+        function updateFrameJson(s) {
+            const el = document.getElementById('frameJsonBlock');
+            // Build from whichever status fields are present
+            const imuMotionState = s.imu_tags?.motion_state ?? s.imuState ?? null;
+            const hasAny = s.captureInterval != null || s.latestFrameFilename != null ||
+                           s.vadState != null || s.noiseLevel != null || imuMotionState != null;
+            if (!hasAny) {
+                el.className = 'frame-json-block dim';
+                el.innerHTML = '— pipeline not active —';
+                return;
+            }
+            const frameObj = {
+                timestamp:       s.lastFrameTimestamp   ?? null,
+                image_filename:  s.latestFrameFilename  ?? null,
+                audio_tags: {
+                    noise_level:     s.noiseLevel      ?? null,
+                    speech_detected: s.vadState != null ? (s.vadState === 'speech') : null,
+                    ...(s.transcript ? { transcript: s.transcript } : {})
+                },
+                imu_tags: {
+                    motion_state: imuMotionState
+                },
+                current_interval: s.captureInterval ?? null
+            };
+            el.className = 'frame-json-block';
+            el.innerHTML = syntaxHighlight(frameObj);
+        }
+
+        // ── Settings Panel ──
+        function selectSegment(groupId, value, el) {
+            document.querySelectorAll(`#${groupId} .segment-option`).forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+        function getSegmentValue(groupId) {
+            const a = document.querySelector(`#${groupId} .segment-option.active`);
+            return a ? a.dataset.value : null;
+        }
+        function syncSegment(groupId, value) {
+            document.querySelectorAll(`#${groupId} .segment-option`).forEach(b =>
+                b.classList.toggle('active', b.dataset.value === value));
+        }
+
+        function saveConfig(endpoint, data, btnEl) {
+            const orig = btnEl.textContent;
+            btnEl.disabled = true; btnEl.textContent = 'Saving...';
+            fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) })
+            .then(r => r.json())
+            .then(d => {
+                btnEl.textContent = d.success ? 'Saved!' : 'Error';
+                btnEl.style.background = d.success ? '#4CAF50' : '#f44336';
+            }).catch(() => {
+                btnEl.textContent = 'Error'; btnEl.style.background = '#f44336';
+            }).finally(() => {
+                setTimeout(() => { btnEl.textContent = orig; btnEl.style.background = ''; btnEl.disabled = false; }, 1500);
+            });
+        }
+
+        function buildRampSequence(min, max, ratio) {
+            if (min >= max || ratio <= 1) return [min, max];
+            const steps = [min];
+            let cur = min;
+            while (steps.length < 30) {
+                cur *= ratio;
+                const next = Math.round(cur);
+                if (next >= max) { steps.push(max); break; }
+                if (next === steps[steps.length - 1]) { steps.push(max); break; }
+                steps.push(next);
+            }
+            return steps;
+        }
+
+        let _ladderCurrentInterval = null;
+        function updateRampLadder(currentInterval) {
+            if (currentInterval !== undefined) _ladderCurrentInterval = currentInterval;
+            const min   = parseInt(document.getElementById('minIntervalInput').value)   || 3;
+            const max   = parseInt(document.getElementById('maxIntervalInput').value)   || 20;
+            const ratio = parseFloat(document.getElementById('rampRatioSlider').value) || 1.67;
+            const steps = buildRampSequence(min, max, ratio);
+            const cur   = _ladderCurrentInterval;
+            document.getElementById('rampLadder').innerHTML = steps.map((s, i) =>
+                (i > 0 ? '<span class="ramp-arrow">›</span>' : '') +
+                `<span class="ramp-step${cur === s ? ' active' : ''}">${s}s</span>`
+            ).join('');
+        }
+
+        function onRampRatioChange(val) {
+            document.getElementById('rampRatioDisplay').textContent = parseFloat(val).toFixed(2);
+            updateRampLadder();
+        }
+
+        function saveCaptureConfig(e) {
+            saveConfig('/update-capture-config', {
+                minInterval: parseInt(document.getElementById('minIntervalInput').value),
+                maxInterval: parseInt(document.getElementById('maxIntervalInput').value),
+                rampRatio:   parseFloat(document.getElementById('rampRatioSlider').value)
+            }, e.target);
+        }
+        function saveAudioConfig(e) {
+            saveConfig('/update-audio-config', {
+                vadSensitivity:       getSegmentValue('vadSensitivity'),
+                transcriptionEnabled: document.getElementById('transcriptionToggle').classList.contains('active')
+            }, e.target);
+        }
+        function saveIMUConfig(e) {
+            saveConfig('/update-imu-config', {
+                sustainedMotionThreshold: parseInt(document.getElementById('sustainedMotionInput').value),
+                varianceLow:  parseFloat(document.getElementById('varianceLowInput').value),
+                varianceHigh: parseFloat(document.getElementById('varianceHighInput').value)
+            }, e.target);
+        }
+        function saveBatchConfig(e) {
+            saveConfig('/update-batch-config', {
+                firstBatchWindow:   parseInt(document.getElementById('firstBatchWindowInput').value),
+                maxWindow:          parseInt(document.getElementById('maxWindowInput').value) * 60,
+                ssimThreshold:      parseFloat(document.getElementById('ssimInput').value),
+                ssimDedupThreshold: parseFloat(document.getElementById('ssimDedupInput').value),
+                kDensityPerMin:     parseFloat(document.getElementById('kDensityInput').value),
+                kMin:               parseInt(document.getElementById('kMinInput').value),
+                kMax:               parseInt(document.getElementById('kMaxInput').value),
+                scoreThreshold:     parseFloat(document.getElementById('scoreThresholdInput').value)
+            }, e.target);
+        }
+        function saveOutboxConfig(e) {
+            saveConfig('/update-outbox-config', {
+                endpoint: document.getElementById('outboxEndpointInput').value.trim()
+            }, e.target);
+        }
+        function saveInferenceConfig(e) {
+            saveConfig('/update-inference-config', {
+                provider: getSegmentValue('vlmProvider')
+            }, e.target);
+        }
+
         function testApiKey() {
-            const testBtn = document.getElementById('testApiBtn');
-            const originalText = testBtn.textContent;
-            
-            testBtn.disabled = true;
-            testBtn.textContent = 'Testing...';
-            
-            fetch('/test-api-key')
-                .then(response => response.json())
-                .then(data => {
-                    const apiKeyStatus = document.getElementById('apiKeyStatus');
-                    if (data.success) {
-                        apiKeyStatus.textContent = 'API Key test successful!';
-                        apiKeyStatus.style.color = '#4CAF50';
-                    } else {
-                        apiKeyStatus.textContent = `API Key test failed: ${data.error || 'Unknown error'}`;
-                        apiKeyStatus.style.color = '#f44336';
-                    }
-                })
-                .catch(error => {
-                    const apiKeyStatus = document.getElementById('apiKeyStatus');
-                    apiKeyStatus.textContent = `Test failed: ${error.message}`;
-                    apiKeyStatus.style.color = '#f44336';
-                })
-                .finally(() => {
-                    testBtn.disabled = false;
-                    testBtn.textContent = originalText;
-                });
+            const btn = document.getElementById('testApiBtn'), orig = btn.textContent;
+            btn.disabled = true; btn.textContent = 'Testing...';
+            fetch('/test-api-key').then(r => r.json()).then(d => {
+                const el = document.getElementById('apiKeyStatus');
+                el.textContent = d.success ? '✓ API key valid' : `✗ ${d.error || 'Failed'}`;
+                el.style.color = d.success ? '#4CAF50' : '#f44336';
+            }).catch(() => {
+                const el = document.getElementById('apiKeyStatus');
+                el.textContent = '✗ Request failed'; el.style.color = '#f44336';
+            }).finally(() => { btn.disabled = false; btn.textContent = orig; });
         }
-        
-        function saveInterval() {
-            const interval = document.getElementById('intervalInput').value;
-            const saveBtn = event.target;
-            const originalText = saveBtn.textContent;
-            
-            saveBtn.disabled = true;
-            saveBtn.textContent = 'Saving...';
-            
-            fetch('/update-interval', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ interval: parseInt(interval) })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    saveBtn.textContent = 'Saved!';
-                    saveBtn.style.background = '#4CAF50';
-                    isEditingInterval = false; // Reset editing state
-                    // Reflect saved value immediately to avoid flicker
-                    const intervalInput = document.getElementById('intervalInput');
-                    intervalInput.value = parseInt(interval);
-                    setTimeout(() => {
-                        saveBtn.textContent = originalText;
-                        saveBtn.style.background = '';
-                        saveBtn.disabled = false;
-                    }, 1500);
-                } else {
-                    console.error('Failed to update interval:', data.error);
-                    saveBtn.textContent = 'Error';
-                    saveBtn.style.background = '#f44336';
-                    setTimeout(() => {
-                        saveBtn.textContent = originalText;
-                        saveBtn.style.background = '';
-                        saveBtn.disabled = false;
-                    }, 1500);
+
+        function updateSettingsPanel(s) {
+            // API key
+            const statusEl = document.getElementById('apiKeyStatus');
+            const displayEl = document.getElementById('apiKeyDisplay');
+            const testBtn   = document.getElementById('testApiBtn');
+            if (s.hasApiKey) {
+                displayEl.placeholder = '•'.repeat(Math.min(s.apiKeyLength || 16, 20));
+                if (!statusEl.textContent.startsWith('✓') && !statusEl.textContent.startsWith('✗')) {
+                    statusEl.textContent = `Configured (${s.apiKeyLength || '?'} chars)`;
+                    statusEl.style.color = '#4CAF50';
                 }
-            })
-            .catch(error => {
-                console.error('Error updating interval:', error);
-                saveBtn.textContent = 'Error';
-                saveBtn.style.background = '#f44336';
-                setTimeout(() => {
-                    saveBtn.textContent = originalText;
-                    saveBtn.style.background = '';
-                    saveBtn.disabled = false;
-                }, 1500);
-            });
+                testBtn.disabled = false;
+            } else {
+                displayEl.placeholder = 'Set in mobile app';
+                statusEl.textContent = 'No API key found'; statusEl.style.color = '#f44336';
+                testBtn.disabled = true;
+            }
+            // Sync config (skip if input is focused)
+            const active = document.activeElement;
+            const minEl = document.getElementById('minIntervalInput');
+            const maxEl = document.getElementById('maxIntervalInput');
+            const smEl  = document.getElementById('sustainedMotionInput');
+            const vlEl  = document.getElementById('varianceLowInput');
+            const vhEl  = document.getElementById('varianceHighInput');
+            const ssEl  = document.getElementById('ssimInput');
+            const sdEl  = document.getElementById('ssimDedupInput');
+            const kdEl  = document.getElementById('kDensityInput');
+            const kmEl  = document.getElementById('kMinInput');
+            const kxEl  = document.getElementById('kMaxInput');
+            const stEl  = document.getElementById('scoreThresholdInput');
+            if (s.captureMinInterval != null && active !== minEl) minEl.value = s.captureMinInterval;
+            if (s.captureMaxInterval != null && active !== maxEl) maxEl.value = s.captureMaxInterval;
+            const sliderEl = document.getElementById('rampRatioSlider');
+            if (s.rampRatio != null && active !== sliderEl) {
+                sliderEl.value = s.rampRatio;
+                document.getElementById('rampRatioDisplay').textContent = s.rampRatio.toFixed(2);
+            }
+            updateRampLadder(s.captureInterval ?? _ladderCurrentInterval);
+            if (s.vadSensitivity)    syncSegment('vadSensitivity', s.vadSensitivity);
+            if (s.transcriptionEnabled != null) {
+                document.getElementById('transcriptionToggle').classList.toggle('active', s.transcriptionEnabled);
+            }
+            if (s.sustainedMotionThreshold != null && active !== smEl) smEl.value = s.sustainedMotionThreshold;
+            if (s.varianceLowThreshold  != null && active !== vlEl) vlEl.value = s.varianceLowThreshold;
+            if (s.varianceHighThreshold != null && active !== vhEl) vhEl.value = s.varianceHighThreshold;
+            const fbwEl = document.getElementById('firstBatchWindowInput');
+            if (s.firstBatchWindow != null && active !== fbwEl) fbwEl.value = s.firstBatchWindow;
+            const mwEl = document.getElementById('maxWindowInput');
+            if (s.batchMaxWindow != null && active !== mwEl) mwEl.value = Math.round(s.batchMaxWindow / 60);
+            if (s.ssimThreshold      != null && active !== ssEl) ssEl.value = s.ssimThreshold;
+            if (s.ssimDedupThreshold != null && active !== sdEl) sdEl.value = s.ssimDedupThreshold;
+            if (s.kDensityPerMin     != null && active !== kdEl) kdEl.value = s.kDensityPerMin;
+            if (s.kMin               != null && active !== kmEl) kmEl.value = s.kMin;
+            if (s.kMax               != null && active !== kxEl) kxEl.value = s.kMax;
+            if (s.scoreThreshold     != null && active !== stEl) stEl.value = s.scoreThreshold;
+            if (s.vlmProvider) syncSegment('vlmProvider', s.vlmProvider);
+            // Outbox
+            const epEl = document.getElementById('outboxEndpointInput');
+            if (s.outboxEndpoint != null && active !== epEl) epEl.value = s.outboxEndpoint;
+            const outboxStatusEl = document.getElementById('outboxStatus');
+            if (outboxStatusEl) {
+                const status = s.outboxLastUploadStatus ?? 'idle';
+                const qSize  = s.outboxQueueSize ?? 0;
+                const fails  = s.outboxFailureCount ?? 0;
+                let txt = status === 'idle' ? 'No upload configured' : status;
+                if (qSize > 0) txt += ` · ${qSize} queued`;
+                if (fails > 0) txt += ` · ${fails} failure(s)`;
+                outboxStatusEl.textContent = txt;
+                outboxStatusEl.style.color = status === 'ok' ? '#4CAF50' : status === 'idle' ? '#888' : '#f44336';
+            }
         }
-        
-        function savePrompt() {
-            const prompt = document.getElementById('promptInput').value;
-            const saveBtn = event.target;
-            const originalText = saveBtn.textContent;
-            
-            saveBtn.disabled = true;
-            saveBtn.textContent = 'Saving...';
-            
-            fetch('/update-prompt', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ prompt: prompt })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    saveBtn.textContent = 'Saved!';
-                    saveBtn.style.background = '#4CAF50';
-                    isEditingPrompt = false; // Reset editing state
-                    // Reflect saved value immediately
-                    const promptInput = document.getElementById('promptInput');
-                    promptInput.value = prompt;
-                    setTimeout(() => {
-                        saveBtn.textContent = originalText;
-                        saveBtn.style.background = '';
-                        saveBtn.disabled = false;
-                    }, 1500);
+
+        // ── Main Refresh ──
+        async function refresh() {
+            try {
+                const j = await fetch('/status').then(r => r.json());
+                updateVideoOverlay(j);
+                updateButtonStates(j);
+                updateStatusBar(j);
+                updatePipelinePanel(j);
+                updateFrameJson(j);
+                updateSettingsPanel(j);
+            } catch(e) { console.log(e); }
+        }
+
+        // ── IMU Real-Time Chart ──
+        let IMU_LOW_THR  = 0.006;
+        let IMU_HIGH_THR = 0.012;
+        const IMU_WINDOW   = 60;   // seconds of history to show
+        const POLL_MS      = 1500; // matches setInterval below
+
+        let imuChartOpen = false;
+        let imuPoints = [];        // { t: Date, v: number, moving: boolean }
+
+        function toggleIMUMonitor() {
+            imuChartOpen = !imuChartOpen;
+            document.getElementById('imuMonitorPanel').classList.toggle('open', imuChartOpen);
+            document.getElementById('imuToggleBtn').classList.toggle('open', imuChartOpen);
+            if (imuChartOpen) drawIMUChart();
+        }
+
+        function pushIMUPoint(variance, motionState, elapsed, threshold) {
+            const moving = motionState === 'sustained_motion';
+            imuPoints.push({ t: Date.now(), v: variance, moving });
+            // trim to window
+            const cutoff = Date.now() - IMU_WINDOW * 1000;
+            while (imuPoints.length > 1 && imuPoints[0].t < cutoff) imuPoints.shift();
+            // update sustained-motion timer bar
+            updateSustainedBar(elapsed ?? 0, threshold ?? IMU_WINDOW, moving);
+        }
+
+        function updateSustainedBar(elapsed, threshold, isMotion) {
+            const fill  = document.getElementById('imuSustainedFill');
+            const label = document.getElementById('imuSustainedLabel');
+            if (!fill || !label) return;
+            const pct = threshold > 0 ? Math.min(elapsed / threshold * 100, 100) : 0;
+            fill.style.width = pct + '%';
+            fill.classList.toggle('charging', elapsed > 0 && !isMotion);
+            fill.classList.toggle('full',     isMotion);
+            const eStr = elapsed.toFixed(1);
+            const tStr = threshold.toFixed(0);
+            label.textContent = `sustained  ${eStr}s / ${tStr}s`;
+        }
+
+        function drawIMUChart() {
+            const canvas = document.getElementById('imuChart');
+            if (!canvas) return;
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width  = rect.width  * dpr;
+            canvas.height = rect.height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            const W = rect.width, H = rect.height;
+
+            const PAD = { top: 8, right: 8, bottom: 16, left: 38 };
+            const cw = W - PAD.left - PAD.right;
+            const ch = H - PAD.top  - PAD.bottom;
+
+            // background
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, W, H);
+
+            if (imuPoints.length === 0) {
+                ctx.fillStyle = '#333';
+                ctx.font = '9px Menlo, monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('no data', W / 2, H / 2);
+                return;
+            }
+
+            // y scale
+            const maxV = Math.max(...imuPoints.map(p => p.v), IMU_HIGH_THR * 1.6);
+            const yScale = v => PAD.top + ch * (1 - Math.min(v / maxV, 1));
+
+            // x scale (last IMU_WINDOW seconds)
+            const now = Date.now();
+            const xScale = t => PAD.left + cw * Math.max(0, (t - (now - IMU_WINDOW * 1000)) / (IMU_WINDOW * 1000));
+
+            // grid lines (horizontal at 0 and maxV)
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 0.5;
+            for (let frac of [0.25, 0.5, 0.75]) {
+                const y = PAD.top + ch * (1 - frac);
+                ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cw, y); ctx.stroke();
+            }
+
+            // threshold lines
+            const drawThr = (val, color, label) => {
+                const y = yScale(val);
+                if (y < PAD.top || y > PAD.top + ch) return;
+                ctx.save();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cw, y); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = color;
+                ctx.font = '8px Menlo, monospace';
+                ctx.textAlign = 'left';
+                ctx.fillText(label, PAD.left + 2, y - 2);
+                ctx.restore();
+            };
+            drawThr(IMU_LOW_THR,  '#FFA726', `low ${IMU_LOW_THR}`);
+            drawThr(IMU_HIGH_THR, '#f44336', `high ${IMU_HIGH_THR}`);
+
+            // variance fill + line (split by moving state for colour)
+            const drawSegment = (pts, color) => {
+                if (pts.length < 2) return;
+                ctx.save();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1.5;
+                ctx.lineJoin = 'round';
+                // fill
+                ctx.beginPath();
+                ctx.moveTo(xScale(pts[0].t), PAD.top + ch);
+                pts.forEach(p => ctx.lineTo(xScale(p.t), yScale(p.v)));
+                ctx.lineTo(xScale(pts[pts.length - 1].t), PAD.top + ch);
+                ctx.closePath();
+                ctx.fillStyle = color.replace(')', ', 0.12)').replace('rgb', 'rgba');
+                ctx.fill();
+                // line
+                ctx.beginPath();
+                pts.forEach((p, i) => i === 0 ? ctx.moveTo(xScale(p.t), yScale(p.v)) : ctx.lineTo(xScale(p.t), yScale(p.v)));
+                ctx.stroke();
+                ctx.restore();
+            };
+
+            // group consecutive points by moving state
+            let seg = [imuPoints[0]];
+            for (let i = 1; i < imuPoints.length; i++) {
+                if (imuPoints[i].moving === seg[0].moving) {
+                    seg.push(imuPoints[i]);
                 } else {
-                    console.error('Failed to update prompt:', data.error);
-                    saveBtn.textContent = 'Error';
-                    saveBtn.style.background = '#f44336';
-                    setTimeout(() => {
-                        saveBtn.textContent = originalText;
-                        saveBtn.style.background = '';
-                        saveBtn.disabled = false;
-                    }, 1500);
+                    drawSegment(seg, seg[0].moving ? '#42A5F5' : '#546E7A');
+                    seg = [imuPoints[i - 1], imuPoints[i]]; // bridge gap
                 }
-            })
-            .catch(error => {
-                console.error('Error updating prompt:', error);
-                saveBtn.textContent = 'Error';
-                saveBtn.style.background = '#f44336';
-                setTimeout(() => {
-                    saveBtn.textContent = originalText;
-                    saveBtn.style.background = '';
-                    saveBtn.disabled = false;
-                }, 1500);
-            });
+            }
+            drawSegment(seg, seg[0].moving ? '#42A5F5' : '#546E7A');
+
+            // y-axis labels
+            ctx.fillStyle = '#444';
+            ctx.font = '8px Menlo, monospace';
+            ctx.textAlign = 'right';
+            for (let frac of [0, 0.5, 1]) {
+                const v = maxV * frac;
+                const y = yScale(v);
+                ctx.fillText(v < 0.001 ? '0' : v.toFixed(3), PAD.left - 3, y + 3);
+            }
+
+            // x-axis time labels
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#333';
+            for (let s of [0, 15, 30, 45, 60]) {
+                const t = now - (IMU_WINDOW - s) * 1000;
+                const x = xScale(t);
+                ctx.fillText(`-${IMU_WINDOW - s}s`, x, H - 4);
+            }
         }
-        
-        function updateInterval() {
-            const interval = document.getElementById('intervalInput').value;
-            fetch('/update-interval', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ interval: parseInt(interval) })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('Interval updated successfully');
-                } else {
-                    console.error('Failed to update interval:', data.error);
+
+        // ── VAD Raw RMS Chart ──
+        const AUDIO_WINDOW = 60 * 1000;
+        let vadChartOpen = false;
+        let vadPoints = [];  // { t, rms, speech, threshold }
+        let VAD_THRESHOLD = 0.02;
+
+        function toggleVADMonitor() {
+            vadChartOpen = !vadChartOpen;
+            document.getElementById('vadMonitorPanel').classList.toggle('open', vadChartOpen);
+            document.getElementById('vadToggleBtn').classList.toggle('open', vadChartOpen);
+            if (vadChartOpen) drawVADChart();
+        }
+
+        function pushVADPoint(rms, speech, threshold) {
+            VAD_THRESHOLD = threshold;
+            vadPoints.push({ t: Date.now(), rms, speech });
+            const cutoff = Date.now() - AUDIO_WINDOW;
+            while (vadPoints.length > 1 && vadPoints[0].t < cutoff) vadPoints.shift();
+        }
+
+        function drawVADChart() {
+            const canvas = document.getElementById('vadChart');
+            if (!canvas) return;
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width  = rect.width  * dpr;
+            canvas.height = rect.height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            const W = rect.width, H = rect.height;
+            const PAD = { top: 8, right: 8, bottom: 16, left: 36 };
+            const cw = W - PAD.left - PAD.right;
+            const ch = H - PAD.top - PAD.bottom;
+
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, W, H);
+
+            if (vadPoints.length === 0) {
+                ctx.fillStyle = '#333'; ctx.font = '9px Menlo, monospace'; ctx.textAlign = 'center';
+                ctx.fillText('no data', W / 2, H / 2);
+                return;
+            }
+
+            const now = Date.now();
+            const maxV = Math.max(...vadPoints.map(p => p.rms), VAD_THRESHOLD * 2, 0.001);
+            const yScale = v => PAD.top + ch * (1 - Math.min(v / maxV, 1));
+            const xScale = t => PAD.left + cw * Math.max(0, (t - (now - AUDIO_WINDOW)) / AUDIO_WINDOW);
+
+            // grid
+            ctx.strokeStyle = '#1e1e1e'; ctx.lineWidth = 0.5;
+            for (const f of [0.25, 0.5, 0.75]) {
+                const y = PAD.top + ch * (1 - f);
+                ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cw, y); ctx.stroke();
+            }
+
+            // speech background highlight
+            let inSpeech = false, speechStart = 0;
+            for (let i = 0; i < vadPoints.length; i++) {
+                const pt = vadPoints[i];
+                if (pt.speech && !inSpeech) { inSpeech = true; speechStart = xScale(pt.t); }
+                if (!pt.speech && inSpeech) {
+                    ctx.fillStyle = 'rgba(255,152,0,0.1)';
+                    ctx.fillRect(speechStart, PAD.top, xScale(pt.t) - speechStart, ch);
+                    inSpeech = false;
                 }
-            })
-            .catch(error => {
-                console.error('Error updating interval:', error);
+            }
+            if (inSpeech) {
+                ctx.fillStyle = 'rgba(255,152,0,0.1)';
+                ctx.fillRect(speechStart, PAD.top, PAD.left + cw - speechStart, ch);
+            }
+
+            // threshold line
+            const thrY = yScale(VAD_THRESHOLD);
+            if (thrY >= PAD.top && thrY <= PAD.top + ch) {
+                ctx.save(); ctx.strokeStyle = '#FF9800'; ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath(); ctx.moveTo(PAD.left, thrY); ctx.lineTo(PAD.left + cw, thrY); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#FF9800'; ctx.font = '8px Menlo, monospace'; ctx.textAlign = 'left';
+                ctx.fillText(VAD_THRESHOLD.toFixed(3), PAD.left + 2, thrY - 2);
+                ctx.restore();
+            }
+
+            // RMS line
+            ctx.save(); ctx.strokeStyle = '#42A5F5'; ctx.lineWidth = 1.5; ctx.lineJoin = 'round';
+            ctx.beginPath();
+            vadPoints.forEach((p, i) => {
+                const x = xScale(p.t), y = yScale(p.rms);
+                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
             });
+            ctx.stroke(); ctx.restore();
+
+            // y-axis labels
+            ctx.fillStyle = '#444'; ctx.font = '8px Menlo, monospace'; ctx.textAlign = 'right';
+            for (const f of [0, 0.5, 1]) {
+                const v = maxV * f;
+                ctx.fillText(v.toFixed(3), PAD.left - 3, yScale(v) + 3);
+            }
+
+            // x-axis labels
+            ctx.fillStyle = '#333'; ctx.textAlign = 'center';
+            for (const s of [0, 20, 40, 60]) {
+                ctx.fillText(`-${60 - s}s`, xScale(now - (60 - s) * 1000), H - 3);
+            }
         }
-        
-        function updatePrompt() {
-            const prompt = document.getElementById('promptInput').value;
-            fetch('/update-prompt', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ prompt: prompt })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('Prompt updated successfully');
-                } else {
-                    console.error('Failed to update prompt:', data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error updating prompt:', error);
-            });
+
+        // ── Noise Raw dB Chart ──
+        let noiseChartOpen = false;
+        let noisePoints = [];  // { t, db, quietThr, loudThr }
+        let NOISE_QUIET_THR = -50, NOISE_LOUD_THR = -30;
+
+        function toggleNoiseMonitor() {
+            noiseChartOpen = !noiseChartOpen;
+            document.getElementById('noiseMonitorPanel').classList.toggle('open', noiseChartOpen);
+            document.getElementById('noiseToggleBtn').classList.toggle('open', noiseChartOpen);
+            if (noiseChartOpen) drawNoiseChart();
         }
-        
-        function resetPrompt() {
-            const resetBtn = event.target;
-            const originalText = resetBtn.textContent;
-            
-            resetBtn.disabled = true;
-            resetBtn.textContent = 'Resetting...';
-            
-            fetch('/reset-prompt', {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.defaultPrompt) {
-                    document.getElementById('promptInput').value = data.defaultPrompt;
-                    resetBtn.textContent = 'Reset!';
-                    resetBtn.style.background = '#4CAF50';
-                    isEditingPrompt = false; // Reset editing state
-                    setTimeout(() => {
-                        resetBtn.textContent = originalText;
-                        resetBtn.style.background = '';
-                        resetBtn.disabled = false;
-                    }, 1500);
-                } else {
-                    console.error('Failed to reset prompt:', data.error);
-                    resetBtn.textContent = 'Error';
-                    resetBtn.style.background = '#f44336';
-                    setTimeout(() => {
-                        resetBtn.textContent = originalText;
-                        resetBtn.style.background = '';
-                        resetBtn.disabled = false;
-                    }, 1500);
-                }
-            })
-            .catch(error => {
-                console.error('Error resetting prompt:', error);
-                resetBtn.textContent = 'Error';
-                resetBtn.style.background = '#f44336';
-                setTimeout(() => {
-                    resetBtn.textContent = originalText;
-                    resetBtn.style.background = '';
-                    resetBtn.disabled = false;
-                }, 1500);
-            });
+
+        function pushNoisePoint(db, quietThr, loudThr) {
+            NOISE_QUIET_THR = quietThr; NOISE_LOUD_THR = loudThr;
+            noisePoints.push({ t: Date.now(), db });
+            const cutoff = Date.now() - AUDIO_WINDOW;
+            while (noisePoints.length > 1 && noisePoints[0].t < cutoff) noisePoints.shift();
         }
-        
-        // Add event listeners to track editing state
-        document.addEventListener('DOMContentLoaded', function() {
-            const intervalInput = document.getElementById('intervalInput');
-            const promptInput = document.getElementById('promptInput');
-            
-            // Track interval input editing
-            intervalInput.addEventListener('focus', () => { isEditingInterval = true; });
-            intervalInput.addEventListener('blur', () => { 
-                setTimeout(() => { isEditingInterval = false; }, 100); 
+
+        function drawNoiseChart() {
+            const canvas = document.getElementById('noiseChart');
+            if (!canvas) return;
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width  = rect.width  * dpr;
+            canvas.height = rect.height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            const W = rect.width, H = rect.height;
+            const PAD = { top: 8, right: 8, bottom: 16, left: 36 };
+            const cw = W - PAD.left - PAD.right;
+            const ch = H - PAD.top - PAD.bottom;
+
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, W, H);
+
+            if (noisePoints.length === 0) {
+                ctx.fillStyle = '#333'; ctx.font = '9px Menlo, monospace'; ctx.textAlign = 'center';
+                ctx.fillText('no data', W / 2, H / 2);
+                return;
+            }
+
+            const now = Date.now();
+            const minDB = Math.min(...noisePoints.map(p => p.db), NOISE_QUIET_THR - 10, -100);
+            const maxDB = Math.max(...noisePoints.map(p => p.db), NOISE_LOUD_THR + 10, -20);
+            const yScale = db => PAD.top + ch * (1 - (db - minDB) / (maxDB - minDB));
+            const xScale = t => PAD.left + cw * Math.max(0, (t - (now - AUDIO_WINDOW)) / AUDIO_WINDOW);
+
+            // grid
+            ctx.strokeStyle = '#1e1e1e'; ctx.lineWidth = 0.5;
+            for (const f of [0.25, 0.5, 0.75]) {
+                const y = PAD.top + ch * (1 - f);
+                ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cw, y); ctx.stroke();
+            }
+
+            // threshold lines
+            const drawThr = (db, color, label) => {
+                const y = yScale(db);
+                if (y < PAD.top || y > PAD.top + ch) return;
+                ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cw, y); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = color; ctx.font = '8px Menlo, monospace'; ctx.textAlign = 'left';
+                ctx.fillText(label, PAD.left + 2, y - 2);
+                ctx.restore();
+            };
+            drawThr(NOISE_QUIET_THR, '#FFA726', `quiet ${NOISE_QUIET_THR}dB`);
+            drawThr(NOISE_LOUD_THR,  '#f44336', `loud ${NOISE_LOUD_THR}dB`);
+
+            // dB fill + line
+            ctx.save(); ctx.strokeStyle = '#4CAF50'; ctx.lineWidth = 1.5; ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(xScale(noisePoints[0].t), PAD.top + ch);
+            noisePoints.forEach(p => ctx.lineTo(xScale(p.t), yScale(p.db)));
+            ctx.lineTo(xScale(noisePoints[noisePoints.length - 1].t), PAD.top + ch);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(76,175,80,0.1)'; ctx.fill();
+            ctx.beginPath();
+            noisePoints.forEach((p, i) => {
+                const x = xScale(p.t), y = yScale(p.db);
+                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
             });
-            intervalInput.addEventListener('input', () => { isEditingInterval = true; });
-            
-            // Track prompt input editing
-            promptInput.addEventListener('focus', () => { isEditingPrompt = true; });
-            promptInput.addEventListener('blur', () => { 
-                setTimeout(() => { isEditingPrompt = false; }, 100); 
-            });
-            promptInput.addEventListener('input', () => { 
-                isEditingPrompt = true;
-            });
-        });
-        
+            ctx.stroke(); ctx.restore();
+
+            // y-axis labels
+            ctx.fillStyle = '#444'; ctx.font = '8px Menlo, monospace'; ctx.textAlign = 'right';
+            for (const f of [0, 0.5, 1]) {
+                const db = minDB + (maxDB - minDB) * f;
+                ctx.fillText(`${db.toFixed(0)}`, PAD.left - 3, yScale(db) + 3);
+            }
+
+            // x-axis labels
+            ctx.fillStyle = '#333'; ctx.textAlign = 'center';
+            for (const s of [0, 20, 40, 60]) {
+                ctx.fillText(`-${60 - s}s`, xScale(now - (60 - s) * 1000), H - 3);
+            }
+        }
+
         setInterval(refresh, 1500); refresh();
     </script>
 </body>

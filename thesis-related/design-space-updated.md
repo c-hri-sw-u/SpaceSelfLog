@@ -166,13 +166,13 @@ Default weights (🧪 all tunable): `w1 = 0.3, w2 = 0.3, w3 = 0.2, w4 = 0.2`. Vi
 
 ### 2.1 Inference Batch
 
-**👉 1:1 mapping with preprocess batch.** Each batch from Layer 1.5 becomes one VLM call. Merging and splitting add complexity that is not justified until failure modes are observed during the experiment.
+👉 **1:1 mapping with preprocess batch.** Each batch from Layer 1.5 becomes one VLM call. Merging and splitting add complexity that is not justified until failure modes are observed during the experiment.
 
-**🧪 Experiment variable:** Log cases where 1:1 produces incoherent summaries. Add merge/split only if needed.
+🧪 **Experiment variable:** Log cases where 1:1 produces incoherent summaries. Add merge/split only if needed.
 
 ### 2.2 VLM Call Design
 
-**🔒 Locked:** Cloud API (Claude or GPT-4V). Local models insufficient for the structured reasoning required.
+🔒 **Locked:** Cloud API (Claude or GPT-4V). Local models insufficient for the structured reasoning required.
 
 #### Batch Prompt
 
@@ -206,7 +206,7 @@ The VLM prompt should:
 3. **Request explicit uncertainty.** "If you cannot determine the activity, say so rather than guessing."
 4. **Constrain output length.** Per-batch: 1 short paragraph (4-6 sentences).
 
-**🧪 Experiment variable:** Prompt wording. Iterate during Phase 0 calibration; frozen during Phase 1 observation. Log which prompt versions produce the most useful memory entries.
+🧪 **Experiment variable:** Prompt wording. Iterate during Phase 0 calibration; frozen during Phase 1 observation. Log which prompt versions produce the most useful memory entries.
 
 ---
 

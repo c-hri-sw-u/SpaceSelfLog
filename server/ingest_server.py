@@ -149,6 +149,9 @@ _DEFAULTS: dict = {
     "prompt":              _DEFAULT_PROMPT,
     "insight_prompt":      _INSIGHT_PROMPT,
     "pattern_prompt":      _DEFAULT_PATTERN_PROMPT,
+    "nightly_hour":        2,
+    "insight_min_batches": _INSIGHT_MIN_BATCHES,
+    "insight_min_minutes": _INSIGHT_MIN_MINUTES,
 }
 
 
@@ -203,6 +206,7 @@ _insight_lock         = threading.Lock()
 _insight_batch_count  = 0               # batches since last insight update
 _insight_last_time: datetime | None = None   # UTC time of last insight update
 _insight_log_offset: dict[str, int] = {}     # date_str -> byte offset already incorporated
+_insight_runs_today: dict[str, int] = {}     # date_str -> successful run count
 
 
 # ---------------------------------------------------------------------------
@@ -249,7 +253,8 @@ def post_config():
     body = request.get_json(force=True, silent=True) or {}
     # Merge into current config; ignore unknown keys
     allowed = {"provider", "api_key", "model", "openclaw_memory_dir", "frames_dir",
-               "prompt", "insight_prompt", "pattern_prompt"}
+               "prompt", "insight_prompt", "pattern_prompt", "nightly_hour",
+               "insight_min_batches", "insight_min_minutes"}
     for k in allowed:
         if k in body:
             _config[k] = body[k]
@@ -630,23 +635,26 @@ def _write_physical_log(batch_id, session_id, batch_created,
 
 def _maybe_update_today_insight(date_str: str) -> None:
     """Increment batch counter; trigger insight update if conditions are met."""
-    global _insight_batch_count, _insight_last_time
+    global _insight_batch_count, _insight_last_time, _insight_runs_today
     with _insight_lock:
         _insight_batch_count += 1
         now = datetime.now(timezone.utc)
+        min_batches = int(_config.get("insight_min_batches", _INSIGHT_MIN_BATCHES))
+        min_minutes = int(_config.get("insight_min_minutes", _INSIGHT_MIN_MINUTES))
         elapsed = (
             (now - _insight_last_time).total_seconds() / 60
             if _insight_last_time else float("inf")
         )
         should_update = (
-            _insight_batch_count >= _INSIGHT_MIN_BATCHES
-            and elapsed >= _INSIGHT_MIN_MINUTES
+            _insight_batch_count >= min_batches
+            and elapsed >= min_minutes
         )
         if not should_update:
             return
         # Reset counters before triggering (so a slow update doesn't double-fire)
         _insight_batch_count = 0
         _insight_last_time   = now
+        _insight_runs_today[date_str] = _insight_runs_today.get(date_str, 0) + 1
 
     # Run outside the lock — this is a slow LLM call
     try:
@@ -806,7 +814,7 @@ def _nightly_scheduler() -> None:
     while True:
         _time.sleep(600)   # check every 10 minutes
         now_local = datetime.now()
-        if now_local.hour != 2:
+        if now_local.hour != int(_config.get("nightly_hour", 2)):
             continue
         # Use yesterday's date — the day that just finished
         from datetime import timedelta
@@ -822,6 +830,31 @@ def _nightly_scheduler() -> None:
 # ---------------------------------------------------------------------------
 
 import re as _re
+
+@app.get("/api/insight/status")
+def get_insight_status():
+    """Return current auto-insight trigger progress and today's run count."""
+    with _insight_lock:
+        now = datetime.now(timezone.utc)
+        min_batches = int(_config.get("insight_min_batches", _INSIGHT_MIN_BATCHES))
+        min_minutes = int(_config.get("insight_min_minutes", _INSIGHT_MIN_MINUTES))
+        batches_since = _insight_batch_count
+        minutes_since = (
+            round((now - _insight_last_time).total_seconds() / 60, 1)
+            if _insight_last_time else None
+        )
+        today = datetime.now().strftime("%Y-%m-%d")
+        runs_today = _insight_runs_today.get(today, 0)
+        last_run_at = _insight_last_time.isoformat() if _insight_last_time else None
+    return jsonify({
+        "runs_today":       runs_today,
+        "batches_since":    batches_since,
+        "min_batches":      min_batches,
+        "minutes_since":    minutes_since,
+        "min_minutes":      min_minutes,
+        "last_run_at":      last_run_at,
+    })
+
 
 @app.get("/api/memory/logs")
 def list_log_dates():

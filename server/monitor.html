@@ -229,6 +229,41 @@
   .card-summary.error { color: var(--red); }
   .card-summary.muted { color: var(--muted); font-style: italic; }
 
+  /* ── Insight status bar ── */
+  #insight-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 11px;
+    color: var(--muted);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  #insight-status .isb-label { font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+  #insight-status .isb-sep   { color: var(--border); }
+  #insight-status .isb-val   { color: var(--text); font-variant-numeric: tabular-nums; }
+  #insight-status .isb-ready { color: var(--green); font-weight: 500; }
+  #insight-status .isb-bar {
+    display: inline-block;
+    width: 40px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    vertical-align: middle;
+    overflow: hidden;
+    margin: 0 2px;
+  }
+  #insight-status .isb-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width .4s;
+  }
+  #insight-status .isb-bar-fill.done { background: var(--green); }
+
   /* ── Right panel ── */
   #right-panel {
     width: 320px;
@@ -448,8 +483,30 @@
       <input id="frames-dir" type="text" placeholder="~/.spaceselflog/frames">
     </div>
 
+    <div class="field">
+      <label>Nightly summary time (local)</label>
+      <select id="nightly-hour"></select>
+    </div>
+
     <div class="btn-row">
       <button class="btn-primary" id="btn-save-dirs">Save Dirs</button>
+    </div>
+
+    <hr class="divider">
+    <h2>Auto Insight</h2>
+
+    <div class="field">
+      <label>Min batches to trigger</label>
+      <input id="insight-min-batches" type="number" min="1" max="200" step="1" placeholder="5">
+    </div>
+
+    <div class="field">
+      <label>Min minutes between runs</label>
+      <input id="insight-min-minutes" type="number" min="1" max="1440" step="1" placeholder="30">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" id="btn-save-insight-cfg">Save</button>
     </div>
   </aside>
 
@@ -461,6 +518,22 @@
       <span id="batch-count">0</span>
       <span id="refresh-indicator">–</span>
     </div>
+    <div id="insight-status">
+      <span class="isb-label">Insight</span>
+      <span class="isb-sep">·</span>
+      <span>Today</span><span class="isb-val" id="isb-runs">—</span><span>runs</span>
+      <span class="isb-sep">·</span>
+      <span>Batch</span>
+      <span class="isb-bar"><span class="isb-bar-fill" id="isb-batch-bar" style="width:0%"></span></span>
+      <span class="isb-val" id="isb-batch">—/—</span>
+      <span class="isb-sep">·</span>
+      <span>Time</span>
+      <span class="isb-bar"><span class="isb-bar-fill" id="isb-time-bar" style="width:0%"></span></span>
+      <span class="isb-val" id="isb-time">—/— min</span>
+      <span class="isb-sep">·</span>
+      <span id="isb-next" class="isb-val">—</span>
+    </div>
+
     <div id="feed"></div>
     <div id="empty-state">No batches received yet.<br>Start recording on your iPhone.</div>
   </section>
@@ -521,6 +594,9 @@ async function loadConfig() {
     document.getElementById("model").value         = cfg.model || "";
     document.getElementById("openclaw-dir").value  = cfg.openclaw_memory_dir || "";
     document.getElementById("frames-dir").value    = cfg.frames_dir || "";
+    document.getElementById("nightly-hour").value         = (cfg.nightly_hour ?? 2).toString();
+    document.getElementById("insight-min-batches").value  = cfg.insight_min_batches ?? 5;
+    document.getElementById("insight-min-minutes").value  = cfg.insight_min_minutes ?? 30;
     document.getElementById("prompt").value          = cfg.prompt || "";
     document.getElementById("insight-prompt").value  = cfg.insight_prompt || "";
     document.getElementById("pattern-prompt").value  = cfg.pattern_prompt || "";
@@ -560,6 +636,7 @@ async function saveDirs() {
   const body = {
     openclaw_memory_dir: document.getElementById("openclaw-dir").value.trim(),
     frames_dir:          document.getElementById("frames-dir").value.trim(),
+    nightly_hour:        parseInt(document.getElementById("nightly-hour").value, 10),
   };
   try {
     await fetch("/api/config", { method: "POST",
@@ -770,6 +847,67 @@ document.getElementById("lightbox").addEventListener("click", e => {
   }
 });
 
+// ── Auto Insight config ──
+async function saveInsightCfg() {
+  const btn = document.getElementById("btn-save-insight-cfg");
+  btn.disabled = true;
+  try {
+    await fetch("/api/config", { method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        insight_min_batches: parseInt(document.getElementById("insight-min-batches").value, 10),
+        insight_min_minutes: parseInt(document.getElementById("insight-min-minutes").value, 10),
+      }) });
+    btn.textContent = "Saved ✓";
+    setTimeout(() => { btn.textContent = "Save"; btn.disabled = false; }, 1500);
+  } catch(e) { btn.disabled = false; alert("Save failed: " + e); }
+}
+document.getElementById("btn-save-insight-cfg").addEventListener("click", saveInsightCfg);
+
+// ── Insight status bar ──
+async function updateInsightStatus() {
+  try {
+    const r = await fetch("/api/insight/status");
+    if (!r.ok) return;
+    const s = await r.json();
+
+    const minB = s.min_batches, minM = s.min_minutes;
+    const curB = s.batches_since, curM = s.minutes_since;
+
+    document.getElementById("isb-runs").textContent = " " + s.runs_today + " ";
+
+    // Batch progress
+    const bPct = Math.min(100, Math.round(curB / minB * 100));
+    const bDone = curB >= minB;
+    document.getElementById("isb-batch").textContent = curB + "/" + minB;
+    const bBar = document.getElementById("isb-batch-bar");
+    bBar.style.width = bPct + "%";
+    bBar.className = "isb-bar-fill" + (bDone ? " done" : "");
+
+    // Time progress
+    const tPct = curM === null ? 0 : Math.min(100, Math.round(curM / minM * 100));
+    const tDone = curM !== null && curM >= minM;
+    document.getElementById("isb-time").textContent =
+      (curM === null ? "—" : Math.floor(curM)) + "/" + minM + " min";
+    const tBar = document.getElementById("isb-time-bar");
+    tBar.style.width = tPct + "%";
+    tBar.className = "isb-bar-fill" + (tDone ? " done" : "");
+
+    // Next trigger hint
+    const nextEl = document.getElementById("isb-next");
+    if (bDone && tDone) {
+      nextEl.textContent = "✓ triggers next batch";
+      nextEl.className = "isb-ready";
+    } else {
+      const parts = [];
+      if (!bDone) parts.push((minB - curB) + " batches");
+      if (!tDone) parts.push(Math.ceil(curM === null ? minM : minM - curM) + " min");
+      nextEl.textContent = parts.join(" · ");
+      nextEl.className = "isb-val";
+    }
+  } catch(e) {}
+}
+
 // ── Right panel: Tabs ──
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -913,9 +1051,21 @@ async function loadPattern() {
 }
 
 // ── Init ──
+// Populate nightly-hour select with 00:00–23:00 local time labels
+(function() {
+  const sel = document.getElementById("nightly-hour");
+  for (let h = 0; h < 24; h++) {
+    const opt = document.createElement("option");
+    opt.value = h;
+    opt.textContent = String(h).padStart(2, "0") + ":00";
+    sel.appendChild(opt);
+  }
+})();
 loadConfig();
 pollBatches();
+updateInsightStatus();
 setInterval(pollBatches, 3000);
+setInterval(updateInsightStatus, 5000);
 logViewer.loadDates();
 </script>
 </body>

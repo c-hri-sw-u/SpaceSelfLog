@@ -229,6 +229,128 @@
   .card-summary.error { color: var(--red); }
   .card-summary.muted { color: var(--muted); font-style: italic; }
 
+  /* ── Right panel ── */
+  #right-panel {
+    width: 320px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 0;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+    letter-spacing: .02em;
+  }
+  .tab-btn:hover { color: var(--text); opacity: 1; }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tab-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 12px 14px;
+  }
+  .tab-content.hidden { display: none; }
+
+  .date-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+  }
+  .date-nav button {
+    background: var(--border);
+    color: var(--text);
+    border: none;
+    border-radius: 5px;
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+    font-size: 15px;
+    padding: 0;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity .15s;
+  }
+  .date-nav button:disabled { opacity: .3; cursor: default; }
+  #current-date {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: ui-monospace, "SF Mono", monospace;
+  }
+
+  .mem-content {
+    flex: 1;
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.65;
+  }
+  .mem-content .md-h1 {
+    font-size: 13px;
+    font-weight: 700;
+    margin: 14px 0 5px;
+    color: var(--text);
+  }
+  .mem-content .md-h2 {
+    font-size: 12px;
+    font-weight: 700;
+    margin: 12px 0 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  .mem-content .md-h3 {
+    font-size: 12px;
+    font-weight: 600;
+    margin: 10px 0 3px;
+    color: var(--text);
+  }
+  .mem-content .md-code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 6px 8px;
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 11px;
+    white-space: pre-wrap;
+    margin: 6px 0;
+    color: var(--text);
+  }
+  .mem-content .md-li { padding-left: 10px; color: var(--text); }
+  .mem-content .md-li::before { content: "•  "; color: var(--muted); }
+  .mem-content p { margin-bottom: 4px; color: var(--text); }
+  .mem-content hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+  .mem-content .md-muted {
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+    padding: 40px 0;
+    font-size: 13px;
+  }
+  .mem-content .md-comment { display: none; }
+
   /* ── Lightbox ── */
   #lightbox {
     display: none;
@@ -333,6 +455,7 @@
 
   <!-- ── Batch feed ── -->
   <section>
+
     <div class="feed-header">
       <h2>Batch Feed</h2>
       <span id="batch-count">0</span>
@@ -341,6 +464,29 @@
     <div id="feed"></div>
     <div id="empty-state">No batches received yet.<br>Start recording on your iPhone.</div>
   </section>
+
+  <!-- ── Right panel ── -->
+  <div id="right-panel">
+    <div class="panel-tabs">
+      <button class="tab-btn active" data-tab="log">Daily Log</button>
+      <button class="tab-btn" data-tab="pattern">Pattern</button>
+    </div>
+
+    <!-- Daily Log tab -->
+    <div id="tab-log" class="tab-content">
+      <div class="date-nav">
+        <button id="btn-prev-date" title="Previous day">‹</button>
+        <span id="current-date">—</span>
+        <button id="btn-next-date" title="Next day">›</button>
+      </div>
+      <div id="log-content" class="mem-content"><div class="md-muted">Loading…</div></div>
+    </div>
+
+    <!-- Pattern tab -->
+    <div id="tab-pattern" class="tab-content hidden">
+      <div id="pattern-content" class="mem-content"><div class="md-muted">Loading…</div></div>
+    </div>
+  </div>
 </main>
 
 <!-- Lightbox -->
@@ -613,10 +759,139 @@ document.getElementById("lightbox").addEventListener("click", e => {
   }
 });
 
+// ── Right panel: Tabs ──
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.add("hidden"));
+    btn.classList.add("active");
+    document.getElementById("tab-" + btn.dataset.tab).classList.remove("hidden");
+    if (btn.dataset.tab === "pattern") loadPattern();
+  });
+});
+
+// ── Simple Markdown renderer ──
+function renderMarkdown(text) {
+  const frag = document.createDocumentFragment();
+  let inCode = false, codeLines = [];
+
+  function flush() {
+    if (!codeLines.length) return;
+    const pre = document.createElement("div");
+    pre.className = "md-code";
+    pre.textContent = codeLines.join("\n");
+    frag.appendChild(pre);
+    codeLines = [];
+    inCode = false;
+  }
+
+  text.split("\n").forEach(raw => {
+    const line = raw;
+
+    if (line.startsWith("```")) { inCode ? flush() : (inCode = true); return; }
+    if (inCode) { codeLines.push(line); return; }
+
+    // HTML comments — skip
+    if (/^<!--/.test(line)) return;
+
+    let el;
+    if (/^### /.test(line))       { el = document.createElement("div"); el.className = "md-h3"; el.textContent = line.slice(4); }
+    else if (/^## /.test(line))   { el = document.createElement("div"); el.className = "md-h2"; el.textContent = line.slice(3); }
+    else if (/^# /.test(line))    { el = document.createElement("div"); el.className = "md-h1"; el.textContent = line.slice(2); }
+    else if (/^---+$/.test(line.trim())) { el = document.createElement("hr"); }
+    else if (/^[*-] /.test(line)) {
+      el = document.createElement("div");
+      el.className = "md-li";
+      el.innerHTML = inlineFormat(line.slice(2));
+    } else if (line.trim() === "") {
+      el = document.createElement("div");
+      el.style.height = "4px";
+    } else {
+      el = document.createElement("p");
+      el.innerHTML = inlineFormat(line);
+    }
+    frag.appendChild(el);
+  });
+  if (inCode) flush();
+  return frag;
+}
+
+function inlineFormat(s) {
+  // Escape HTML, then apply inline markdown
+  s = s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  s = s.replace(/`([^`]+)`/g, "<code style='background:var(--bg);padding:1px 4px;border-radius:3px;font-family:monospace;'>$1</code>");
+  return s;
+}
+
+// ── Daily Log ──
+let logDates = [];
+let logDateIndex = 0;
+
+async function loadLogDates() {
+  try {
+    const r = await fetch("/api/memory/logs");
+    if (!r.ok) return;
+    logDates = await r.json();
+    if (!logDates.length) {
+      document.getElementById("current-date").textContent = "No logs";
+      document.getElementById("log-content").innerHTML = '<div class="md-muted">No physical-log files found.</div>';
+      return;
+    }
+    // Default to today or most recent
+    const today = new Date().toISOString().slice(0, 10);
+    const todayIdx = logDates.indexOf(today);
+    logDateIndex = todayIdx >= 0 ? todayIdx : 0;
+    renderLogDate();
+  } catch(e) { console.error("loadLogDates:", e); }
+}
+
+function renderLogDate() {
+  const date = logDates[logDateIndex];
+  document.getElementById("current-date").textContent = date;
+  document.getElementById("btn-prev-date").disabled = logDateIndex >= logDates.length - 1;
+  document.getElementById("btn-next-date").disabled = logDateIndex <= 0;
+  loadLogContent(date);
+}
+
+async function loadLogContent(date) {
+  const el = document.getElementById("log-content");
+  el.innerHTML = '<div class="md-muted">Loading…</div>';
+  try {
+    const r = await fetch("/api/memory/logs/" + date);
+    if (!r.ok) { el.innerHTML = '<div class="md-muted">Not found.</div>'; return; }
+    const text = await r.text();
+    el.innerHTML = "";
+    el.appendChild(renderMarkdown(text));
+  } catch(e) { el.innerHTML = '<div class="md-muted">Error loading log.</div>'; }
+}
+
+document.getElementById("btn-prev-date").addEventListener("click", () => {
+  if (logDateIndex < logDates.length - 1) { logDateIndex++; renderLogDate(); }
+});
+document.getElementById("btn-next-date").addEventListener("click", () => {
+  if (logDateIndex > 0) { logDateIndex--; renderLogDate(); }
+});
+
+// ── Pattern ──
+async function loadPattern() {
+  const el = document.getElementById("pattern-content");
+  el.innerHTML = '<div class="md-muted">Loading…</div>';
+  try {
+    const r = await fetch("/api/memory/pattern");
+    if (r.status === 404) { el.innerHTML = '<div class="md-muted">physical-pattern.md not found yet.</div>'; return; }
+    if (!r.ok) { el.innerHTML = '<div class="md-muted">Error: ' + r.status + '</div>'; return; }
+    const text = await r.text();
+    el.innerHTML = "";
+    el.appendChild(renderMarkdown(text));
+  } catch(e) { el.innerHTML = '<div class="md-muted">Error loading pattern.</div>'; }
+}
+
 // ── Init ──
 loadConfig();
 pollBatches();
 setInterval(pollBatches, 3000);
+loadLogDates();
 </script>
 </body>
 </html>

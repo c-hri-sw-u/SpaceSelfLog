@@ -817,6 +817,51 @@ def _nightly_scheduler() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Memory read API
+# ---------------------------------------------------------------------------
+
+import re as _re
+
+@app.get("/api/memory/logs")
+def list_log_dates():
+    """Return sorted list of dates (desc) that have a physical-log file."""
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        return jsonify([])
+    logs_dir = Path(mem_dir).expanduser() / "physical-logs"
+    if not logs_dir.exists():
+        return jsonify([])
+    dates = sorted([f.stem for f in logs_dir.glob("*.md")], reverse=True)
+    return jsonify(dates)
+
+
+@app.get("/api/memory/logs/<date>")
+def get_log_file(date: str):
+    """Return raw markdown content for a given date (YYYY-MM-DD)."""
+    if not _re.match(r'^\d{4}-\d{2}-\d{2}$', date):
+        return "invalid date", 400
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        return "openclaw_memory_dir not configured", 404
+    log_file = Path(mem_dir).expanduser() / "physical-logs" / f"{date}.md"
+    if not log_file.exists():
+        return "not found", 404
+    return log_file.read_text(encoding="utf-8"), 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+
+@app.get("/api/memory/pattern")
+def get_pattern_file():
+    """Return raw markdown content of physical-pattern.md."""
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        return "openclaw_memory_dir not configured", 404
+    pattern_file = Path(mem_dir).expanduser() / "physical-pattern.md"
+    if not pattern_file.exists():
+        return "not found", 404
+    return pattern_file.read_text(encoding="utf-8"), 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 

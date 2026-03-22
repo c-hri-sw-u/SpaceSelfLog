@@ -469,17 +469,28 @@
   <div id="right-panel">
     <div class="panel-tabs">
       <button class="tab-btn active" data-tab="log">Daily Log</button>
+      <button class="tab-btn" data-tab="insight">Insights</button>
       <button class="tab-btn" data-tab="pattern">Pattern</button>
     </div>
 
     <!-- Daily Log tab -->
     <div id="tab-log" class="tab-content">
       <div class="date-nav">
-        <button id="btn-prev-date" title="Previous day">‹</button>
-        <span id="current-date">—</span>
-        <button id="btn-next-date" title="Next day">›</button>
+        <button id="btn-prev-log" title="Previous day">‹</button>
+        <span id="current-log-date">—</span>
+        <button id="btn-next-log" title="Next day">›</button>
       </div>
       <div id="log-content" class="mem-content"><div class="md-muted">Loading…</div></div>
+    </div>
+
+    <!-- Insights tab -->
+    <div id="tab-insight" class="tab-content hidden">
+      <div class="date-nav">
+        <button id="btn-prev-insight" title="Previous day">‹</button>
+        <span id="current-insight-date">—</span>
+        <button id="btn-next-insight" title="Next day">›</button>
+      </div>
+      <div id="insight-content" class="mem-content"><div class="md-muted">Loading…</div></div>
     </div>
 
     <!-- Pattern tab -->
@@ -767,6 +778,7 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
     btn.classList.add("active");
     document.getElementById("tab-" + btn.dataset.tab).classList.remove("hidden");
     if (btn.dataset.tab === "pattern") loadPattern();
+    if (btn.dataset.tab === "insight") insightViewer.loadDates();
   });
 });
 
@@ -824,53 +836,66 @@ function inlineFormat(s) {
   return s;
 }
 
-// ── Daily Log ──
-let logDates = [];
-let logDateIndex = 0;
+// ── Generic dated-file viewer ──
+function makeDatedViewer({ apiList, apiFile, prevBtn, nextBtn, dateSpan, contentEl, emptyMsg }) {
+  let dates = [], idx = 0;
 
-async function loadLogDates() {
-  try {
-    const r = await fetch("/api/memory/logs");
-    if (!r.ok) return;
-    logDates = await r.json();
-    if (!logDates.length) {
-      document.getElementById("current-date").textContent = "No logs";
-      document.getElementById("log-content").innerHTML = '<div class="md-muted">No physical-log files found.</div>';
-      return;
-    }
-    // Default to today or most recent
-    const today = new Date().toISOString().slice(0, 10);
-    const todayIdx = logDates.indexOf(today);
-    logDateIndex = todayIdx >= 0 ? todayIdx : 0;
-    renderLogDate();
-  } catch(e) { console.error("loadLogDates:", e); }
+  async function loadDates() {
+    try {
+      const r = await fetch(apiList);
+      if (!r.ok) return;
+      dates = await r.json();
+      const el = document.getElementById(contentEl);
+      if (!dates.length) {
+        document.getElementById(dateSpan).textContent = "No files";
+        el.innerHTML = '<div class="md-muted">' + emptyMsg + '</div>';
+        return;
+      }
+      const today = new Date().toISOString().slice(0, 10);
+      const todayIdx = dates.indexOf(today);
+      idx = todayIdx >= 0 ? todayIdx : 0;
+      render();
+    } catch(e) { console.error(apiList, e); }
+  }
+
+  function render() {
+    const date = dates[idx];
+    document.getElementById(dateSpan).textContent = date;
+    document.getElementById(prevBtn).disabled = idx >= dates.length - 1;
+    document.getElementById(nextBtn).disabled = idx <= 0;
+    loadContent(date);
+  }
+
+  async function loadContent(date) {
+    const el = document.getElementById(contentEl);
+    el.innerHTML = '<div class="md-muted">Loading…</div>';
+    try {
+      const r = await fetch(apiFile + "/" + date);
+      if (!r.ok) { el.innerHTML = '<div class="md-muted">Not found.</div>'; return; }
+      const text = await r.text();
+      el.innerHTML = "";
+      el.appendChild(renderMarkdown(text));
+    } catch(e) { el.innerHTML = '<div class="md-muted">Error loading file.</div>'; }
+  }
+
+  document.getElementById(prevBtn).addEventListener("click", () => { if (idx < dates.length - 1) { idx++; render(); } });
+  document.getElementById(nextBtn).addEventListener("click", () => { if (idx > 0) { idx--; render(); } });
+
+  return { loadDates };
 }
 
-function renderLogDate() {
-  const date = logDates[logDateIndex];
-  document.getElementById("current-date").textContent = date;
-  document.getElementById("btn-prev-date").disabled = logDateIndex >= logDates.length - 1;
-  document.getElementById("btn-next-date").disabled = logDateIndex <= 0;
-  loadLogContent(date);
-}
-
-async function loadLogContent(date) {
-  const el = document.getElementById("log-content");
-  el.innerHTML = '<div class="md-muted">Loading…</div>';
-  try {
-    const r = await fetch("/api/memory/logs/" + date);
-    if (!r.ok) { el.innerHTML = '<div class="md-muted">Not found.</div>'; return; }
-    const text = await r.text();
-    el.innerHTML = "";
-    el.appendChild(renderMarkdown(text));
-  } catch(e) { el.innerHTML = '<div class="md-muted">Error loading log.</div>'; }
-}
-
-document.getElementById("btn-prev-date").addEventListener("click", () => {
-  if (logDateIndex < logDates.length - 1) { logDateIndex++; renderLogDate(); }
+const logViewer = makeDatedViewer({
+  apiList: "/api/memory/logs", apiFile: "/api/memory/logs",
+  prevBtn: "btn-prev-log", nextBtn: "btn-next-log",
+  dateSpan: "current-log-date", contentEl: "log-content",
+  emptyMsg: "No physical-log files found.",
 });
-document.getElementById("btn-next-date").addEventListener("click", () => {
-  if (logDateIndex > 0) { logDateIndex--; renderLogDate(); }
+
+const insightViewer = makeDatedViewer({
+  apiList: "/api/memory/insights", apiFile: "/api/memory/insights",
+  prevBtn: "btn-prev-insight", nextBtn: "btn-next-insight",
+  dateSpan: "current-insight-date", contentEl: "insight-content",
+  emptyMsg: "No insight files found.",
 });
 
 // ── Pattern ──
@@ -891,7 +916,7 @@ async function loadPattern() {
 loadConfig();
 pollBatches();
 setInterval(pollBatches, 3000);
-loadLogDates();
+logViewer.loadDates();
 </script>
 </body>
 </html>

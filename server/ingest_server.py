@@ -356,7 +356,7 @@ def ingest():
                 batch_created=batch_created, summary=summary,
                 frame_count=len(frame_paths), input_frames=input_frames,
             )
-            date_str = batch_created.strftime("%Y-%m-%d")
+            date_str = batch_created.astimezone().strftime("%Y-%m-%d")
             threading.Thread(
                 target=_maybe_update_today_insight,
                 args=(date_str,),
@@ -596,9 +596,10 @@ def _write_physical_log(batch_id, session_id, batch_created,
     logs_dir = Path(mem_dir).expanduser() / "physical-logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
 
-    date_str = batch_created.strftime("%Y-%m-%d")
+    local_created = batch_created.astimezone()
+    date_str = local_created.strftime("%Y-%m-%d")
     log_file = logs_dir / f"{date_str}.md"
-    time_str = batch_created.strftime("%H:%M")
+    time_str = local_created.strftime("%H:%M")
 
     # Parse JSON output from VLM; fall back to raw text if malformed
     try:
@@ -847,6 +848,33 @@ def get_log_file(date: str):
     if not log_file.exists():
         return "not found", 404
     return log_file.read_text(encoding="utf-8"), 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+
+@app.get("/api/memory/insights")
+def list_insight_dates():
+    """Return sorted list of dates (desc) that have a physical-insight file."""
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        return jsonify([])
+    insights_dir = Path(mem_dir).expanduser() / "physical-insights"
+    if not insights_dir.exists():
+        return jsonify([])
+    dates = sorted([f.stem for f in insights_dir.glob("*.md")], reverse=True)
+    return jsonify(dates)
+
+
+@app.get("/api/memory/insights/<date>")
+def get_insight_file(date: str):
+    """Return raw markdown content for a given date's insight file."""
+    if not _re.match(r'^\d{4}-\d{2}-\d{2}$', date):
+        return "invalid date", 400
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        return "openclaw_memory_dir not configured", 404
+    insight_file = Path(mem_dir).expanduser() / "physical-insights" / f"{date}.md"
+    if not insight_file.exists():
+        return "not found", 404
+    return insight_file.read_text(encoding="utf-8"), 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 
 @app.get("/api/memory/pattern")

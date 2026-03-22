@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autoethnographic Journal — SpaceSelfLog</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0f1117;
+    --surface: #1a1d27;
+    --border:  #2a2d3a;
+    --text:    #e2e4ed;
+    --muted:   #6b7280;
+    --accent:  #6366f1;
+    --green:   #22c55e;
+    --red:     #ef4444;
+    --yellow:  #f59e0b;
+    --blue:    #3b82f6;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  header h1 { font-size: 15px; font-weight: 600; }
+  header a {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  header a:hover { color: var(--text); }
+
+  /* ── Entry type tabs ── */
+  .type-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .type-tab {
+    flex: 1;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    transition: color .15s, border-color .15s;
+    user-select: none;
+  }
+  .type-tab.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+  .type-tab:hover:not(.active) { color: var(--text); }
+  .type-tab .eta {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 6px;
+  }
+
+  /* ── Main layout ── */
+  main {
+    display: grid;
+    grid-template-columns: 500px 1fr;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── Form panel ── */
+  .form-panel {
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .meta-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .section-head {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; color: var(--muted); }
+  .field textarea, .field input, .field select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 13px;
+    padding: 7px 10px;
+    outline: none;
+    width: 100%;
+    transition: border-color .15s;
+  }
+  .field textarea {
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.55;
+  }
+  .field textarea:focus,
+  .field input:focus,
+  .field select:focus { border-color: var(--accent); }
+  .field select option { background: var(--surface); }
+
+  /* ── Interaction assessment rows ── */
+  #assessments-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .assessment-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+  }
+  .assessment-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .assessment-num {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+  }
+  .btn-remove {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 2px;
+  }
+  .btn-remove:hover { color: var(--red); }
+
+  .assessment-selects {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .btn-add {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 8px 12px;
+    cursor: pointer;
+    width: 100%;
+    transition: color .15s, border-color .15s;
+  }
+  .btn-add:hover { color: var(--text); border-color: var(--accent); }
+
+  /* ── Utilization summary ── */
+  .util-table { display: flex; flex-direction: column; gap: 6px; }
+  .util-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr;
+    gap: 8px;
+    align-items: center;
+  }
+  .util-label { font-size: 12px; color: var(--muted); }
+  .util-row input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text);
+    font-size: 13px;
+    padding: 5px 8px;
+    text-align: center;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .util-row input:focus { border-color: var(--accent); }
+  .util-col-header { font-size: 11px; color: var(--muted); text-align: center; }
+
+  /* ── Phase-conditional field ── */
+  .phase-field { display: none; }
+  .phase-field.visible { display: flex; }
+
+  /* ── Save row ── */
+  .save-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding-top: 4px;
+  }
+  #btn-save {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 24px;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  #btn-save:hover { opacity: .85; }
+  #btn-save:disabled { opacity: .4; cursor: default; }
+  #status-msg { font-size: 12px; color: var(--green); min-height: 18px; }
+  #status-msg.err { color: var(--red); }
+
+  /* ── History panel ── */
+  .history-panel {
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .history-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .history-header h2 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+  }
+  #entry-count {
+    font-size: 11px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1px 8px;
+    color: var(--muted);
+  }
+
+  #entries-list { display: flex; flex-direction: column; gap: 10px; }
+
+  /* ── Date group ── */
+  .date-group { display: flex; flex-direction: column; gap: 6px; }
+  .date-group-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  .entry-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .entry-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .entry-card-header:hover { background: rgba(255,255,255,.02); }
+  .entry-type-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+  }
+  .entry-type-badge.midday   { background: #1e2a14; color: var(--yellow); }
+  .entry-type-badge.endofday { background: #1a1d3a; color: var(--blue); }
+  .entry-phase { font-size: 11px; color: var(--muted); }
+  .entry-ts    { font-size: 11px; color: var(--muted); margin-left: auto; }
+  .entry-chevron { font-size: 12px; color: var(--muted); }
+
+  .entry-body {
+    display: none;
+    padding: 0 14px 14px;
+    border-top: 1px solid var(--border);
+  }
+  .entry-body.open { display: block; }
+
+  .entry-section { margin-top: 12px; }
+  .entry-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .entry-text {
+    font-size: 13px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    color: var(--text);
+  }
+  .util-display {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .util-display-cell {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 8px;
+    text-align: center;
+  }
+  .util-display-cell .num { font-size: 18px; font-weight: 600; color: var(--text); }
+  .util-display-cell .den { font-size: 12px; color: var(--muted); }
+  .util-display-cell .method { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+
+  .assessment-display {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .assessment-display-row {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .assessment-display-row .ad-desc { font-size: 13px; color: var(--text); }
+  .assessment-display-row .ad-meta { font-size: 11px; color: var(--muted); }
+
+  #empty-msg { color: var(--muted); font-size: 13px; text-align: center; margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Autoethnographic Journal</h1>
+  <span style="font-size:12px;color:var(--muted)">Phase 0 + Phase 1</span>
+  <a href="/" >← Monitor</a>
+</header>
+
+<!-- Entry type tabs -->
+<div class="type-bar">
+  <div class="type-tab active" data-type="midday" onclick="setType('midday')">
+    Mid-day Check-in <span class="eta">~5 min</span>
+  </div>
+  <div class="type-tab" data-type="endofday" onclick="setType('endofday')">
+    End-of-day Reflection <span class="eta">~15 min</span>
+  </div>
+</div>
+
+<main>
+  <!-- ── Form ── -->
+  <div class="form-panel">
+
+    <!-- Meta -->
+    <div class="meta-row">
+      <div class="field">
+        <label for="entry-date">Date</label>
+        <input type="date" id="entry-date">
+      </div>
+      <div class="field">
+        <label for="entry-phase">Phase</label>
+        <select id="entry-phase">
+          <option value="Phase 0">Phase 0 — Calibration</option>
+          <option value="Phase 1">Phase 1 — Observation</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ══ MID-DAY FIELDS ══ -->
+    <div id="midday-fields">
+
+      <div class="section-head">Interaction Assessments</div>
+      <div id="assessments-list"></div>
+      <button class="btn-add" onclick="addAssessment()">+ Add interaction</button>
+
+      <div class="section-head" style="margin-top:4px">Structured Probe Intent</div>
+      <div class="field">
+        <label>Why a perception log entry was selected and what the probe was designed to test (leave blank if no probes today)</label>
+        <textarea id="probe-intent" rows="4" placeholder="e.g. Perception log showed researcher worked from café three afternoons. Probe: 'suggest a workspace for this afternoon' — testing whether café pattern surfaces unprompted."></textarea>
+      </div>
+
+    </div>
+
+    <!-- ══ END-OF-DAY FIELDS ══ -->
+    <div id="endofday-fields" style="display:none; flex-direction:column; gap:18px;">
+
+      <div>
+        <div class="section-head">Utilization Summary</div>
+        <div style="margin-top:8px">
+          <div class="util-table">
+            <div class="util-row" style="margin-bottom:2px">
+              <div></div>
+              <div class="util-col-header">Surfaced</div>
+              <div class="util-col-header">Total interactions</div>
+            </div>
+            <div class="util-row">
+              <div class="util-label">Passive</div>
+              <input type="number" id="util-passive-surfaced" min="0" placeholder="0">
+              <input type="number" id="util-passive-total"    min="0" placeholder="0">
+            </div>
+            <div class="util-row">
+              <div class="util-label">Probes</div>
+              <input type="number" id="util-probe-surfaced" min="0" placeholder="0">
+              <input type="number" id="util-probe-total"    min="0" placeholder="0">
+            </div>
+            <div class="util-row">
+              <div class="util-label">Proactive</div>
+              <input type="number" id="util-proactive-surfaced" min="0" placeholder="0">
+              <input type="number" id="util-proactive-total"    min="0" placeholder="0">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-head">Missed Opportunities</div>
+        <div class="field" style="margin-top:8px">
+          <label>Information the pipeline captured (or should have) that the agent failed to use — include diagnosis of where the chain broke</label>
+          <textarea id="missed-opportunities" rows="4" placeholder="e.g. Pipeline logged 3 hours of desk work but agent did not suggest break when asked about afternoon plan. Likely cause: physical-insights not yet updated (only 2 batches since last insight run)."></textarea>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-head">Noise / Irrelevance</div>
+        <div class="field" style="margin-top:8px">
+          <label>Cases where physical context surfaced but was unhelpful or distracting</label>
+          <textarea id="noise-irrelevance" rows="3" placeholder="e.g. Agent referenced this morning's coffee location when helping draft an email — irrelevant to the task, slightly distracting."></textarea>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-head">Pipeline Behavior</div>
+        <div class="field" style="margin-top:8px">
+          <label>Technical observations: capture density, batch quality, memory tier behavior</label>
+          <textarea id="pipeline-behavior" rows="3" placeholder="e.g. Capture rate dropped during outdoor walk — SSIM threshold too aggressive in bright light, batches merging two distinct scenes."></textarea>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-head">Reflection</div>
+        <div class="field" style="margin-top:8px">
+          <label>Free-form — emerging patterns, design intuitions, interpretive observations</label>
+          <textarea id="reflection" rows="5" placeholder="Unstructured space for themes that resist structured fields…"></textarea>
+        </div>
+      </div>
+
+      <!-- Phase-conditional -->
+      <div id="phase0-field" class="phase-field" style="flex-direction:column;gap:8px">
+        <div class="section-head">Pipeline Modifications (narrative)</div>
+        <div class="field">
+          <label>Narrative context for modifications logged in the iteration log today</label>
+          <textarea id="pipeline-modifications" rows="4" placeholder="e.g. Lowered ssimBoundaryThreshold from 0.85 → 0.78 after noticing indoor→outdoor transition being missed. Output now catches scene change but creates extra batch at kitchen window — acceptable trade-off."></textarea>
+        </div>
+      </div>
+
+      <div id="phase1-field" class="phase-field" style="flex-direction:column;gap:8px">
+        <div class="section-head">Issues Observed But Not Acted On</div>
+        <div class="field">
+          <label>Technical or behavioral issues noted during frozen-parameter Phase 1</label>
+          <textarea id="issues-not-acted-on" rows="4" placeholder="e.g. Noticed insight_prompt over-generalises exercise entries — consistently drops duration. Not fixing during Phase 1; flagged for post-study analysis."></textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Save -->
+    <div class="save-row">
+      <button id="btn-save" onclick="saveEntry()">Save entry</button>
+      <span id="status-msg"></span>
+    </div>
+
+  </div>
+
+  <!-- ── History ── -->
+  <div class="history-panel">
+    <div class="history-header">
+      <h2>History</h2>
+      <span id="entry-count">0</span>
+    </div>
+    <div id="entries-list">
+      <p id="empty-msg">No entries yet.</p>
+    </div>
+  </div>
+</main>
+
+<script>
+// ── State ──
+let currentType = 'midday';
+let assessmentCount = 0;
+
+// ── Init ──
+document.getElementById('entry-date').value = todayStr();
+addAssessment(); // start with one blank assessment
+loadEntries();
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-'
+    + String(d.getMonth()+1).padStart(2,'0') + '-'
+    + String(d.getDate()).padStart(2,'0');
+}
+
+// ── Phase conditional fields ──
+document.getElementById('entry-phase').addEventListener('change', updatePhaseFields);
+function updatePhaseFields() {
+  const phase = document.getElementById('entry-phase').value;
+  document.getElementById('phase0-field').classList.toggle('visible', phase === 'Phase 0');
+  document.getElementById('phase1-field').classList.toggle('visible', phase === 'Phase 1');
+}
+updatePhaseFields();
+
+// ── Type tabs ──
+function setType(type) {
+  currentType = type;
+  document.querySelectorAll('.type-tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.type === type));
+  document.getElementById('midday-fields').style.display  = type === 'midday'  ? '' : 'none';
+  const edf = document.getElementById('endofday-fields');
+  edf.style.display = type === 'endofday' ? 'flex' : 'none';
+}
+
+// ── Interaction assessments ──
+function addAssessment() {
+  assessmentCount++;
+  const n   = assessmentCount;
+  const id  = 'a' + n;
+  const el  = document.createElement('div');
+  el.className = 'assessment-card';
+  el.id = 'card-' + id;
+  el.innerHTML = `
+    <div class="assessment-card-header">
+      <span class="assessment-num">Interaction ${n}</span>
+      <button class="btn-remove" onclick="removeAssessment('${id}')" title="Remove">×</button>
+    </div>
+    <div class="field">
+      <input type="text" id="desc-${id}" placeholder="Brief description of this interaction">
+    </div>
+    <div class="assessment-selects">
+      <div class="field">
+        <label>Physical context surfaced?</label>
+        <select id="surfaced-${id}">
+          <option value="">—</option>
+          <option>Yes</option>
+          <option>Partially</option>
+          <option>No</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Was it useful?</label>
+        <select id="useful-${id}">
+          <option value="">—</option>
+          <option>Yes</option>
+          <option>Partially</option>
+          <option>No</option>
+          <option>N/A</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <textarea id="notes-${id}" rows="2" placeholder="Reasoning / what should have surfaced / why it helped or didn't…"></textarea>
+    </div>`;
+  document.getElementById('assessments-list').appendChild(el);
+}
+
+function removeAssessment(id) {
+  const el = document.getElementById('card-' + id);
+  if (el) el.remove();
+}
+
+function collectAssessments() {
+  const cards = document.getElementById('assessments-list').querySelectorAll('.assessment-card');
+  return Array.from(cards).map(card => {
+    const id = card.id.replace('card-', '');
+    return {
+      description: card.querySelector(`#desc-${id}`)?.value.trim() || '',
+      surfaced:    card.querySelector(`#surfaced-${id}`)?.value || '',
+      useful:      card.querySelector(`#useful-${id}`)?.value || '',
+      notes:       card.querySelector(`#notes-${id}`)?.value.trim() || '',
+    };
+  }).filter(a => a.description || a.surfaced || a.notes);
+}
+
+// ── Save ──
+function setStatus(msg, isErr = false) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg;
+  el.className = isErr ? 'err' : '';
+  if (!isErr && msg) setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 3000);
+}
+
+async function saveEntry() {
+  const date  = document.getElementById('entry-date').value;
+  const phase = document.getElementById('entry-phase').value;
+  if (!date) { setStatus('Select a date.', true); return; }
+
+  let data = {};
+  if (currentType === 'midday') {
+    const assessments = collectAssessments();
+    if (assessments.length === 0) {
+      setStatus('Add at least one interaction assessment.', true); return;
+    }
+    data = {
+      interaction_assessments: assessments,
+      probe_intent: document.getElementById('probe-intent').value.trim(),
+    };
+  } else {
+    data = {
+      utilization_summary: {
+        passive:   { surfaced: +document.getElementById('util-passive-surfaced').value||0,   total: +document.getElementById('util-passive-total').value||0 },
+        probe:     { surfaced: +document.getElementById('util-probe-surfaced').value||0,     total: +document.getElementById('util-probe-total').value||0 },
+        proactive: { surfaced: +document.getElementById('util-proactive-surfaced').value||0, total: +document.getElementById('util-proactive-total').value||0 },
+      },
+      missed_opportunities:  document.getElementById('missed-opportunities').value.trim(),
+      noise_irrelevance:     document.getElementById('noise-irrelevance').value.trim(),
+      pipeline_behavior:     document.getElementById('pipeline-behavior').value.trim(),
+      reflection:            document.getElementById('reflection').value.trim(),
+      pipeline_modifications: document.getElementById('pipeline-modifications').value.trim(),
+      issues_not_acted_on:   document.getElementById('issues-not-acted-on').value.trim(),
+    };
+    if (!data.reflection) { setStatus('Reflection field is required.', true); return; }
+  }
+
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true;
+  setStatus('Saving…');
+  try {
+    const res = await fetch('/api/journal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date, phase, entry_type: currentType, data }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || res.statusText);
+    setStatus('Saved.');
+    clearForm();
+    loadEntries();
+  } catch(e) {
+    setStatus(e.message, true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function clearForm() {
+  document.getElementById('probe-intent').value = '';
+  document.getElementById('assessments-list').innerHTML = '';
+  assessmentCount = 0;
+  addAssessment();
+  ['missed-opportunities','noise-irrelevance','pipeline-behavior','reflection',
+   'pipeline-modifications','issues-not-acted-on'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['util-passive-surfaced','util-passive-total','util-probe-surfaced','util-probe-total',
+   'util-proactive-surfaced','util-proactive-total'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+// ── History ──
+async function loadEntries() {
+  try {
+    const res     = await fetch('/api/journal');
+    const entries = await res.json();
+    document.getElementById('entry-count').textContent = entries.length;
+    const list = document.getElementById('entries-list');
+    list.innerHTML = '';
+    if (entries.length === 0) {
+      const p = document.createElement('p');
+      p.id = 'empty-msg'; p.textContent = 'No entries yet.';
+      list.appendChild(p);
+      return;
+    }
+    // Group by date
+    const groups = {};
+    entries.forEach(e => {
+      if (!groups[e.date]) groups[e.date] = [];
+      groups[e.date].push(e);
+    });
+    Object.keys(groups).sort().reverse().forEach(date => {
+      const grp = document.createElement('div');
+      grp.className = 'date-group';
+      const lbl = document.createElement('div');
+      lbl.className = 'date-group-label';
+      lbl.textContent = formatDate(date);
+      grp.appendChild(lbl);
+      groups[date].forEach(e => grp.appendChild(renderEntry(e)));
+      list.appendChild(grp);
+    });
+  } catch(e) { console.error('Failed to load journal', e); }
+}
+
+function formatDate(dateStr) {
+  try {
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
+  } catch { return dateStr; }
+}
+
+function formatTs(ts) {
+  try {
+    return new Date(ts).toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' });
+  } catch { return ts; }
+}
+
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderEntry(e) {
+  const card = document.createElement('div');
+  card.className = 'entry-card';
+
+  const header = document.createElement('div');
+  header.className = 'entry-card-header';
+  const typeLabel = e.entry_type === 'midday' ? 'Mid-day' : 'End-of-day';
+  header.innerHTML = `
+    <span class="entry-type-badge ${e.entry_type}">${typeLabel}</span>
+    <span class="entry-phase">${esc(e.phase)}</span>
+    <span class="entry-ts">saved ${formatTs(e.ts)}</span>
+    <span class="entry-chevron">›</span>`;
+
+  const body = document.createElement('div');
+  body.className = 'entry-body';
+
+  header.addEventListener('click', () => {
+    body.classList.toggle('open');
+    header.querySelector('.entry-chevron').textContent = body.classList.contains('open') ? '⌄' : '›';
+  });
+
+  if (e.entry_type === 'midday') {
+    body.innerHTML = renderMiddayBody(e.data);
+  } else {
+    body.innerHTML = renderEndofdayBody(e.data, e.phase);
+  }
+
+  card.appendChild(header);
+  card.appendChild(body);
+  return card;
+}
+
+function renderMiddayBody(data) {
+  let html = '';
+  const assessments = data.interaction_assessments || [];
+  if (assessments.length) {
+    html += `<div class="entry-section"><div class="entry-section-label">Interaction Assessments (${assessments.length})</div><div class="assessment-display">`;
+    assessments.forEach((a, i) => {
+      html += `<div class="assessment-display-row">
+        <div class="ad-desc">${esc(a.description) || '<em>No description</em>'}</div>
+        <div class="ad-meta">Surfaced: <strong>${esc(a.surfaced)||'—'}</strong> · Useful: <strong>${esc(a.useful)||'—'}</strong></div>
+        ${a.notes ? `<div class="ad-meta" style="color:var(--text);font-size:12px">${esc(a.notes)}</div>` : ''}
+      </div>`;
+    });
+    html += '</div></div>';
+  }
+  if (data.probe_intent) {
+    html += `<div class="entry-section"><div class="entry-section-label">Structured Probe Intent</div><div class="entry-text">${esc(data.probe_intent)}</div></div>`;
+  }
+  return html || '<div class="entry-section" style="color:var(--muted);font-size:12px">No data recorded.</div>';
+}
+
+function renderEndofdayBody(data, phase) {
+  let html = '';
+  const util = data.utilization_summary || {};
+  html += `<div class="entry-section"><div class="entry-section-label">Utilization Summary</div><div class="util-display">`;
+  ['passive','probe','proactive'].forEach(m => {
+    const r = util[m] || {};
+    html += `<div class="util-display-cell">
+      <div class="num">${r.surfaced||0}<span style="font-size:13px;color:var(--muted)">/${r.total||0}</span></div>
+      <div class="method">${m}</div>
+    </div>`;
+  });
+  html += '</div></div>';
+
+  const fields = [
+    ['missed_opportunities', 'Missed Opportunities'],
+    ['noise_irrelevance',    'Noise / Irrelevance'],
+    ['pipeline_behavior',    'Pipeline Behavior'],
+    ['reflection',           'Reflection'],
+  ];
+  fields.forEach(([key, label]) => {
+    if (data[key]) html += `<div class="entry-section"><div class="entry-section-label">${label}</div><div class="entry-text">${esc(data[key])}</div></div>`;
+  });
+  if (phase === 'Phase 0' && data.pipeline_modifications) {
+    html += `<div class="entry-section"><div class="entry-section-label">Pipeline Modifications</div><div class="entry-text">${esc(data.pipeline_modifications)}</div></div>`;
+  }
+  if (phase === 'Phase 1' && data.issues_not_acted_on) {
+    html += `<div class="entry-section"><div class="entry-section-label">Issues Not Acted On</div><div class="entry-text">${esc(data.issues_not_acted_on)}</div></div>`;
+  }
+  return html;
+}
+</script>
+</body>
+</html>

@@ -45,6 +45,7 @@ CONTEXT_FILE = Path(os.environ.get("CONTEXT_FILE", "~/.spaceselflog/context.json
 EVENTS_FILE           = Path(os.environ.get("EVENTS_FILE",  "~/.spaceselflog/events.jsonl")).expanduser()
 PENDING_COMMENTS_FILE = Path(os.environ.get("PENDING_COMMENTS_FILE", "~/.spaceselflog/pending_comments.jsonl")).expanduser()
 ITERATION_LOG_FILE    = Path(os.environ.get("ITERATION_LOG_FILE", "~/.spaceselflog/iteration_log.jsonl")).expanduser()
+JOURNAL_FILE          = Path(os.environ.get("JOURNAL_FILE", "~/.spaceselflog/journal.jsonl")).expanduser()
 PORT         = int(os.environ.get("PORT", 8000))
 
 _events_lock = threading.Lock()
@@ -1176,6 +1177,135 @@ def post_iteration_log():
 
     log.info("Iteration log entry saved: %s", entry["variable"])
     return jsonify({"ok": True, "entry": entry})
+
+
+# ---------------------------------------------------------------------------
+# Autoethnographic journal
+# ---------------------------------------------------------------------------
+
+_journal_lock = threading.Lock()
+
+
+@app.get("/journal")
+def journal_ui():
+    return send_file(Path(__file__).parent / "journal.html")
+
+
+@app.get("/api/journal")
+def get_journal():
+    """Return all journal entries (newest first)."""
+    if not JOURNAL_FILE.exists():
+        return jsonify([])
+    entries = []
+    with _journal_lock:
+        with JOURNAL_FILE.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        entries.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        pass
+    entries.sort(key=lambda e: (e.get("date", ""), e.get("entry_type", "")), reverse=True)
+    return jsonify(entries)
+
+
+@app.post("/api/journal")
+def post_journal():
+    """Save a journal entry to JSONL and write markdown to project dir."""
+    body = request.get_json(force=True, silent=True) or {}
+    if not body.get("date") or not body.get("entry_type") or not body.get("phase"):
+        return jsonify({"error": "Missing required fields: date, entry_type, phase"}), 400
+    if body["entry_type"] not in ("midday", "endofday"):
+        return jsonify({"error": "entry_type must be midday or endofday"}), 400
+
+    entry = {
+        "ts":         datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "date":       body["date"],
+        "entry_type": body["entry_type"],
+        "phase":      body["phase"],
+        "data":       body.get("data", {}),
+    }
+
+    JOURNAL_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with _journal_lock:
+        with JOURNAL_FILE.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+    # Write markdown to project dir if configured
+    proj_dir = _config.get("project_dir", "")
+    if proj_dir:
+        journal_dir = Path(proj_dir).expanduser() / "journal"
+        journal_dir.mkdir(parents=True, exist_ok=True)
+        slug = "midday" if entry["entry_type"] == "midday" else "endofday"
+        md_path = journal_dir / f"{entry['date']}-{slug}.md"
+        try:
+            md_path.write_text(_journal_to_markdown(entry), encoding="utf-8")
+        except Exception as e:
+            log.warning("Failed to write journal markdown: %s", e)
+
+    log.info("Journal entry saved: %s %s", entry["date"], entry["entry_type"])
+    return jsonify({"ok": True, "entry": entry})
+
+
+def _journal_to_markdown(entry: dict) -> str:
+    d    = entry["data"]
+    date = entry["date"]
+    phase = entry["phase"]
+    lines = []
+
+    if entry["entry_type"] == "midday":
+        lines.append(f"# Mid-day Check-in — {date}  ({phase})\n")
+        lines.append(f"_Saved at {entry['ts']}_\n")
+
+        assessments = d.get("interaction_assessments", [])
+        if assessments:
+            lines.append("\n## Interaction Assessments\n")
+            for i, a in enumerate(assessments, 1):
+                lines.append(f"### Interaction {i}\n")
+                if a.get("description"):
+                    lines.append(f"**Description:** {a['description']}\n\n")
+                lines.append(f"**Physical context surfaced:** {a.get('surfaced', '—')}\n\n")
+                lines.append(f"**Useful:** {a.get('useful', '—')}\n")
+                if a.get("notes"):
+                    lines.append(f"\n**Notes:** {a['notes']}\n")
+                lines.append("\n")
+
+        if d.get("probe_intent"):
+            lines.append("\n## Structured Probe Intent\n")
+            lines.append(d["probe_intent"] + "\n")
+
+    else:  # endofday
+        lines.append(f"# End-of-day Reflection — {date}  ({phase})\n")
+        lines.append(f"_Saved at {entry['ts']}_\n")
+
+        util = d.get("utilization_summary", {})
+        if util:
+            lines.append("\n## Utilization Summary\n")
+            lines.append("| Method | Surfaced | Total |\n")
+            lines.append("|--------|----------|-------|\n")
+            for method in ("passive", "probe", "proactive"):
+                row = util.get(method, {})
+                lines.append(f"| {method.capitalize()} | {row.get('surfaced', 0)} | {row.get('total', 0)} |\n")
+
+        for field, label in [
+            ("missed_opportunities", "Missed Opportunities"),
+            ("noise_irrelevance",    "Noise / Irrelevance"),
+            ("pipeline_behavior",    "Pipeline Behavior"),
+            ("reflection",           "Reflection"),
+        ]:
+            if d.get(field):
+                lines.append(f"\n## {label}\n")
+                lines.append(d[field] + "\n")
+
+        if phase == "Phase 0" and d.get("pipeline_modifications"):
+            lines.append("\n## Pipeline Modifications (narrative)\n")
+            lines.append(d["pipeline_modifications"] + "\n")
+        elif phase == "Phase 1" and d.get("issues_not_acted_on"):
+            lines.append("\n## Issues Observed But Not Acted On\n")
+            lines.append(d["issues_not_acted_on"] + "\n")
+
+    return "".join(lines)
 
 
 # ---------------------------------------------------------------------------

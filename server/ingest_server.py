@@ -138,6 +138,9 @@ Guidelines:
 - Output markdown only, no preamble or explanation.\
 """
 
+_INSIGHT_MIN_BATCHES  = 5
+_INSIGHT_MIN_MINUTES  = 30
+
 _DEFAULTS: dict = {
     "provider":            "openrouter",
     "api_key":             os.environ.get("OPENROUTER_API_KEY")
@@ -198,9 +201,6 @@ def _record_batch(entry: dict) -> None:
 # ---------------------------------------------------------------------------
 # Rolling insight state
 # ---------------------------------------------------------------------------
-
-_INSIGHT_MIN_BATCHES  = 5
-_INSIGHT_MIN_MINUTES  = 30
 
 _insight_lock         = threading.Lock()
 _insight_batch_count  = 0               # batches since last insight update

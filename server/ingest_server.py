@@ -884,12 +884,13 @@ def get_insight_status():
         runs_today = _insight_runs_today.get(today, 0)
         last_run_at = _insight_last_time.isoformat() if _insight_last_time else None
     return jsonify({
-        "runs_today":       runs_today,
-        "batches_since":    batches_since,
-        "min_batches":      min_batches,
-        "minutes_since":    minutes_since,
-        "min_minutes":      min_minutes,
-        "last_run_at":      last_run_at,
+        "runs_today":            runs_today,
+        "batches_since":         batches_since,
+        "min_batches":           min_batches,
+        "minutes_since":         minutes_since,
+        "min_minutes":           min_minutes,
+        "last_run_at":           last_run_at,
+        "pattern_last_run_date": _pattern_last_run_date,
     })
 
 

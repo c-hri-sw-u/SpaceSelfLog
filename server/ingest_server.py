@@ -80,6 +80,64 @@ sufficient evidence — do not guess.
 - Do not repeat the prior summary verbatim; only reference it for continuity.\
 """
 
+_DEFAULT_PATTERN_PROMPT = """\
+You are maintaining a persistent behavioral profile for a personal AI agent. \
+You will be given the agent's current profile (which may be empty on first run) \
+and a daily insight summary from today's egocentric perception logs. \
+Your task is to produce an updated profile that merges new evidence into existing knowledge.
+
+The profile should contain:
+## Routines & Schedule
+Recurring time-based patterns: when the user wakes, works, eats, exercises, sleeps, etc.
+
+## Environments
+Frequently visited places and what activities happen there.
+
+## Work & Focus Patterns
+How the user works: tools used, focus duration, context-switching habits, collaboration style.
+
+## Social Patterns
+Who the user spends time with, in what contexts, and how often.
+
+## Preferences & Habits
+Specific preferences inferred from repeated behavior: food, environment, movement, etc.
+
+## Physical & Energy Patterns
+Energy levels across the day, physical activity habits, rest patterns.
+
+Guidelines:
+- Merge new evidence with existing entries — do not simply append.
+- Increase confidence in patterns that appear repeatedly; note first-time observations as tentative.
+- Remove or revise entries contradicted by new evidence.
+- Be specific: prefer "works at desk 09:00–12:00 most weekdays" over "works in mornings".
+- Omit sections with no evidence yet.
+- Output markdown only. No preamble, no explanation, no commentary outside the profile.\
+"""
+
+_INSIGHT_PROMPT = """\
+You are summarizing a personal AI agent user's physical-world activity for today, \
+based on egocentric perception logs. Your output will be injected into the agent's \
+context at the start of each session so it can personalize its responses.
+
+Write a concise markdown document with these sections:
+## Today's Activity (so far)
+One paragraph summarizing what the user has been doing today, in chronological order.
+
+## Current Context
+Key facts about the user's current or most recent state: location, activity, \
+social context, energy/focus level if inferable.
+
+## Notable Observations
+Bullet list (3–6 items) of specific details worth remembering: habits revealed, \
+preferences inferred, transitions or events that stand out.
+
+Guidelines:
+- Write in third person, past/present tense.
+- Be specific and faithful to the logs — do not speculate beyond what is observed.
+- Omit sections that have no meaningful content yet.
+- Output markdown only, no preamble or explanation.\
+"""
+
 _DEFAULTS: dict = {
     "provider":            "openrouter",
     "api_key":             os.environ.get("OPENROUTER_API_KEY")
@@ -145,64 +203,6 @@ _insight_lock         = threading.Lock()
 _insight_batch_count  = 0               # batches since last insight update
 _insight_last_time: datetime | None = None   # UTC time of last insight update
 _insight_log_offset: dict[str, int] = {}     # date_str -> byte offset already incorporated
-
-_DEFAULT_PATTERN_PROMPT = """\
-You are maintaining a persistent behavioral profile for a personal AI agent. \
-You will be given the agent's current profile (which may be empty on first run) \
-and a daily insight summary from today's egocentric perception logs. \
-Your task is to produce an updated profile that merges new evidence into existing knowledge.
-
-The profile should contain:
-## Routines & Schedule
-Recurring time-based patterns: when the user wakes, works, eats, exercises, sleeps, etc.
-
-## Environments
-Frequently visited places and what activities happen there.
-
-## Work & Focus Patterns
-How the user works: tools used, focus duration, context-switching habits, collaboration style.
-
-## Social Patterns
-Who the user spends time with, in what contexts, and how often.
-
-## Preferences & Habits
-Specific preferences inferred from repeated behavior: food, environment, movement, etc.
-
-## Physical & Energy Patterns
-Energy levels across the day, physical activity habits, rest patterns.
-
-Guidelines:
-- Merge new evidence with existing entries — do not simply append.
-- Increase confidence in patterns that appear repeatedly; note first-time observations as tentative.
-- Remove or revise entries contradicted by new evidence.
-- Be specific: prefer "works at desk 09:00–12:00 most weekdays" over "works in mornings".
-- Omit sections with no evidence yet.
-- Output markdown only. No preamble, no explanation, no commentary outside the profile.\
-"""
-
-_INSIGHT_PROMPT = """\
-You are summarizing a personal AI agent user's physical-world activity for today, \
-based on egocentric perception logs. Your output will be injected into the agent's \
-context at the start of each session so it can personalize its responses.
-
-Write a concise markdown document with these sections:
-## Today's Activity (so far)
-One paragraph summarizing what the user has been doing today, in chronological order.
-
-## Current Context
-Key facts about the user's current or most recent state: location, activity, \
-social context, energy/focus level if inferable.
-
-## Notable Observations
-Bullet list (3–6 items) of specific details worth remembering: habits revealed, \
-preferences inferred, transitions or events that stand out.
-
-Guidelines:
-- Write in third person, past/present tense.
-- Be specific and faithful to the logs — do not speculate beyond what is observed.
-- Omit sections that have no meaningful content yet.
-- Output markdown only, no preamble or explanation.\
-"""
 
 
 # ---------------------------------------------------------------------------

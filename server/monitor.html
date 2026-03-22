@@ -482,6 +482,7 @@
 <header>
   <div id="dot"></div>
   <h1>SpaceSelfLog Monitor</h1>
+  <a href="/iteration-log" target="_blank" style="font-size:12px;padding:3px 10px;border-radius:5px;background:var(--surface);border:1px solid var(--border);color:var(--muted);text-decoration:none;flex-shrink:0;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Iteration Log ↗</a>
   <span id="header-meta">connecting…</span>
   <span class="header-sep">·</span>
   <span class="header-tag">Insight</span><span id="header-insight" class="header-time">—</span>
@@ -559,13 +560,13 @@
     </div>
 
     <div class="field">
-      <label>Frames dir</label>
-      <input id="frames-dir" type="text" placeholder="~/.spaceselflog/frames">
+      <label>Project dir</label>
+      <input id="project-dir" type="text" placeholder="/path/to/SpaceSelfLog">
     </div>
 
     <div class="field">
-      <label>Nightly summary time (local)</label>
-      <select id="nightly-hour"></select>
+      <label>Frames dir</label>
+      <input id="frames-dir" type="text" placeholder="~/.spaceselflog/frames">
     </div>
 
     <div class="btn-row">
@@ -573,7 +574,12 @@
     </div>
 
     <hr class="divider">
-    <h2>Auto Insight</h2>
+    <h2>Scheduling &amp; Auto Insight</h2>
+
+    <div class="field">
+      <label>Nightly summary time (local)</label>
+      <select id="nightly-hour"></select>
+    </div>
 
     <div class="field">
       <label>Min batches to trigger</label>
@@ -679,6 +685,7 @@ async function loadConfig() {
     document.getElementById("api-key").placeholder = cfg.api_key_masked || "";
     document.getElementById("model").value         = cfg.model || "";
     document.getElementById("openclaw-dir").value  = cfg.openclaw_memory_dir || "";
+    document.getElementById("project-dir").value   = cfg.project_dir || "";
     document.getElementById("frames-dir").value    = cfg.frames_dir || "";
     document.getElementById("nightly-hour").value         = (cfg.nightly_hour ?? 2).toString();
     document.getElementById("insight-min-batches").value  = cfg.insight_min_batches ?? 5;
@@ -721,8 +728,8 @@ async function saveDirs() {
   btn.disabled = true;
   const body = {
     openclaw_memory_dir: document.getElementById("openclaw-dir").value.trim(),
+    project_dir:         document.getElementById("project-dir").value.trim(),
     frames_dir:          document.getElementById("frames-dir").value.trim(),
-    nightly_hour:        parseInt(document.getElementById("nightly-hour").value, 10),
   };
   try {
     await fetch("/api/config", { method: "POST",
@@ -1020,6 +1027,7 @@ async function saveInsightCfg() {
     await fetch("/api/config", { method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
+        nightly_hour:        parseInt(document.getElementById("nightly-hour").value, 10),
         insight_min_batches: parseInt(document.getElementById("insight-min-batches").value, 10),
         insight_min_minutes: parseInt(document.getElementById("insight-min-minutes").value, 10),
       }) });

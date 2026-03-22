@@ -1,6 +1,6 @@
 ## 5.1 Methodological Framework
 
-**Research through Design.** The central methodological question is what design requirements emerge when a new input modality—egocentric perception—meets an existing agent memory architecture. No prior system has attempted this integration, so there is no established design to validate or benchmark against. **The appropriate method must support exploratory iteration rather than confirmatory evaluation**. Methods that presuppose a stable design (controlled experiments, benchmarking) or simulate the system without building it (Wizard-of-Oz) cannot resolve the open design decisions identified in Chapter 4—adaptive interval parameters, SSIM threshold, batch window size, prompt wording, nightly summarization, proactive surfacing. Research through Design (RtD) treats iterative building and deployment as the knowledge-generating activity itself *(Research through Design as a Method for Interaction Design Research in HCI (Zimmerman et al., 2007))*, making it the appropriate framework for a study where the design variables outnumber the settled decisions.
+**Research through Design.** The central methodological question is what design requirements emerge when a new input modality—egocentric perception—meets an existing agent memory architecture. No prior system has attempted this integration, so there is no established design to validate or benchmark against. **The appropriate method must support exploratory iteration rather than confirmatory evaluation**. Methods that presuppose a stable design (controlled experiments, benchmarking) or simulate the system without building it (Wizard-of-Oz) cannot resolve the open design decisions identified in Chapter 4—over a dozen experiment variables spanning capture timing, preprocessing thresholds, prompt design, and memory update frequency. (see Table 2) Research through Design (RtD) treats iterative building and deployment as the knowledge-generating activity itself *(Research through Design as a Method for Interaction Design Research in HCI (Zimmerman et al., 2007))*, making it the appropriate framework for a study where the design variables outnumber the settled decisions.
 
 **Autoethnography.**RtD requires sustained deployment. The question is who deploys. Autoethnography—extended self-study by the designer-researcher—is selected for two reasons. Methodologically, the designer's intimate knowledge of the system enables diagnostic depth that external participants cannot provide: tracing a personalization failure to a specific pipeline stage rather than merely reporting that the agent's response was unhelpful (Autobiographical Design (Neustaedter & Sengers, 2012)). For a study whose primary contribution is design requirements (RQ3), this depth is essential. Practically, the system is a research prototype requiring daily pipeline monitoring, and always-on egocentric capture raises ethical and logistical barriers that exceed the scope of a master's thesis.
 
@@ -13,7 +13,7 @@ The study has two phases: a calibration period preceding the formal study, follo
 \[**Table 1: Study phases**\]
 
 |  | Phase 0: Calibration | Phase 1: Observation |
-|---|---|---|
+| --- | --- | --- |
 | Duration | Pre-study (approx. 1 week) | 2 weeks |
 | System state | Active iteration | All parameters frozen |
 | Purpose | Stabilize pipeline; resolve open design variables | Collect data for RQ1, RQ2, RQ3 |
@@ -25,16 +25,23 @@ The study has two phases: a calibration period preceding the formal study, follo
 
 | Variable | Range | Resolution criterion |
 | --- | --- | --- |
-| Adaptive interval max_interval | 15s / 20s / 30s | Balances pattern accumulation (needs continuous low-frequency coverage) against storage and token cost |
-| Adaptive interval ramp curve | e.g., 3s → 5s → 8s → 15s → 30s | Trigger-to-baseline recovery speed balances event capture density against redundancy |
-| Batch window max | 10 / 15 min | Produces coherent scene-level summaries |
-| SSIM threshold | Continuous | Confirms genuine scene change vs. minor angle/lighting shift; fallback: upgrade to embedding similarity |
-| VLM prompt wording | Iterative | Outputs personalization-relevant descriptions, not generic scene captions |
-| Importance score weights | w1(visual) / w2(audio) / w3(imu) / w4(sparsity), default 0.3/0.3/0.2/0.2 | Key frame selection prioritizes information-rich frames within each batch |
-| Nightly summarization prompt | Iterative | Day-level summary captures longitudinal patterns absent from per-batch output |
-| Proactive cron frequency | Hourly / every 4h / twice daily | Generates sufficient decision points without overwhelming the researcher |
+| maxInterval | Continuous | Stable scenes receive ≥1 frame per interval without exceeding daily token budget |
+| rampRatio | Continuous | Post-trigger ramp-back produces dense event coverage without redundant frames in the following quiet period |
+| ssimBoundaryThreshold | Continuous | Batch boundaries align with researcher-observed scene transitions in sampled cases; fallback: upgrade to embedding similarity if SSIM proves insufficient |
+| firstBatchWindowSeconds | Continuous | First batch produces a coherent scene summary despite lacking a prior-batch tail for comparison |
+| maxWindowSeconds | Continuous | Batches remain short enough for coherent single-scene summaries without splitting mid-activity |
+| Importance score weights (wVisual / wAudio / wIMU / wSparsity) | Continuous per weight | Selected key frames cover each batch's main activity and transitions as judged by manual review |
+| ssimDedupThreshold | Continuous | Duplicate removal eliminates near-identical frames without collapsing visually distinct moments within the same scene |
+| kMin / kMax / kDensityPerMin | Continuous | Short batches retain enough frames for VLM context; long batches do not exceed the VLM's useful input range |
+| scoreThreshold | Continuous | Guaranteed-inclusion threshold retains event-bearing frames without inflating output during uneventful periods |
+| prompt wording | Iterative | VLM outputs describe user habits and context, not generic scene captions, across diverse real-world scenes |
+| insight_prompt wording | Iterative | Rolling summary captures evolving intra-day context that individual batch outputs miss |
+| pattern_prompt wording | Iterative | Cross-day profile extracts stable behavioral patterns rather than echoing today's episodic content |
+| insight_min_batches / insight_min_minutes | Continuous | Summary stays current without triggering redundant updates during low-activity periods |
+| nightly_hour | Discrete (local hour) | Late enough that the day's activity is complete; early enough that the pattern file is ready for the next morning's first session |
+| Proactive cron frequency | Iterative | Generates sufficient decision points for analysis without overwhelming the researcher with notifications |
 
-**Phase 1: Observation (2 weeks).** All pipeline parameters are frozen. The system runs continuously during waking hours, writing physical-world observations into OpenClaw's memory through the three-tier direct write strategy (physical-logs, physical-insights, physical-pattern.md) described in Section 4.5. Three observation methods operate in parallel.
+**Phase 1: Observation (2 weeks).** All pipeline parameters are frozen. The system runs continuously during waking hours, writing physical-world observations into OpenClaw's memory through the three-tier direct write strategy (physical-logs, physical-insights (rolling intra-day), [physical-pattern.md](http://physical-pattern.md) (nightly)) described in Section 4.5. Three observation methods operate in parallel.
 
 - **Passive observation.** The researcher uses OpenClaw for daily tasks—scheduling, writing, planning, information lookup—without steering conversations toward physical-world topics.
   - *Protocol:* After each interaction, tag in the journal whether the agent's response referenced physical-world memory, and if so, whether the reference improved the response. No intervention is made to increase or decrease the likelihood of physical context surfacing.
@@ -61,7 +68,7 @@ These three methods are complementary lenses on the same deployment, not indepen
 
 The study produces two categories of data: automated records generated by the pipeline and agent independent of researcher judgment, and researcher-produced records that capture structured observations and reflections.
 
-Three data sources are automated. The **perception log** stores every VLM output produced by the pipeline, unfiltered by OpenClaw's memory heuristics—the complete record of what egocentric capture made visible. The **three-tier memory output**—physical-logs (real-time batch observations), physical-insights (nightly distillation), and [physical-pattern.md](http://physical-pattern.md) (persistent cross-day patterns), alongside OpenClaw's native daily logs and [MEMORY.md](http://MEMORY.md)—records what information the memory architecture retained, distilled, or discarded at each tier. Together the perception log and the three-tier output form a paired record: what the pipeline produced versus how the memory architecture processed it across granularity levels. **Interaction transcripts** record every conversation with OpenClaw during the observation period in full, including natural interactions, structured probes, and proactive messages initiated by the cron job. Proactive messages are logged as a distinct interaction type, annotated with the agent's stated reasoning for acting or declining to act.
+Three data sources are automated. The **perception log** stores every VLM output produced by the pipeline, unfiltered by OpenClaw's memory heuristics—the complete record of what egocentric capture made visible. The **three-tier memory output** (Section 4.5)—physical-logs, physical-insights, and physical-pattern.md, alongside OpenClaw's native daily logs and MEMORY.md—records what the memory architecture retained, distilled, or discarded at each tier. Together with the perception log, it forms a paired record: what the pipeline produced versus what the memory architecture preserved. **Interaction transcripts** record every conversation with OpenClaw during the observation period in full, including natural interactions, structured probes, and proactive messages initiated by the cron job. Proactive messages are logged as a distinct interaction type, annotated with the agent's stated reasoning for acting or declining to act.
 
 Two data sources are researcher-produced. The **design iteration log** from Phase 0 records every pipeline modification with its rationale and before/after output comparison, documenting the design decisions that shaped the final system configuration.
 
@@ -73,13 +80,13 @@ The two-entry rhythm serves a methodological purpose: mid-day entries guard agai
 
 \[**Table 4: Data sources**\]
 
-| Data source | Production | Content | Collection period | Primary RQ |
+| Data source | Production | Content | Collection period | Feeds analysis stage |
 | --- | --- | --- | --- | --- |
-| Perception log | Automated (pipeline) | All VLM outputs, unfiltered | Phase 1 | RQ1 |
-| Three-tier memory output | Automated (pipeline + OpenClaw) | physical-logs, physical-insights, [physical-pattern.md](http://physical-pattern.md) changes, plus OpenClaw native memory changes | Phase 1 | RQ3 |
-| Interaction transcripts | Automated (OpenClaw) | All conversations: passive, probe, and proactive; annotated by type | Phase 1 | RQ2 |
-| Design iteration log | Researcher-produced | Pipeline modifications with rationale and before/after comparison | Phase 0 | RQ3 |
-| Autoethnographic journal | Researcher-produced | Twice-daily structured entries: interaction assessments, probe design intent, utilization counts, missed opportunities, noise cases, pipeline observations, reflections | Phase 0 + Phase 1 | RQ1, RQ2, RQ3 |
+| Perception log | Automated (pipeline) | All VLM outputs, unfiltered | Phase 1 | Content classification; three-tier memory flow |
+| Three-tier memory output | Automated (pipeline + OpenClaw) | physical-logs, physical-insights, physical-pattern.md changes, plus OpenClaw native memory changes | Phase 1 | Three-tier memory flow |
+| Interaction transcripts | Automated (OpenClaw) | All conversations: passive, probe, and proactive; annotated by type | Phase 1 | Interaction-level coding |
+| Design iteration log | Researcher-produced | Pipeline modifications with rationale and before/after comparison | Phase 0 | Thematic analysis |
+| Autoethnographic journal | Researcher-produced | Twice-daily structured entries: interaction assessments, probe design intent, utilization counts, missed opportunities, noise cases, pipeline observations, reflections | Phase 0 + Phase 1 | All stages (interpretive supplement) |
 
 \[**Table 5: Journal entry structure**\]
 
@@ -97,35 +104,32 @@ The two-entry rhythm serves a methodological purpose: mid-day entries guard agai
 
 Analysis proceeds in four stages, each building on the prior stage's output.
 
-**Content classification (→ RQ1).** All perception log entries are categorized by information type through open coding—categories emerge from the data rather than a predefined taxonomy, though initial passes are guided by the broad domains summarized in Table 5. The resulting classification is compared against the digital traces available during the same period—OpenClaw's pre-existing memory entries, calendar events, and chat logs—to identify information categories that are exclusively or primarily accessible through physical-world observation.
+**Content classification (→ RQ1).** All perception log entries are categorized by information type through open coding—categories emerge from the data rather than a predefined taxonomy, though initial passes are guided by the broad domains summarized in Table 5. The resulting classification is compared against the digital traces available during the same period—OpenClaw's pre-existing memory entries, calendar events, and chat logs—to identify information categories that are exclusively or primarily accessible through physical-world observation. Cross-entry temporal patterns—recurring routines, schedule regularities—are identified during aggregation rather than coded at the individual entry level.
 
 \[**Table 6: Initial content classification domains**\]
 
 | Domain | What it captures |
-|---|---|
+| --- | --- |
 | Activity | What the user is doing (cooking, working, exercising) |
 | Environment | Where the user is and what the space looks like (home office, café, kitchen) |
 | Objects | What objects the user interacts with (groceries, books, equipment) |
 | Social context | Who is present, whether conversation is occurring |
-| Temporal patterns | Recurring routines that emerge over days or weeks |
 
-**Interaction-level coding (→ RQ2).** Each interaction transcript is coded for the role physical-world information played. The initial coding scheme is summarized in Table 6; codes are iteratively refined as sub-patterns emerge during analysis. Coding is performed across all three observation methods (passive, structured probe, proactive cron), enabling comparison along two dimensions: whether the agent uses physical context spontaneously versus only when prompted, and whether proactive surfacing changes utilization patterns.
+**Interaction-level coding (→ RQ2).** Each interaction transcript is coded for the role physical-world information played. \[The journal's per-interaction assessments (Section 5.3, Table 5) serve as an initial interpretive pass—recording whether physical context surfaced and whether it helped while the interaction is fresh. The systematic coding described here is a second pass applied to the full transcript corpus after Phase 1, using the journal assessments as an interpretive anchor but coding independently from the transcript text itself.\] The initial coding scheme is summarized in Table 7; codes are iteratively refined as sub-patterns emerge during analysis. Coding is performed across all three observation methods (passive, structured probe, proactive cron), enabling comparison along two dimensions: whether the agent uses physical context spontaneously versus only when prompted, and whether proactive surfacing changes utilization patterns.
 
 \[**Table 7: Initial interaction-level codes**\]
 
 | Code | Definition |
-|---|---|
+| --- | --- |
 | Useful | Physical context improved response relevance |
 | Unused | Relevant physical information existed in memory but was not surfaced |
 | Irrelevant | Physical context surfaced but did not help or distracted |
 | Absent | Interaction type where physical context has no bearing |
 
-**Three-tier memory flow analysis (→ RQ3).** The three-tier memory output described in Section 5.3 is analyzed through entry-level tracing across tiers: each perception log entry is followed through physical-logs (was it written?), physical-insights (was it distilled into the nightly summary?), and physical-pattern.md (did it contribute to a persistent pattern?). This is supplemented by category-level aggregation to identify systematic patterns—whether certain information types are consistently lost during nightly distillation, whether the nightly job produces false patterns, and which tier the agent's retrieval mechanism actually surfaces during interactions. The analysis also examines the three-tier visibility design: whether bootstrap injection of physical-pattern.md causes the agent to use persistent patterns naturally, whether session-start loading of physical-insights changes agent behavior compared to on-demand retrieval from physical-logs, and where information is lost or distorted across the pipeline.
+**Three-tier memory flow analysis (→ RQ3).** The three-tier memory output described in Section 5.3 is analyzed through entry-level tracing across tiers: each perception log entry is followed through physical-logs (was it written?), physical-insights (was it retained in the intra-day distillation?), and physical-pattern.md (did it contribute to a persistent pattern?). This is supplemented by category-level aggregation to identify systematic patterns—whether certain information types are consistently lost during intra-day distillation, whether the pattern update produces false patterns, and which tier the agent's retrieval mechanism actually surfaces during interactions. The analysis also examines the three-tier visibility design: whether bootstrap injection of physical-pattern.md causes the agent to use persistent patterns naturally, whether session-start loading of physical-insights changes agent behavior compared to on-demand retrieval from physical-logs, and where information is lost or distorted across the pipeline.
 
 **Thematic analysis of journal and iteration log (→ RQ3).** Recurring themes across daily reflections and Phase 0 design iterations are extracted following reflexive thematic analysis *(Thematic Analysis (Braun & Clarke, 2006))*. Codes are generated inductively from the data, grouped into candidate themes, and reviewed against the full dataset. These themes feed the design implications presented in Chapter 7.
 
-A final cross-cutting analysis links the first two stages: the content classification from RQ1 is mapped against the interaction-level codes from RQ2 to determine whether certain information types are inherently more useful for personalization, or whether utility depends primarily on task context. Two credibility mechanisms apply throughout: the perception log, interaction transcripts, and iteration log provide a complete audit trail that makes every analytic inference traceable to source data; and negative case analysis—deliberately seeking interactions where physical context should have helped but did not, or where it introduced noise—guards against confirmatory bias.
+A final cross-cutting analysis links the first two stages: the content classification from RQ1 is mapped against the interaction-level codes from RQ2 to determine whether certain information types are inherently more useful for personalization, or whether utility depends primarily on task context. 
 
----
-
-These five data sources and four analytic stages collectively address the three research questions from complementary angles: content classification establishes what egocentric perception makes visible (RQ1), interaction coding determines when that information aids personalization (RQ2), and three-tier memory flow analysis together with thematic analysis surface the design requirements for integrating physical-world sensing into agent memory architectures (RQ3). Chapter 6 reports the findings.
+**Credibility.** Single-researcher autoethnography requires explicit credibility mechanisms to constrain interpretive bias. Four are employed. First, **audit trail**: the perception log, interaction transcripts, and iteration log are recorded automatically, ensuring that every analytic inference is traceable to source data rather than reconstructed from memory. Second, **negative case analysis**: the analysis deliberately seeks interactions where physical context should have helped but did not, or where it introduced noise, guarding against confirmatory selection of supportive examples. Third, **thick description**: findings (Chapter 6) present extended interaction excerpts with full context—the perception log entry, the agent's response, and the researcher's assessment—so that readers can evaluate interpretive claims against the primary data. Fourth, **peer debriefing**: coding samples and emerging themes are reviewed with the thesis advisor at two checkpoints (mid-study and post-analysis) to surface blind spots that single-coder analysis risks missing. The journal's reflection field (Table 5) additionally functions as a **reflexivity audit**—a daily record of the researcher's evolving assumptions and interpretive tendencies, available for review during thematic analysis to detect patterns of self-serving interpretation.

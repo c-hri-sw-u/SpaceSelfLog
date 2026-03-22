@@ -44,6 +44,7 @@ CONFIG_FILE  = Path(os.environ.get("CONFIG_FILE",  "~/.spaceselflog/config.json"
 CONTEXT_FILE = Path(os.environ.get("CONTEXT_FILE", "~/.spaceselflog/context.json")).expanduser()
 EVENTS_FILE           = Path(os.environ.get("EVENTS_FILE",  "~/.spaceselflog/events.jsonl")).expanduser()
 PENDING_COMMENTS_FILE = Path(os.environ.get("PENDING_COMMENTS_FILE", "~/.spaceselflog/pending_comments.jsonl")).expanduser()
+ITERATION_LOG_FILE    = Path(os.environ.get("ITERATION_LOG_FILE", "~/.spaceselflog/iteration_log.jsonl")).expanduser()
 PORT         = int(os.environ.get("PORT", 8000))
 
 _events_lock = threading.Lock()
@@ -174,6 +175,7 @@ _DEFAULTS: dict = {
                            or os.environ.get("ANTHROPIC_API_KEY", ""),
     "model":               os.environ.get("VLM_MODEL", "anthropic/claude-sonnet-4-6"),
     "openclaw_memory_dir": os.environ.get("OPENCLAW_MEMORY_DIR", ""),
+    "project_dir":         os.environ.get("PROJECT_DIR", ""),
     "frames_dir":          os.environ.get("FRAMES_DIR",
                                str(Path("~/.spaceselflog/frames").expanduser())),
     "prompt":              _DEFAULT_PROMPT,
@@ -283,7 +285,7 @@ def post_config():
     global _config, _client
     body = request.get_json(force=True, silent=True) or {}
     # Merge into current config; ignore unknown keys
-    allowed = {"provider", "api_key", "model", "openclaw_memory_dir", "frames_dir",
+    allowed = {"provider", "api_key", "model", "openclaw_memory_dir", "project_dir", "frames_dir",
                "prompt", "insight_prompt", "pattern_prompt", "nightly_hour",
                "insight_min_batches", "insight_min_minutes"}
     for k in allowed:
@@ -1096,6 +1098,84 @@ def get_pattern_file():
     if not pattern_file.exists():
         return "not found", 404
     return pattern_file.read_text(encoding="utf-8"), 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+
+# ---------------------------------------------------------------------------
+# Design iteration log
+# ---------------------------------------------------------------------------
+
+_iteration_log_lock = threading.Lock()
+
+
+@app.get("/iteration-log")
+def iteration_log_ui():
+    return send_file(Path(__file__).parent / "iteration_log.html")
+
+
+@app.get("/api/iteration-log")
+def get_iteration_log():
+    """Return all iteration log entries (newest first)."""
+    if not ITERATION_LOG_FILE.exists():
+        return jsonify([])
+    entries = []
+    with _iteration_log_lock:
+        with ITERATION_LOG_FILE.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        entries.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        pass
+    entries.sort(key=lambda e: e.get("ts", ""), reverse=True)
+    return jsonify(entries)
+
+
+@app.post("/api/iteration-log")
+def post_iteration_log():
+    """Save a new iteration log entry to JSONL and append to markdown."""
+    body = request.get_json(force=True, silent=True) or {}
+    required = {"variable", "change_description", "rationale"}
+    missing = required - body.keys()
+    if missing:
+        return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
+
+    entry = {
+        "ts":                 datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "variable":           body.get("variable", "").strip(),
+        "change_description": body.get("change_description", "").strip(),
+        "rationale":          body.get("rationale", "").strip(),
+        "before_output":      body.get("before_output", "").strip(),
+        "after_output":       body.get("after_output", "").strip(),
+    }
+
+    # Write to JSONL
+    ITERATION_LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with _iteration_log_lock:
+        with ITERATION_LOG_FILE.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+    # Also append markdown to project dir if configured
+    proj_dir = _config.get("project_dir", "")
+    if proj_dir:
+        md_path = Path(proj_dir).expanduser() / "design-iteration-log.md"
+        local_ts = datetime.now().strftime("%Y-%m-%d %H:%M")
+        lines = [f"\n## {local_ts} — {entry['variable']}\n"]
+        lines.append(f"**Change:** {entry['change_description']}\n\n")
+        lines.append(f"**Rationale:** {entry['rationale']}\n")
+        if entry["before_output"]:
+            lines.append(f"\n**Before:**\n{entry['before_output']}\n")
+        if entry["after_output"]:
+            lines.append(f"\n**After:**\n{entry['after_output']}\n")
+        try:
+            md_path.parent.mkdir(parents=True, exist_ok=True)
+            with md_path.open("a", encoding="utf-8") as f:
+                f.write("".join(lines))
+        except Exception as e:
+            log.warning("Failed to write iteration log markdown: %s", e)
+
+    log.info("Iteration log entry saved: %s", entry["variable"])
+    return jsonify({"ok": True, "entry": entry})
 
 
 # ---------------------------------------------------------------------------

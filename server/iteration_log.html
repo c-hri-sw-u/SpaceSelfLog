@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Iteration Log — SpaceSelfLog</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0f1117;
+    --surface: #1a1d27;
+    --border:  #2a2d3a;
+    --text:    #e2e4ed;
+    --muted:   #6b7280;
+    --accent:  #6366f1;
+    --green:   #22c55e;
+    --red:     #ef4444;
+    --yellow:  #f59e0b;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { font-size: 15px; font-weight: 600; letter-spacing: .02em; }
+  header a {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  header a:hover { color: var(--text); }
+
+  main {
+    display: grid;
+    grid-template-columns: 480px 1fr;
+    gap: 0;
+    height: calc(100vh - 45px);
+  }
+
+  /* ── Form panel ── */
+  .form-panel {
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .form-panel h2 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; color: var(--muted); }
+  .field textarea, .field select, .field input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 13px;
+    padding: 7px 10px;
+    outline: none;
+    width: 100%;
+    transition: border-color .15s;
+  }
+  .field textarea {
+    font-family: ui-monospace, "SF Mono", monospace;
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+  }
+  .field textarea:focus,
+  .field select:focus,
+  .field input:focus { border-color: var(--accent); }
+  .field select option { background: var(--surface); }
+
+  .hint { font-size: 11px; color: var(--muted); }
+
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  btn-row { display: flex; gap: 8px; }
+  button {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  button:hover { opacity: .85; }
+  #btn-save {
+    background: var(--accent);
+    color: #fff;
+    flex: 1;
+  }
+  #btn-clear {
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  #status-msg {
+    font-size: 12px;
+    min-height: 18px;
+    color: var(--green);
+  }
+  #status-msg.err { color: var(--red); }
+
+  /* ── History panel ── */
+  .history-panel {
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .history-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .history-header h2 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+  }
+  #entry-count {
+    font-size: 11px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1px 8px;
+    color: var(--muted);
+  }
+
+  #entries-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .entry-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .entry-card-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .entry-variable {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    font-family: ui-monospace, "SF Mono", monospace;
+  }
+  .entry-ts {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  .entry-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .entry-text {
+    font-size: 13px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    color: var(--text);
+  }
+  .entry-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .entry-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 8px 10px;
+  }
+  .entry-box .entry-section-label { margin-top: 0; margin-bottom: 4px; }
+  .entry-box .entry-text { font-size: 12px; font-family: ui-monospace, "SF Mono", monospace; }
+
+  #empty-msg {
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Design Iteration Log</h1>
+  <span style="font-size:12px;color:var(--muted)">Phase 0 calibration record</span>
+  <a href="/">← Monitor</a>
+</header>
+
+<main>
+  <!-- ── Form ── -->
+  <div class="form-panel">
+    <h2>New entry</h2>
+
+    <div class="field">
+      <label for="variable">Variable / component changed</label>
+      <select id="variable">
+        <option value="">— select —</option>
+        <optgroup label="Timing &amp; intervals">
+          <option>maxInterval</option>
+          <option>rampRatio</option>
+          <option>firstBatchWindowSeconds</option>
+          <option>maxWindowSeconds</option>
+        </optgroup>
+        <optgroup label="Batch boundaries">
+          <option>ssimBoundaryThreshold</option>
+        </optgroup>
+        <optgroup label="Frame selection">
+          <option>Importance score weights (wVisual / wAudio / wIMU / wSparsity)</option>
+          <option>ssimDedupThreshold</option>
+          <option>kMin / kMax / kDensityPerMin</option>
+          <option>scoreThreshold</option>
+        </optgroup>
+        <optgroup label="Prompts">
+          <option>prompt wording</option>
+          <option>insight_prompt wording</option>
+          <option>pattern_prompt wording</option>
+        </optgroup>
+        <optgroup label="Insight triggers">
+          <option>insight_min_batches / insight_min_minutes</option>
+        </optgroup>
+        <optgroup label="Scheduling">
+          <option>nightly_hour</option>
+          <option>Proactive cron frequency</option>
+        </optgroup>
+        <option value="other">Other / multiple</option>
+      </select>
+    </div>
+
+    <div class="field" id="other-field" style="display:none">
+      <label for="variable-other">Specify variable / component</label>
+      <input type="text" id="variable-other" placeholder="e.g. audio VAD threshold">
+    </div>
+
+    <div class="field">
+      <label for="change-desc">Change description <span style="color:var(--red)">*</span></label>
+      <textarea id="change-desc" rows="3" placeholder="What exactly was changed? (values, logic, wording…)"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="rationale">Rationale <span style="color:var(--red)">*</span></label>
+      <textarea id="rationale" rows="3" placeholder="Why was this change made? What problem did it address?"></textarea>
+    </div>
+
+    <div class="row-2">
+      <div class="field">
+        <label for="before-output">Before</label>
+        <textarea id="before-output" rows="4" placeholder="Output / behavior before the change"></textarea>
+      </div>
+      <div class="field">
+        <label for="after-output">After</label>
+        <textarea id="after-output" rows="4" placeholder="Output / behavior after (or expected)"></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center">
+      <button id="btn-save">Save entry</button>
+      <button id="btn-clear">Clear</button>
+    </div>
+    <div id="status-msg"></div>
+  </div>
+
+  <!-- ── History ── -->
+  <div class="history-panel">
+    <div class="history-header">
+      <h2>History</h2>
+      <span id="entry-count">0</span>
+    </div>
+    <div id="entries-list">
+      <p id="empty-msg">No entries yet.</p>
+    </div>
+  </div>
+</main>
+
+<script>
+const variableSelect = document.getElementById('variable');
+const otherField     = document.getElementById('other-field');
+const variableOther  = document.getElementById('variable-other');
+const changeDesc     = document.getElementById('change-desc');
+const rationale      = document.getElementById('rationale');
+const beforeOutput   = document.getElementById('before-output');
+const afterOutput    = document.getElementById('after-output');
+const btnSave        = document.getElementById('btn-save');
+const btnClear       = document.getElementById('btn-clear');
+const statusMsg      = document.getElementById('status-msg');
+const entriesList    = document.getElementById('entries-list');
+const entryCount     = document.getElementById('entry-count');
+const emptyMsg       = document.getElementById('empty-msg');
+
+variableSelect.addEventListener('change', () => {
+  otherField.style.display = variableSelect.value === 'other' ? '' : 'none';
+});
+
+function setStatus(msg, isErr = false) {
+  statusMsg.textContent = msg;
+  statusMsg.className = isErr ? 'err' : '';
+  if (!isErr && msg) setTimeout(() => { if (statusMsg.textContent === msg) statusMsg.textContent = ''; }, 3000);
+}
+
+function clearForm() {
+  variableSelect.value = '';
+  otherField.style.display = 'none';
+  variableOther.value = '';
+  changeDesc.value = '';
+  rationale.value = '';
+  beforeOutput.value = '';
+  afterOutput.value = '';
+  statusMsg.textContent = '';
+}
+
+btnClear.addEventListener('click', clearForm);
+
+btnSave.addEventListener('click', async () => {
+  const variable = variableSelect.value === 'other'
+    ? variableOther.value.trim()
+    : variableSelect.value.trim();
+
+  if (!variable) { setStatus('Select or specify a variable.', true); return; }
+  if (!changeDesc.value.trim()) { setStatus('Change description is required.', true); return; }
+  if (!rationale.value.trim())  { setStatus('Rationale is required.', true); return; }
+
+  btnSave.disabled = true;
+  setStatus('Saving…');
+
+  try {
+    const res = await fetch('/api/iteration-log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        variable,
+        change_description: changeDesc.value.trim(),
+        rationale:          rationale.value.trim(),
+        before_output:      beforeOutput.value.trim(),
+        after_output:       afterOutput.value.trim(),
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || res.statusText);
+    setStatus('Saved.');
+    clearForm();
+    loadEntries();
+  } catch (e) {
+    setStatus(e.message, true);
+  } finally {
+    btnSave.disabled = false;
+  }
+});
+
+function formatTs(ts) {
+  try {
+    const d = new Date(ts);
+    return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch { return ts; }
+}
+
+function renderEntry(e) {
+  const card = document.createElement('div');
+  card.className = 'entry-card';
+
+  const header = document.createElement('div');
+  header.className = 'entry-card-header';
+  header.innerHTML = `<span class="entry-variable">${esc(e.variable)}</span><span class="entry-ts">${formatTs(e.ts)}</span>`;
+  card.appendChild(header);
+
+  function section(label, text) {
+    if (!text) return;
+    const l = document.createElement('div');
+    l.className = 'entry-section-label';
+    l.textContent = label;
+    const t = document.createElement('div');
+    t.className = 'entry-text';
+    t.textContent = text;
+    card.appendChild(l);
+    card.appendChild(t);
+  }
+
+  section('Change', e.change_description);
+  section('Rationale', e.rationale);
+
+  if (e.before_output || e.after_output) {
+    const comp = document.createElement('div');
+    comp.className = 'entry-comparison';
+    ['before_output', 'after_output'].forEach((key, i) => {
+      const box = document.createElement('div');
+      box.className = 'entry-box';
+      box.innerHTML = `<div class="entry-section-label">${i === 0 ? 'Before' : 'After'}</div><div class="entry-text">${esc(e[key] || '—')}</div>`;
+      comp.appendChild(box);
+    });
+    card.appendChild(comp);
+  }
+
+  return card;
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function loadEntries() {
+  try {
+    const res = await fetch('/api/iteration-log');
+    const entries = await res.json();
+    entryCount.textContent = entries.length;
+    entriesList.innerHTML = '';
+    if (entries.length === 0) {
+      entriesList.appendChild(emptyMsg);
+      emptyMsg.style.display = '';
+    } else {
+      entries.forEach(e => entriesList.appendChild(renderEntry(e)));
+    }
+  } catch (e) {
+    console.error('Failed to load entries', e);
+  }
+}
+
+loadEntries();
+</script>
+</body>
+</html>

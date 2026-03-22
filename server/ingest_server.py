@@ -42,7 +42,23 @@ load_dotenv(Path(__file__).parent / ".env")
 
 CONFIG_FILE  = Path(os.environ.get("CONFIG_FILE",  "~/.spaceselflog/config.json")).expanduser()
 CONTEXT_FILE = Path(os.environ.get("CONTEXT_FILE", "~/.spaceselflog/context.json")).expanduser()
+EVENTS_FILE  = Path(os.environ.get("EVENTS_FILE",  "~/.spaceselflog/events.jsonl")).expanduser()
 PORT         = int(os.environ.get("PORT", 8000))
+
+_events_lock = threading.Lock()
+
+def _append_event(type: str, **kwargs) -> None:
+    """Append a structured event to events.jsonl (thread-safe)."""
+    entry = {"ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "type": type}
+    entry.update(kwargs)
+    line = json.dumps(entry, ensure_ascii=False)
+    try:
+        EVENTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with _events_lock:
+            with EVENTS_FILE.open("a", encoding="utf-8") as f:
+                f.write(line + "\n")
+    except Exception as e:
+        log.warning("Failed to write event log: %s", e)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -396,7 +412,16 @@ def ingest():
     })
 
     if error_msg:
+        _append_event("batch", status="error", batch_id=batch_id,
+                      session_id=session_id, frames=len(frame_paths), error=error_msg)
         return jsonify({"error": error_msg}), 500
+
+    if mem_error:
+        _append_event("batch", status="ok", batch_id=batch_id,
+                      session_id=session_id, frames=len(frame_paths), mem_error=mem_error)
+    else:
+        _append_event("batch", status="ok", batch_id=batch_id,
+                      session_id=session_id, frames=len(frame_paths))
     return jsonify({"ok": True, "batch_id": batch_id, "summary": summary})
 
 
@@ -669,8 +694,11 @@ def _maybe_update_today_insight(date_str: str) -> None:
     # Run outside the lock — this is a slow LLM call
     try:
         _update_today_insight(date_str)
+        _append_event("insight", status="ok", date=date_str,
+                      run=_insight_runs_today.get(date_str, 1))
     except Exception as e:
         log.error("Insight update error: %s", e)
+        _append_event("insight", status="error", date=date_str, error=str(e))
 
 
 def _update_today_insight(date_str: str) -> None:
@@ -832,9 +860,12 @@ def _run_nightly_pattern_update(date_str: str, extra_date_str: str | None = None
         )
         _pattern_last_run_date = date_str
         log.info("physical-pattern.md updated for %s", date_str)
+        _append_event("pattern", status="ok", date=date_str,
+                      extra_date=extra_date_str)
 
     except Exception as e:
         log.error("Nightly pattern update failed: %s", e)
+        _append_event("pattern", status="error", date=date_str, error=str(e))
 
 
 def _nightly_scheduler() -> None:
@@ -892,6 +923,25 @@ def get_insight_status():
         "last_run_at":           last_run_at,
         "pattern_last_run_date": _pattern_last_run_date,
     })
+
+
+@app.get("/api/events")
+def get_events():
+    """Return recent events from events.jsonl (newest first, up to ?limit= entries)."""
+    limit = min(int(request.args.get("limit", 200)), 1000)
+    if not EVENTS_FILE.exists():
+        return jsonify([])
+    events = []
+    with _events_lock:
+        with EVENTS_FILE.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        events.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        pass
+    return jsonify(events[-limit:][::-1])  # newest first
 
 
 @app.get("/api/memory/logs")

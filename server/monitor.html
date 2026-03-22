@@ -389,6 +389,42 @@
   }
   .mem-content .md-comment { display: none; }
 
+  /* ── Events list ── */
+  .events-list {
+    padding: 12px 16px;
+    overflow-y: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .ev-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .ev-row:hover { background: var(--surface); }
+  .ev-ts   { color: var(--muted); flex-shrink: 0; }
+  .ev-badge {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+  .ev-badge.batch   { background: #1e3a5f; color: #60a5fa; }
+  .ev-badge.insight { background: #1e3a2f; color: #4ade80; }
+  .ev-badge.pattern { background: #3a2a1e; color: #fb923c; }
+  .ev-badge.error   { background: #3a1e1e; color: var(--red); }
+  .ev-detail { color: var(--text); flex: 1; }
+  .ev-error  { color: var(--red); font-size: 11px; }
+
   /* ── Lightbox ── */
   #lightbox {
     display: none;
@@ -551,6 +587,7 @@
       <button class="tab-btn active" data-tab="log">Daily Log</button>
       <button class="tab-btn" data-tab="insight">Insights</button>
       <button class="tab-btn" data-tab="pattern">Pattern</button>
+      <button class="tab-btn" data-tab="events">Events</button>
     </div>
 
     <!-- Daily Log tab -->
@@ -576,6 +613,11 @@
     <!-- Pattern tab -->
     <div id="tab-pattern" class="tab-content hidden">
       <div id="pattern-content" class="mem-content"><div class="md-muted">Loading…</div></div>
+    </div>
+
+    <!-- Events tab -->
+    <div id="tab-events" class="tab-content hidden">
+      <div id="events-list" class="events-list"><div class="md-muted">Loading…</div></div>
     </div>
   </div>
 </main>
@@ -930,6 +972,7 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
     document.getElementById("tab-" + btn.dataset.tab).classList.remove("hidden");
     if (btn.dataset.tab === "pattern") loadPattern();
     if (btn.dataset.tab === "insight") insightViewer.loadDates();
+    if (btn.dataset.tab === "events") loadEvents();
   });
 });
 
@@ -1048,6 +1091,61 @@ const insightViewer = makeDatedViewer({
   dateSpan: "current-insight-date", contentEl: "insight-content",
   emptyMsg: "No insight files found.",
 });
+
+// ── Events ──
+async function loadEvents() {
+  const el = document.getElementById("events-list");
+  el.innerHTML = '<div class="md-muted">Loading…</div>';
+  try {
+    const r = await fetch("/api/events?limit=200");
+    if (!r.ok) { el.innerHTML = '<div class="md-muted">Error loading events.</div>'; return; }
+    const events = await r.json();
+    if (!events.length) { el.innerHTML = '<div class="md-muted">No events recorded yet.</div>'; return; }
+    el.innerHTML = "";
+    events.forEach(ev => {
+      const row = document.createElement("div");
+      row.className = "ev-row";
+
+      const ts = document.createElement("span");
+      ts.className = "ev-ts";
+      // Show local time from UTC iso string
+      ts.textContent = new Date(ev.ts).toLocaleString([], {
+        month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", second: "2-digit"
+      });
+
+      const badge = document.createElement("span");
+      const isError = ev.status === "error";
+      badge.className = "ev-badge " + (isError ? "error" : ev.type);
+      badge.textContent = ev.type;
+
+      const detail = document.createElement("span");
+      detail.className = "ev-detail";
+      if (ev.type === "batch") {
+        detail.textContent = isError
+          ? `${ev.frames ?? "?"} frames · ${ev.session_id?.slice(0,10) ?? ""}`
+          : `${ev.frames} frames · ${ev.session_id?.slice(0,10) ?? ""}${ev.mem_error ? " ⚠ mem" : ""}`;
+      } else if (ev.type === "insight") {
+        detail.textContent = isError ? ev.date : `${ev.date} · run #${ev.run}`;
+      } else if (ev.type === "pattern") {
+        detail.textContent = ev.date + (ev.extra_date ? ` + ${ev.extra_date}` : "");
+      }
+
+      row.appendChild(ts);
+      row.appendChild(badge);
+      row.appendChild(detail);
+
+      if (isError && ev.error) {
+        const err = document.createElement("span");
+        err.className = "ev-error";
+        err.textContent = ev.error;
+        row.appendChild(err);
+      }
+
+      el.appendChild(row);
+    });
+  } catch(e) { el.innerHTML = '<div class="md-muted">Error loading events.</div>'; }
+}
 
 // ── Pattern ──
 async function loadPattern() {

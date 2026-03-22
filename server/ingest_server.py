@@ -1301,7 +1301,7 @@ def _journal_to_markdown(entry: dict) -> str:
         if phase == "Phase 0" and d.get("pipeline_modifications"):
             lines.append("\n## Pipeline Modifications (narrative)\n")
             lines.append(d["pipeline_modifications"] + "\n")
-        elif phase == "Phase 1" and d.get("issues_not_acted_on"):
+        elif phase.startswith("Phase 1") and d.get("issues_not_acted_on"):
             lines.append("\n## Issues Observed But Not Acted On\n")
             lines.append(d["issues_not_acted_on"] + "\n")
 

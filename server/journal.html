@@ -407,7 +407,8 @@
         <label for="entry-phase">Phase</label>
         <select id="entry-phase">
           <option value="Phase 0">Phase 0 — Calibration</option>
-          <option value="Phase 1">Phase 1 — Observation</option>
+          <option value="Phase 1 Week 1">Phase 1 Week 1 — no proactive hook</option>
+          <option value="Phase 1 Week 2">Phase 1 Week 2 — proactive hook active</option>
         </select>
       </div>
     </div>
@@ -449,7 +450,7 @@
               <input type="number" id="util-probe-surfaced" min="0" placeholder="0">
               <input type="number" id="util-probe-total"    min="0" placeholder="0">
             </div>
-            <div class="util-row">
+            <div class="util-row" id="util-proactive-row">
               <div class="util-label">Proactive</div>
               <input type="number" id="util-proactive-surfaced" min="0" placeholder="0">
               <input type="number" id="util-proactive-total"    min="0" placeholder="0">
@@ -550,8 +551,17 @@ function todayStr() {
 document.getElementById('entry-phase').addEventListener('change', updatePhaseFields);
 function updatePhaseFields() {
   const phase = document.getElementById('entry-phase').value;
-  document.getElementById('phase0-field').classList.toggle('visible', phase === 'Phase 0');
-  document.getElementById('phase1-field').classList.toggle('visible', phase === 'Phase 1');
+  const isPhase0 = phase === 'Phase 0';
+  const isPhase1 = phase.startsWith('Phase 1');
+  const isWeek2  = phase === 'Phase 1 Week 2';
+  document.getElementById('phase0-field').classList.toggle('visible', isPhase0);
+  document.getElementById('phase1-field').classList.toggle('visible', isPhase1);
+  // Proactive hook only exists in Week 2
+  const proactiveRow = document.getElementById('util-proactive-row');
+  if (proactiveRow) {
+    proactiveRow.style.opacity = isWeek2 ? '1' : '0.3';
+    proactiveRow.title = isWeek2 ? '' : 'Proactive hook not active in Week 1';
+  }
 }
 updatePhaseFields();
 
@@ -831,7 +841,7 @@ function renderEndofdayBody(data, phase) {
   if (phase === 'Phase 0' && data.pipeline_modifications) {
     html += `<div class="entry-section"><div class="entry-section-label">Pipeline Modifications</div><div class="entry-text">${esc(data.pipeline_modifications)}</div></div>`;
   }
-  if (phase === 'Phase 1' && data.issues_not_acted_on) {
+  if (phase.startsWith('Phase 1') && data.issues_not_acted_on) {
     html += `<div class="entry-section"><div class="entry-section-label">Issues Not Acted On</div><div class="entry-text">${esc(data.issues_not_acted_on)}</div></div>`;
   }
   return html;

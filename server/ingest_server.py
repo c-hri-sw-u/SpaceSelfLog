@@ -42,7 +42,8 @@ load_dotenv(Path(__file__).parent / ".env")
 
 CONFIG_FILE  = Path(os.environ.get("CONFIG_FILE",  "~/.spaceselflog/config.json")).expanduser()
 CONTEXT_FILE = Path(os.environ.get("CONTEXT_FILE", "~/.spaceselflog/context.json")).expanduser()
-EVENTS_FILE  = Path(os.environ.get("EVENTS_FILE",  "~/.spaceselflog/events.jsonl")).expanduser()
+EVENTS_FILE           = Path(os.environ.get("EVENTS_FILE",  "~/.spaceselflog/events.jsonl")).expanduser()
+PENDING_COMMENTS_FILE = Path(os.environ.get("PENDING_COMMENTS_FILE", "~/.spaceselflog/pending_comments.jsonl")).expanduser()
 PORT         = int(os.environ.get("PORT", 8000))
 
 _events_lock = threading.Lock()
@@ -270,6 +271,10 @@ def get_config():
     # Mask key for display (show last 6 chars only)
     key = safe.get("api_key", "")
     safe["api_key_masked"] = ("•" * max(0, len(key) - 6) + key[-6:]) if key else ""
+    # Return effective prompt values so the UI reflects what will actually be used.
+    safe["prompt"]         = safe.get("prompt")         or _DEFAULT_PROMPT
+    safe["insight_prompt"] = safe.get("insight_prompt") or _INSIGHT_PROMPT
+    safe["pattern_prompt"] = safe.get("pattern_prompt") or _DEFAULT_PATTERN_PROMPT
     return jsonify(safe)
 
 
@@ -735,6 +740,20 @@ def _update_today_insight(date_str: str) -> None:
             line for line in text.splitlines() if not line.startswith("<!--")
         ).strip()
 
+    # Read and consume pending human comments
+    pending_comments = []
+    with _comments_lock:
+        if PENDING_COMMENTS_FILE.exists():
+            for line in PENDING_COMMENTS_FILE.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if line:
+                    try:
+                        pending_comments.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        pass
+            if pending_comments:
+                PENDING_COMMENTS_FILE.write_text("", encoding="utf-8")  # clear
+
     if existing_insight:
         user_msg = (
             f"Existing summary for {date_str}:\n\n{existing_insight}\n\n"
@@ -742,6 +761,15 @@ def _update_today_insight(date_str: str) -> None:
         )
     else:
         user_msg = f"Physical perception logs for {date_str}:\n\n{new_logs}"
+
+    if pending_comments:
+        annotations = "\n\n".join(
+            f"- [{c['ts']}] {c['comment']}"
+            + (f"\n  (context: {c['batch_summary'][:150]})" if c.get('batch_summary') else "")
+            for c in pending_comments
+        )
+        user_msg += f"\n\n---\nHuman annotations (prioritize incorporating these):\n\n{annotations}"
+        log.info("Insight: including %d human comment(s)", len(pending_comments))
 
     insight_system = _config.get("insight_prompt") or _INSIGHT_PROMPT
 
@@ -942,6 +970,66 @@ def get_events():
                     except json.JSONDecodeError:
                         pass
     return jsonify(events[-limit:][::-1])  # newest first
+
+
+_comments_lock = threading.Lock()
+
+
+@app.post("/api/comment")
+def post_comment():
+    """Save a human annotation for a batch."""
+    body = request.get_json(force=True, silent=True) or {}
+    batch_id = (body.get("batch_id") or "").strip()
+    comment  = (body.get("comment")  or "").strip()
+    if not batch_id or not comment:
+        return jsonify({"error": "batch_id and comment required"}), 400
+
+    # Find batch in memory to get summary snippet and update its comment field
+    batch_summary = ""
+    for b in _batches:
+        if b["batch_id"] == batch_id:
+            batch_summary = (b.get("summary") or "")[:300]
+            b["comment"] = comment
+            break
+
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    entry = {
+        "ts":            ts,
+        "batch_id":      batch_id,
+        "batch_summary": batch_summary,
+        "comment":       comment,
+    }
+
+    # 1. Append to pending (for next insight run)
+    line = json.dumps(entry, ensure_ascii=False)
+    try:
+        PENDING_COMMENTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with _comments_lock:
+            with PENDING_COMMENTS_FILE.open("a", encoding="utf-8") as f:
+                f.write(line + "\n")
+    except Exception as e:
+        log.error("Failed to write pending comment: %s", e)
+        return jsonify({"error": str(e)}), 500
+
+    # 2. Append to permanent archive in memory dir
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if mem_dir:
+        archive_file = Path(mem_dir).expanduser() / "human-comments.md"
+        try:
+            archive_file.parent.mkdir(parents=True, exist_ok=True)
+            block = (
+                f"\n## {ts}\n"
+                f"**Batch**: `{batch_id}`\n\n"
+                + (f"**Context**: {batch_summary}\n\n" if batch_summary else "")
+                + f"**Comment**: {comment}\n\n---"
+            )
+            with _comments_lock:
+                with archive_file.open("a", encoding="utf-8") as f:
+                    f.write(block + "\n")
+        except Exception as e:
+            log.warning("Failed to write comment archive: %s", e)
+
+    return jsonify({"ok": True})
 
 
 @app.get("/api/memory/logs")

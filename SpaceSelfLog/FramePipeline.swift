@@ -83,6 +83,15 @@ final class FramePipeline {
         print("FramePipeline: started — session \(sessionDirectory.lastPathComponent), interval \(currentInterval)s, ramp \(rampSequence)")
     }
 
+    func updateIntervals(minInterval: Int, maxInterval: Int, rampRatio: Double) {
+        self.minInterval  = minInterval
+        self.maxInterval  = maxInterval
+        self.rampSequence = buildRampSequence(from: minInterval, to: maxInterval, ratio: rampRatio)
+        // Clamp current ramp index to new sequence bounds
+        rampIndex = min(rampIndex, rampSequence.count - 1)
+        currentInterval = rampSequence[rampIndex]
+    }
+
     func stop() {
         captureTimer?.invalidate()
         captureTimer = nil

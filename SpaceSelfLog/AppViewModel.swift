@@ -197,6 +197,7 @@ final class AppViewModel: ObservableObject {
                 self.captureMinInterval = minInterval
                 self.captureMaxInterval = maxInterval
                 self.rampRatio = rampRatio
+                self.framePipeline.updateIntervals(minInterval: minInterval, maxInterval: maxInterval, rampRatio: rampRatio)
             }
             return true
         }

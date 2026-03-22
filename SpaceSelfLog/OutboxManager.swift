@@ -209,12 +209,11 @@ final class OutboxManager {
         var request = URLRequest(url: endpoint, timeoutInterval: 60)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = body
 
         var uploadError: Error?
         var responseData: Data?
         let semaphore = DispatchSemaphore(value: 0)
-        URLSession.shared.dataTask(with: request) { data, response, error in
+        URLSession.shared.uploadTask(with: request, from: body) { data, response, error in
             if let error {
                 uploadError = error
             } else if let http = response as? HTTPURLResponse, http.statusCode >= 400 {

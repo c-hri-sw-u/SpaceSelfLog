@@ -81,61 +81,71 @@ sufficient evidence — do not guess.
 """
 
 _DEFAULT_PATTERN_PROMPT = """\
-You are maintaining a persistent behavioral profile for a personal AI agent. \
-You will be given the agent's current profile (which may be empty on first run) \
-and a daily insight summary from today's egocentric perception logs. \
-Your task is to produce an updated profile that merges new evidence into existing knowledge.
+You are maintaining a persistent behavioral profile for a personal AI \
+agent whose job is to proactively help its user — anticipating needs, \
+offering timely suggestions, and adapting responses to what is actually \
+happening in the user's life. This profile is injected into every agent \
+session, so it must be concise and high-signal.
 
-The profile should contain:
-## Routines & Schedule
-Recurring time-based patterns: when the user wakes, works, eats, exercises, sleeps, etc.
+Inputs:
+1. Current profile (empty on first run)
+2. Today's insights summary
 
-## Environments
-Frequently visited places and what activities happen there.
+Update rules:
+- Merge new evidence into existing entries. Do not simply append.
+- For each entry, note how many days it has been observed (e.g., \
+  "cooks dinner ~18:00 — observed 5 of 9 days"). This replaces \
+  vague confidence language.
+- Remove or revise entries clearly contradicted by new evidence.
+- Be specific: "works at desk 09:00–12:00 most weekdays" not \
+  "works in mornings".
+- Apply the same filter as the insights file: could the agent use \
+  this pattern to help the user — answer a question better, make a \
+  timely suggestion, or anticipate a need? If not, omit it.
 
-## Work & Focus Patterns
-How the user works: tools used, focus duration, context-switching habits, collaboration style.
-
-## Social Patterns
-Who the user spends time with, in what contexts, and how often.
-
-## Preferences & Habits
-Specific preferences inferred from repeated behavior: food, environment, movement, etc.
-
-## Physical & Energy Patterns
-Energy levels across the day, physical activity habits, rest patterns.
+Structure the profile into whatever sections best organize the \
+current evidence. Do not force empty sections. Sections will \
+naturally emerge and evolve as evidence accumulates.
 
 Guidelines:
-- Merge new evidence with existing entries — do not simply append.
-- Increase confidence in patterns that appear repeatedly; note first-time observations as tentative.
-- Remove or revise entries contradicted by new evidence.
-- Be specific: prefer "works at desk 09:00–12:00 most weekdays" over "works in mornings".
-- Omit sections with no evidence yet.
-- Output markdown only. No preamble, no explanation, no commentary outside the profile.\
+- Third person. Markdown only, no preamble.
+- Keep the total file concise — this consumes context budget on \
+  every turn of every session.\
 """
 
 _INSIGHT_PROMPT = """\
-You are summarizing a personal AI agent user's physical-world activity for today, \
-based on egocentric perception logs. Your output will be injected into the agent's \
-context at the start of each session so it can personalize its responses.
+You are distilling today's physical-world perception logs into a daily \
+summary for a personal AI agent whose job is to proactively help its \
+user — anticipating needs, offering timely suggestions, and adapting \
+responses to what is actually happening in the user's life. This \
+summary is the agent's only window into the physical world, so include \
+anything that could inform a helpful action.
 
-Write a concise markdown document with these sections:
-## Today's Activity (so far)
-One paragraph summarizing what the user has been doing today, in chronological order.
+Inputs:
+1. Previous version of today's insights file (empty on first run)
+2. Perception logs since the last run
 
-## Current Context
-Key facts about the user's current or most recent state: location, activity, \
-social context, energy/focus level if inferable.
+Carry forward previous highlights that still pass the filter. Drop an \
+item only when later observations clearly contradict or supersede it, \
+not simply because it is from earlier in the day.
 
-## Notable Observations
-Bullet list (3–6 items) of specific details worth remembering: habits revealed, \
-preferences inferred, transitions or events that stand out.
+## Current State (as of [timestamp of most recent log entry])
+2-3 sentences. What is the user doing, where, with whom, and in what \
+mode (focused, relaxed, transitioning, social)?
+
+## Today's Highlights
+Bullet list. For each candidate item, ask: could the agent use this to \
+help the user — answer a question better, make a timely suggestion, or \
+anticipate an upcoming need? If not, omit it.
+
+Each item should be specific to today — a behavior, schedule deviation, \
+object, or event that suggests a need or preference. Typical days \
+produce 3-8 items; fewer is fine.
 
 Guidelines:
-- Write in third person, past/present tense.
-- Be specific and faithful to the logs — do not speculate beyond what is observed.
-- Omit sections that have no meaningful content yet.
-- Output markdown only, no preamble or explanation.\
+- Write for the agent, not for a diary.
+- No patterns or habits — that belongs in the separate pattern file.
+- Third person. Markdown only, no preamble.\
 """
 
 _INSIGHT_MIN_BATCHES  = 5

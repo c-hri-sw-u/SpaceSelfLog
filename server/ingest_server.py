@@ -753,8 +753,13 @@ def _update_today_insight(date_str: str) -> None:
 _pattern_last_run_date: str | None = None   # local date string of last successful run
 
 
-def _run_nightly_pattern_update(date_str: str) -> None:
-    """Merge yesterday's insight into physical-pattern.md."""
+def _run_nightly_pattern_update(date_str: str, extra_date_str: str | None = None) -> None:
+    """Merge one or two days' insights into physical-pattern.md.
+
+    date_str is always the primary date (yesterday when triggered after midnight).
+    extra_date_str is an optional second date (today) to include when the trigger
+    fires after midnight and today already has some logged activity.
+    """
     global _pattern_last_run_date
 
     mem_dir = _config.get("openclaw_memory_dir", "")
@@ -762,14 +767,25 @@ def _run_nightly_pattern_update(date_str: str) -> None:
         log.warning("Nightly pattern: openclaw_memory_dir not set — skipping")
         return
 
-    insight_file = Path(mem_dir).expanduser() / "physical-insights" / f"{date_str}.md"
+    insights_dir = Path(mem_dir).expanduser() / "physical-insights"
+
+    insight_file = insights_dir / f"{date_str}.md"
     if not insight_file.exists():
         log.warning("Nightly pattern: no insight file for %s — skipping", date_str)
         return
 
-    today_insight = insight_file.read_text(encoding="utf-8").strip()
-    if not today_insight:
+    combined_insight = insight_file.read_text(encoding="utf-8").strip()
+    if not combined_insight:
         return
+
+    # Append today's partial insight if it exists and has content
+    if extra_date_str:
+        extra_file = insights_dir / f"{extra_date_str}.md"
+        if extra_file.exists():
+            extra_text = extra_file.read_text(encoding="utf-8").strip()
+            if extra_text:
+                combined_insight += f"\n\n---\nPartial insight for {extra_date_str}:\n\n{extra_text}"
+                log.info("Nightly pattern: also including partial insight for %s", extra_date_str)
 
     pattern_file = Path(mem_dir).expanduser() / "physical-pattern.md"
     existing_pattern = ""
@@ -779,13 +795,14 @@ def _run_nightly_pattern_update(date_str: str) -> None:
             line for line in text.splitlines() if not line.startswith("<!--")
         ).strip()
 
+    dates_label = f"{date_str}" + (f" + {extra_date_str}" if extra_date_str else "")
     if existing_pattern:
         user_msg = (
             f"Current profile:\n\n{existing_pattern}\n\n"
-            f"---\nNew daily insight ({date_str}) to merge in:\n\n{today_insight}"
+            f"---\nNew daily insight ({dates_label}) to merge in:\n\n{combined_insight}"
         )
     else:
-        user_msg = f"Daily insight ({date_str}) — no existing profile yet:\n\n{today_insight}"
+        user_msg = f"Daily insight ({dates_label}) — no existing profile yet:\n\n{combined_insight}"
 
     pattern_system = _config.get("pattern_prompt") or _DEFAULT_PATTERN_PROMPT
 
@@ -821,20 +838,28 @@ def _run_nightly_pattern_update(date_str: str) -> None:
 
 
 def _nightly_scheduler() -> None:
-    """Background thread: trigger pattern update each night at 02:00 local time."""
+    """Background thread: trigger pattern update each night at configured hour."""
     import time as _time
     while True:
         _time.sleep(600)   # check every 10 minutes
         now_local = datetime.now()
-        if now_local.hour != int(_config.get("nightly_hour", 2)):
+        nightly_hour = int(_config.get("nightly_hour", 2))
+        if now_local.hour != nightly_hour:
             continue
-        # Use yesterday's date — the day that just finished
         from datetime import timedelta
-        yesterday = (now_local - timedelta(days=1)).strftime("%Y-%m-%d")
-        if _pattern_last_run_date == yesterday:
+        # If trigger fires after midnight, yesterday is the completed day;
+        # today may already have partial activity worth including.
+        # If trigger fires before midnight (e.g. 23:00), only today matters.
+        if nightly_hour < 12:
+            primary = (now_local - timedelta(days=1)).strftime("%Y-%m-%d")
+            extra = now_local.strftime("%Y-%m-%d")
+        else:
+            primary = now_local.strftime("%Y-%m-%d")
+            extra = None
+        if _pattern_last_run_date == primary:
             continue   # already ran for this date
-        log.info("Nightly scheduler: running pattern update for %s", yesterday)
-        _run_nightly_pattern_update(yesterday)
+        log.info("Nightly scheduler: running pattern update for %s", primary)
+        _run_nightly_pattern_update(primary, extra_date_str=extra)
 
 
 # ---------------------------------------------------------------------------

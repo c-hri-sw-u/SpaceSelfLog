@@ -145,6 +145,13 @@ final class OutboxManager {
         guard !due.isEmpty else { return }
 
         for var entry in due {
+            // Drop immediately if the data directory is gone — retrying won't help.
+            guard FileManager.default.fileExists(atPath: entry.dataURL.path) else {
+                print("OutboxManager: dropping \(entry.batchId) — data directory missing")
+                removeEntry(entry)
+                continue
+            }
+
             do {
                 let summary = try uploadSync(entry: entry, endpoint: endpoint)
                 removeEntry(entry)

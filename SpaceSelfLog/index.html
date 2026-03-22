@@ -1112,6 +1112,7 @@
         }
 
         function saveConfig(endpoint, data, btnEl) {
+            freezeSettings(5000);
             const orig = btnEl.textContent;
             btnEl.disabled = true; btnEl.textContent = 'Saving...';
             fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) })
@@ -1141,6 +1142,8 @@
         }
 
         let _ladderCurrentInterval = null;
+        let _settingsFrozenUntil = 0;
+        function freezeSettings(ms = 5000) { _settingsFrozenUntil = Date.now() + ms; }
         function updateRampLadder(currentInterval) {
             if (currentInterval !== undefined) _ladderCurrentInterval = currentInterval;
             const min   = parseInt(document.getElementById('minIntervalInput').value)   || 3;
@@ -1197,7 +1200,8 @@
             }, e.target);
         }
         function updateSettingsPanel(s) {
-            // Sync config (skip if input is focused)
+            // Sync config (skip if inputs were recently touched or a save is in flight)
+            if (Date.now() < _settingsFrozenUntil) return;
             const active = document.activeElement;
             const minEl = document.getElementById('minIntervalInput');
             const maxEl = document.getElementById('maxIntervalInput');
@@ -1270,10 +1274,10 @@
         const IMU_WINDOW   = 60;   // seconds of history to show
         const POLL_MS      = 1500; // matches setInterval below
 
-        let imuChartOpen = false;
+        let imuChartOpen = true;
         let imuPoints = [];        // { t: Date, v: number, moving: boolean }
 
-        let ssimDebugOpen = false;
+        let ssimDebugOpen = true;
         function toggleSSIMDebug() {
             ssimDebugOpen = !ssimDebugOpen;
             document.getElementById('ssimDebugPanel').classList.toggle('open', ssimDebugOpen);
@@ -1428,7 +1432,7 @@
 
         // ── VAD Raw RMS Chart ──
         const AUDIO_WINDOW = 60 * 1000;
-        let vadChartOpen = false;
+        let vadChartOpen = true;
         let vadPoints = [];  // { t, rms, speech, threshold }
         let VAD_THRESHOLD = 0.02;
 
@@ -1533,7 +1537,7 @@
         }
 
         // ── Noise Raw dB Chart ──
-        let noiseChartOpen = false;
+        let noiseChartOpen = true;
         let noisePoints = [];  // { t, db, quietThr, loudThr }
         let NOISE_QUIET_THR = -50, NOISE_LOUD_THR = -30;
 
@@ -1630,6 +1634,19 @@
                 ctx.fillText(`-${60 - s}s`, xScale(now - (60 - s) * 1000), H - 3);
             }
         }
+
+        // Freeze settings sync whenever the user edits any settings input
+        document.querySelector('.settings-panel').addEventListener('input', () => freezeSettings(5000));
+
+        // Open pipeline monitor panels by default
+        document.getElementById('vadMonitorPanel').classList.add('open');
+        document.getElementById('vadToggleBtn').classList.add('open');
+        document.getElementById('noiseMonitorPanel').classList.add('open');
+        document.getElementById('noiseToggleBtn').classList.add('open');
+        document.getElementById('imuMonitorPanel').classList.add('open');
+        document.getElementById('imuToggleBtn').classList.add('open');
+        document.getElementById('ssimDebugPanel').classList.add('open');
+        document.getElementById('ssimToggleBtn').classList.add('open');
 
         setInterval(refresh, 1500); refresh();
     </script>

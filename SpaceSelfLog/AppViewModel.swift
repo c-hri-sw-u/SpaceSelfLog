@@ -215,6 +215,8 @@ final class AppViewModel: ObservableObject {
                 self.imuManager.sustainedMotionThresholdSeconds = Double(threshold)
                 self.imuManager.varianceLowThreshold  = varianceLow
                 self.imuManager.varianceHighThreshold = varianceHigh
+                UserDefaults.standard.set(varianceLow,  forKey: "VarianceLowThreshold")
+                UserDefaults.standard.set(varianceHigh, forKey: "VarianceHighThreshold")
             }
             return true
         }
@@ -347,6 +349,10 @@ final class AppViewModel: ObservableObject {
             self?.framePipeline.handleMotionStateChange(state)
         }
         imuManager.sustainedMotionThresholdSeconds = Double(sustainedMotionThreshold)
+        let vl = UserDefaults.standard.double(forKey: "VarianceLowThreshold")
+        if vl > 0 { imuManager.varianceLowThreshold = vl }
+        let vh = UserDefaults.standard.double(forKey: "VarianceHighThreshold")
+        if vh > 0 { imuManager.varianceHighThreshold = vh }
 
         // FramePipeline
         framePipeline.capturePhoto = { [weak self] completion in

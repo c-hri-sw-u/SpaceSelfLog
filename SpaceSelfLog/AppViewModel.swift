@@ -183,8 +183,10 @@ final class AppViewModel: ObservableObject {
                     "outboxQueueSize": self.outboxManager.queueSize,
                     "outboxLastUploadStatus": self.outboxManager.lastUploadStatus,
                     "outboxFailureCount": self.outboxManager.failureCount,
-                    "outboxLastSummary": self.outboxManager.lastSummary ?? "",
-                    "outboxEndpoint": self.outboxEndpoint
+                    "outboxEndpoint": self.outboxEndpoint,
+                    "latestBatchOutput": self.latestBatchOutput,
+                    "batchHistory": self.batchResultHistory,
+                    "lastSSIMComparison": self.batchProcessor.lastSSIMDebugDict as Any
                 ]
             }
             return Thread.isMainThread ? build() : DispatchQueue.main.sync { build() }
@@ -238,6 +240,23 @@ final class AppViewModel: ObservableObject {
         return s
     }()
 
+    private func setupOutboxCallback() {
+        outboxManager.onSummaryReceived = { [weak self] summary, time, frameCount in
+            guard let self else { return }
+            self.latestBatchOutput = summary
+            let entry: [String: Any] = [
+                "time":      time.timeIntervalSince1970 * 1000,
+                "output":    summary,
+                "keyFrames": frameCount,
+                "trigger":   "upload"
+            ]
+            self.batchResultHistory.insert(entry, at: 0)
+            if self.batchResultHistory.count > 20 {
+                self.batchResultHistory.removeLast()
+            }
+        }
+    }
+
     private var timer: Timer?
     private var secondsElapsed: Int = 0
     private var recordingStartTime: Date?
@@ -289,6 +308,7 @@ final class AppViewModel: ObservableObject {
         batchProcessor.kMax                    = kMax
         batchProcessor.scoreThreshold          = Float(scoreThreshold)
         outboxManager.uploadEndpoint           = ep.isEmpty ? nil : URL(string: ep)
+        setupOutboxCallback()
 
         // Camera callbacks
         camera.onFrame = { [weak self] data in
@@ -376,9 +396,12 @@ final class AppViewModel: ObservableObject {
     var outboxQueueSize: Int        { outboxManager.queueSize }
     var outboxUploadStatus: String  { outboxManager.lastUploadStatus }
     var outboxFailureCount: Int     { outboxManager.failureCount }
-    var outboxLastSummary: String?  { outboxManager.lastSummary }
     var batchPendingFrames: Int     { batchProcessor.pendingFrameCount }
     var batchTotalProcessed: Int    { batchProcessor.totalBatchesProcessed }
+
+    // MARK: - Inference results (from Mac)
+    private var latestBatchOutput: String = ""
+    private var batchResultHistory: [[String: Any]] = []  // max 20 entries
 
     // MARK: - Server
     func startServerIfNeeded() {

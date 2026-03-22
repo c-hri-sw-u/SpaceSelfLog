@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 // MARK: - Data types
 
@@ -53,6 +54,15 @@ struct ProcessedBatch {
     let inputFrameCount: Int   // frames ingested before any filtering
 }
 
+/// Debug snapshot of the most recent SSIM boundary comparison.
+struct SSIMComparisonData {
+    let referenceJpeg: Data   // ~200px-wide thumbnail
+    let incomingJpeg: Data
+    let ssimValue: Float
+    let didCut: Bool
+    let timestamp: Date
+}
+
 // MARK: - BatchProcessor
 
 /// Layer 1.5 — accumulates raw frames from FramePipeline, cuts batches on scene change or
@@ -100,6 +110,18 @@ final class BatchProcessor {
     private(set) var totalBatchesProcessed: Int = 0
     private(set) var lastBatchTime: Date? = nil
     private(set) var lastBatchTrigger: String = ""
+    private(set) var lastSSIMComparison: SSIMComparisonData?
+
+    var lastSSIMDebugDict: [String: Any]? {
+        guard let c = lastSSIMComparison else { return nil }
+        return [
+            "referenceB64": c.referenceJpeg.base64EncodedString(),
+            "incomingB64":  c.incomingJpeg.base64EncodedString(),
+            "ssim":         c.ssimValue,
+            "didCut":       c.didCut,
+            "ts":           c.timestamp.timeIntervalSince1970
+        ]
+    }
 
     // MARK: - Private
 
@@ -111,6 +133,18 @@ final class BatchProcessor {
     private var sessionDirectory: URL?
 
     private let processingQueue = DispatchQueue(label: "com.spaceselflog.batchprocessor", qos: .utility)
+
+    // MARK: - Thumbnail helper (for SSIM debug display)
+
+    private static func makeThumbnail(_ jpegData: Data, width: Int = 200) -> Data? {
+        guard let src = UIImage(data: jpegData) else { return nil }
+        let scale = CGFloat(width) / src.size.width
+        let size = CGSize(width: CGFloat(width), height: src.size.height * scale)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.jpegData(withCompressionQuality: 0.55) { ctx in
+            src.draw(in: CGRect(origin: .zero, size: size))
+        }
+    }
 
     // MARK: - Lifecycle
 
@@ -126,6 +160,7 @@ final class BatchProcessor {
             self.totalBatchesProcessed = 0
             self.lastBatchTime = nil
             self.lastBatchTrigger = ""
+            self.lastSSIMComparison = nil
             self.lastSelectedAt = .distantPast
             self.sessionDirectory = sessionDirectory
             print("BatchProcessor: started — \(sessionDirectory.lastPathComponent)")
@@ -173,10 +208,23 @@ final class BatchProcessor {
         if !buffer.isEmpty && elapsed >= windowLimit {
             cutBatch(reason: hasTail ? "max_window(\(Int(elapsed))s)" : "first_window(\(Int(elapsed))s)")
             buffer.append(frame)
-        } else if hasTail, let tail = lastBatchTailData {
-            // After the first batch: also check for scene change vs. previous tail.
-            let sim = FrameSimilarity.similarity(jpegData, tail)
-            if sim < ssimBoundaryThreshold {
+        } else if hasTail {
+            // After the first batch: check for scene change vs. the most recent frame
+            // in the current buffer, falling back to the previous batch tail only when
+            // the buffer is empty (i.e. the very first frame after a cut).
+            // Using buffer.last prevents cascade cuts: once a scene-change cut fires,
+            // subsequent frames compare against each other rather than the stale tail.
+            let reference = buffer.last?.jpegData ?? lastBatchTailData!
+            let sim = FrameSimilarity.similarity(jpegData, reference)
+            let didCut = sim < ssimBoundaryThreshold
+            lastSSIMComparison = SSIMComparisonData(
+                referenceJpeg: Self.makeThumbnail(reference) ?? reference,
+                incomingJpeg:  Self.makeThumbnail(jpegData)  ?? jpegData,
+                ssimValue: sim,
+                didCut: didCut,
+                timestamp: Date()
+            )
+            if didCut {
                 cutBatch(reason: String(format: "scene_change(ssim=%.3f)", sim))
             }
             buffer.append(frame)

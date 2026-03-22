@@ -31,7 +31,6 @@ struct ExperimentSettingsView: View {
     @State private var liveOutboxQueueSize: Int = 0
     @State private var liveOutboxStatus: String = "idle"
     @State private var liveOutboxFailures: Int = 0
-    @State private var liveOutboxLastSummary: String? = nil
 
     @State private var showingDataManagement = false
 
@@ -177,12 +176,6 @@ struct ExperimentSettingsView: View {
                             .font(.caption2)
                             .foregroundColor(.red)
                     }
-                    if let summary = liveOutboxLastSummary {
-                        Text(summary)
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
                 }
 
                 // MARK: Data Management
@@ -257,7 +250,6 @@ struct ExperimentSettingsView: View {
         liveOutboxQueueSize           = viewModel.outboxQueueSize
         liveOutboxStatus              = viewModel.outboxUploadStatus
         liveOutboxFailures            = viewModel.outboxFailureCount
-        liveOutboxLastSummary         = viewModel.outboxLastSummary
     }
 
     private func saveSettings() {

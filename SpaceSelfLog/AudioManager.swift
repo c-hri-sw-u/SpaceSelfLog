@@ -156,6 +156,19 @@ final class AudioManager {
     // MARK: - Engine setup
 
     private func setupAudioEngine() {
+        do {
+            // Configure and activate the session FIRST so the input node reports
+            // the correct hardware format when we query it below.
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playAndRecord,
+                                    mode: .measurement,
+                                    options: [.defaultToSpeaker, .allowBluetoothHFP, .mixWithOthers])
+            try session.setActive(true)
+        } catch {
+            print("AudioManager: session setup failed — \(error)")
+            return
+        }
+
         let inputNode = audioEngine.inputNode
         let format    = inputNode.outputFormat(forBus: 0)
 
@@ -169,11 +182,6 @@ final class AudioManager {
         }
 
         do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playAndRecord,
-                                    mode: .measurement,
-                                    options: [.defaultToSpeaker, .allowBluetoothHFP, .mixWithOthers])
-            try session.setActive(true)
             try audioEngine.start()
             print("AudioManager: engine started (sampleRate=\(format.sampleRate))")
         } catch {

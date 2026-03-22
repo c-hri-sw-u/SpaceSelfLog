@@ -288,6 +288,21 @@
         .imu-sustained-fill.charging { background: #42A5F5; }
         .imu-sustained-fill.full     { background: #42A5F5; box-shadow: 0 0 4px #42A5F5; }
 
+        /* SSIM debug panel */
+        .ssim-debug-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease, opacity 0.25s ease;
+            opacity: 0;
+        }
+        .ssim-debug-panel.open { max-height: 280px; opacity: 1; }
+        .ssim-img-pair { display: flex; gap: 6px; margin: 8px 0 4px; }
+        .ssim-img-slot { flex: 1; text-align: center; }
+        .ssim-img-label { font-size: 9px; color: #555; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.4px; }
+        .ssim-img-slot img { width: 100%; border-radius: 3px; display: block; }
+        .ssim-placeholder { width: 100%; padding-bottom: 75%; background: #2a2a2a; border-radius: 3px; }
+        .ssim-detail { font-size: 10px; color: #666; text-align: center; font-family: Menlo, monospace; margin-top: 4px; }
+
         .imu-chart-legend {
             display: flex;
             gap: 10px;
@@ -664,8 +679,6 @@
             <div class="section-save-row">
                 <button class="settings-button" onclick="saveOutboxConfig(event)">Save</button>
             </div>
-            <div class="settings-label" style="margin-top:10px;">Last result</div>
-            <div class="settings-status" id="outboxLastSummary" style="white-space:pre-wrap;line-height:1.4;">–</div>
         </div>
 
     </div>
@@ -776,6 +789,27 @@
                     <span class="imu-legend-item" style="color:#FFA726">— low thr</span>
                     <span class="imu-legend-item" style="color:#f44336">— high thr</span>
                 </div>
+            </div>
+            <hr class="sensor-divider">
+            <div class="sensor-row">
+                <span class="sensor-label">SSIM Debug</span>
+                <span class="sensor-value dim" id="ssimDebugVal">—</span>
+                <button class="imu-toggle-btn" id="ssimToggleBtn" onclick="toggleSSIMDebug()" title="Toggle SSIM debug">›</button>
+            </div>
+            <div class="ssim-debug-panel" id="ssimDebugPanel">
+                <div class="ssim-img-pair">
+                    <div class="ssim-img-slot">
+                        <div class="ssim-img-label">Reference</div>
+                        <img id="ssimRefImg" style="display:none">
+                        <div class="ssim-placeholder" id="ssimRefPh"></div>
+                    </div>
+                    <div class="ssim-img-slot">
+                        <div class="ssim-img-label">Incoming</div>
+                        <img id="ssimInImg" style="display:none">
+                        <div class="ssim-placeholder" id="ssimInPh"></div>
+                    </div>
+                </div>
+                <div class="ssim-detail" id="ssimDetailRow">—</div>
             </div>
             <hr class="sensor-divider">
             <div class="sensor-row">
@@ -959,6 +993,28 @@
                     if (imuChartOpen) drawIMUChart();
                 }
             } else { iv.textContent = '—'; iv.className = 'sensor-value dim'; id_.className = 'sensor-dot'; }
+
+            // SSIM Debug
+            const ssimCmp = s.lastSSIMComparison;
+            const ssimValEl = document.getElementById('ssimDebugVal');
+            if (ssimCmp) {
+                const cut = ssimCmp.didCut, v = ssimCmp.ssim;
+                ssimValEl.textContent = v.toFixed(3) + (cut ? ' ✂' : '');
+                ssimValEl.className = 'sensor-value';
+                ssimValEl.style.color = cut ? '#f44336' : v > 0.85 ? '#4CAF50' : '#FFA726';
+                const refImg = document.getElementById('ssimRefImg'), inImg = document.getElementById('ssimInImg');
+                const refPh = document.getElementById('ssimRefPh'), inPh = document.getElementById('ssimInPh');
+                refImg.src = 'data:image/jpeg;base64,' + ssimCmp.referenceB64;
+                inImg.src  = 'data:image/jpeg;base64,' + ssimCmp.incomingB64;
+                refImg.style.display = 'block'; refPh.style.display = 'none';
+                inImg.style.display  = 'block'; inPh.style.display  = 'none';
+                const ts = new Date(ssimCmp.ts * 1000).toLocaleTimeString();
+                const detailEl = document.getElementById('ssimDetailRow');
+                detailEl.textContent = `${ts}  ·  ssim = ${v.toFixed(3)}  ·  ${cut ? 'CUT ✂' : 'ok'}`;
+                detailEl.style.color = cut ? '#f44336' : '#555';
+            } else {
+                ssimValEl.textContent = '—'; ssimValEl.className = 'sensor-value dim'; ssimValEl.style.color = '';
+            }
 
             // Buffer
             const bv = document.getElementById('bufferVal');
@@ -1193,11 +1249,6 @@
                 outboxStatusEl.textContent = txt;
                 outboxStatusEl.style.color = status === 'ok' ? '#4CAF50' : status === 'idle' ? '#888' : '#f44336';
             }
-            const summaryEl = document.getElementById('outboxLastSummary');
-            if (summaryEl && s.outboxLastSummary) {
-                summaryEl.textContent = s.outboxLastSummary;
-                summaryEl.style.color = '#ccc';
-            }
         }
 
         // ── Main Refresh ──
@@ -1221,6 +1272,13 @@
 
         let imuChartOpen = false;
         let imuPoints = [];        // { t: Date, v: number, moving: boolean }
+
+        let ssimDebugOpen = false;
+        function toggleSSIMDebug() {
+            ssimDebugOpen = !ssimDebugOpen;
+            document.getElementById('ssimDebugPanel').classList.toggle('open', ssimDebugOpen);
+            document.getElementById('ssimToggleBtn').classList.toggle('open', ssimDebugOpen);
+        }
 
         function toggleIMUMonitor() {
             imuChartOpen = !imuChartOpen;

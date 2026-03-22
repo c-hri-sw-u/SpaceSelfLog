@@ -37,7 +37,9 @@ final class OutboxManager {
     private(set) var lastUploadAt: Date?
     private(set) var lastUploadStatus: String = "idle"
     private(set) var failureCount: Int = 0
-    private(set) var lastSummary: String?
+
+    /// Called on main thread when a summary is received: (summary, batchTime, frameCount)
+    var onSummaryReceived: ((String, Date, Int) -> Void)?
 
     // MARK: - Private
 
@@ -146,11 +148,15 @@ final class OutboxManager {
             do {
                 let summary = try uploadSync(entry: entry, endpoint: endpoint)
                 removeEntry(entry)
+                let uploadedAt = Date()
+                let frameCount = entry.frameCount
                 DispatchQueue.main.async {
-                    self.lastUploadAt = Date()
+                    self.lastUploadAt = uploadedAt
                     self.lastUploadStatus = "ok"
                     self.queueSize = self.entries.count
-                    if let summary { self.lastSummary = summary }
+                    if let summary {
+                        self.onSummaryReceived?(summary, uploadedAt, frameCount)
+                    }
                 }
                 print("OutboxManager: uploaded \(entry.batchId)")
             } catch {

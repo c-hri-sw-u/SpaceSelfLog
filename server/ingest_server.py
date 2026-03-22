@@ -27,6 +27,7 @@ import os, sys, json, base64, logging
 from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
+import threading
 
 import anthropic as anthropic_sdk
 from openai import OpenAI
@@ -88,6 +89,8 @@ _DEFAULTS: dict = {
     "frames_dir":          os.environ.get("FRAMES_DIR",
                                str(Path("~/.spaceselflog/frames").expanduser())),
     "prompt":              _DEFAULT_PROMPT,
+    "insight_prompt":      _INSIGHT_PROMPT,
+    "pattern_prompt":      _DEFAULT_PATTERN_PROMPT,
 }
 
 
@@ -129,6 +132,77 @@ _batches: deque = deque(maxlen=50)  # each entry: dict
 
 def _record_batch(entry: dict) -> None:
     _batches.appendleft(entry)   # newest first
+
+
+# ---------------------------------------------------------------------------
+# Rolling insight state
+# ---------------------------------------------------------------------------
+
+_INSIGHT_MIN_BATCHES  = 5
+_INSIGHT_MIN_MINUTES  = 30
+
+_insight_lock         = threading.Lock()
+_insight_batch_count  = 0               # batches since last insight update
+_insight_last_time: datetime | None = None   # UTC time of last insight update
+_insight_log_offset: dict[str, int] = {}     # date_str -> byte offset already incorporated
+
+_DEFAULT_PATTERN_PROMPT = """\
+You are maintaining a persistent behavioral profile for a personal AI agent. \
+You will be given the agent's current profile (which may be empty on first run) \
+and a daily insight summary from today's egocentric perception logs. \
+Your task is to produce an updated profile that merges new evidence into existing knowledge.
+
+The profile should contain:
+## Routines & Schedule
+Recurring time-based patterns: when the user wakes, works, eats, exercises, sleeps, etc.
+
+## Environments
+Frequently visited places and what activities happen there.
+
+## Work & Focus Patterns
+How the user works: tools used, focus duration, context-switching habits, collaboration style.
+
+## Social Patterns
+Who the user spends time with, in what contexts, and how often.
+
+## Preferences & Habits
+Specific preferences inferred from repeated behavior: food, environment, movement, etc.
+
+## Physical & Energy Patterns
+Energy levels across the day, physical activity habits, rest patterns.
+
+Guidelines:
+- Merge new evidence with existing entries — do not simply append.
+- Increase confidence in patterns that appear repeatedly; note first-time observations as tentative.
+- Remove or revise entries contradicted by new evidence.
+- Be specific: prefer "works at desk 09:00–12:00 most weekdays" over "works in mornings".
+- Omit sections with no evidence yet.
+- Output markdown only. No preamble, no explanation, no commentary outside the profile.\
+"""
+
+_INSIGHT_PROMPT = """\
+You are summarizing a personal AI agent user's physical-world activity for today, \
+based on egocentric perception logs. Your output will be injected into the agent's \
+context at the start of each session so it can personalize its responses.
+
+Write a concise markdown document with these sections:
+## Today's Activity (so far)
+One paragraph summarizing what the user has been doing today, in chronological order.
+
+## Current Context
+Key facts about the user's current or most recent state: location, activity, \
+social context, energy/focus level if inferable.
+
+## Notable Observations
+Bullet list (3–6 items) of specific details worth remembering: habits revealed, \
+preferences inferred, transitions or events that stand out.
+
+Guidelines:
+- Write in third person, past/present tense.
+- Be specific and faithful to the logs — do not speculate beyond what is observed.
+- Omit sections that have no meaningful content yet.
+- Output markdown only, no preamble or explanation.\
+"""
 
 
 # ---------------------------------------------------------------------------
@@ -174,7 +248,8 @@ def post_config():
     global _config, _client
     body = request.get_json(force=True, silent=True) or {}
     # Merge into current config; ignore unknown keys
-    allowed = {"provider", "api_key", "model", "openclaw_memory_dir", "frames_dir", "prompt"}
+    allowed = {"provider", "api_key", "model", "openclaw_memory_dir", "frames_dir",
+               "prompt", "insight_prompt", "pattern_prompt"}
     for k in allowed:
         if k in body:
             _config[k] = body[k]
@@ -281,6 +356,12 @@ def ingest():
                 batch_created=batch_created, summary=summary,
                 frame_count=len(frame_paths), input_frames=input_frames,
             )
+            date_str = batch_created.strftime("%Y-%m-%d")
+            threading.Thread(
+                target=_maybe_update_today_insight,
+                args=(date_str,),
+                daemon=True,
+            ).start()
         except Exception as e:
             mem_error = str(e)
             log.error("Memory write error: %s", e)
@@ -371,9 +452,34 @@ def _frame_annotation(idx: int, total: int, meta: dict, t0: datetime) -> str:
             f"noise={audio.get('noise_level','?')}]")
 
 
+_REQUIRED_JSON_FIELDS = {"activity", "location", "objects", "social_context",
+                         "notable_events", "observation"}
+
+
+def _strip_json_fences(text: str) -> str:
+    """Remove ```json ... ``` or ``` ... ``` wrappers if present."""
+    text = text.strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[-1]          # drop opening fence line
+        if text.endswith("```"):
+            text = text.rsplit("```", 1)[0]     # drop closing fence
+    return text.strip()
+
+
+def _validate_json(text: str) -> dict:
+    """Parse and validate VLM JSON output. Raises ValueError on failure."""
+    data = json.loads(text)
+    if not isinstance(data, dict):
+        raise ValueError("top-level value is not a JSON object")
+    missing = _REQUIRED_JSON_FIELDS - data.keys()
+    if missing:
+        raise ValueError(f"missing fields: {missing}")
+    return data
+
+
 def _run_vlm(frames: list[tuple[str, bytes]], frames_meta: list[dict],
              batch_created: datetime, input_frames: int,
-             prior_summary: str | None) -> str:
+             prior_summary: str | None, max_retries: int = 2) -> str:
     meta_by_file = {m["filename"]: m for m in frames_meta}
     preamble     = _build_preamble(frames_meta, batch_created, input_frames,
                                    len(frames), prior_summary)
@@ -387,9 +493,24 @@ def _run_vlm(frames: list[tuple[str, bytes]], frames_meta: list[dict],
         except ValueError:
             pass
 
-    if _config.get("provider") == "anthropic":
-        return _run_vlm_anthropic(frames, meta_by_file, preamble, t0)
-    return _run_vlm_openrouter(frames, meta_by_file, preamble, t0)
+    call = (_run_vlm_anthropic if _config.get("provider") == "anthropic"
+            else _run_vlm_openrouter)
+
+    last_error: Exception | None = None
+    for attempt in range(1, max_retries + 1):
+        raw = call(frames, meta_by_file, preamble, t0)
+        cleaned = _strip_json_fences(raw)
+        try:
+            _validate_json(cleaned)
+            if attempt > 1:
+                log.info("JSON validation passed on attempt %d", attempt)
+            return cleaned
+        except (json.JSONDecodeError, ValueError) as e:
+            last_error = e
+            log.warning("JSON validation failed (attempt %d/%d): %s",
+                        attempt, max_retries, e)
+
+    raise ValueError(f"VLM returned invalid JSON after {max_retries} attempts: {last_error}")
 
 
 def _run_vlm_openrouter(frames, meta_by_file, preamble, t0) -> str:
@@ -503,6 +624,199 @@ def _write_physical_log(batch_id, session_id, batch_created,
 
 
 # ---------------------------------------------------------------------------
+# Rolling insight: physical-insights/YYYY-MM-DD.md
+# ---------------------------------------------------------------------------
+
+def _maybe_update_today_insight(date_str: str) -> None:
+    """Increment batch counter; trigger insight update if conditions are met."""
+    global _insight_batch_count, _insight_last_time
+    with _insight_lock:
+        _insight_batch_count += 1
+        now = datetime.now(timezone.utc)
+        elapsed = (
+            (now - _insight_last_time).total_seconds() / 60
+            if _insight_last_time else float("inf")
+        )
+        should_update = (
+            _insight_batch_count >= _INSIGHT_MIN_BATCHES
+            and elapsed >= _INSIGHT_MIN_MINUTES
+        )
+        if not should_update:
+            return
+        # Reset counters before triggering (so a slow update doesn't double-fire)
+        _insight_batch_count = 0
+        _insight_last_time   = now
+
+    # Run outside the lock — this is a slow LLM call
+    try:
+        _update_today_insight(date_str)
+    except Exception as e:
+        log.error("Insight update error: %s", e)
+
+
+def _update_today_insight(date_str: str) -> None:
+    """Incorporate new log entries into today's insight file (incremental)."""
+    global _insight_log_offset
+
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        return
+
+    log_file = Path(mem_dir).expanduser() / "physical-logs" / f"{date_str}.md"
+    if not log_file.exists():
+        return
+
+    # Read only new content since last update
+    offset = _insight_log_offset.get(date_str, 0)
+    with log_file.open("r", encoding="utf-8") as fh:
+        fh.seek(offset)
+        new_logs = fh.read()
+    new_offset = log_file.stat().st_size
+
+    if not new_logs.strip():
+        return
+
+    insights_dir = Path(mem_dir).expanduser() / "physical-insights"
+    insights_dir.mkdir(parents=True, exist_ok=True)
+    insight_file = insights_dir / f"{date_str}.md"
+
+    existing_insight = ""
+    if insight_file.exists():
+        # Strip the auto-generated comment header before feeding to model
+        text = insight_file.read_text(encoding="utf-8")
+        existing_insight = "\n".join(
+            line for line in text.splitlines() if not line.startswith("<!--")
+        ).strip()
+
+    if existing_insight:
+        user_msg = (
+            f"Existing summary for {date_str}:\n\n{existing_insight}\n\n"
+            f"---\nNew perception logs to incorporate:\n\n{new_logs}"
+        )
+    else:
+        user_msg = f"Physical perception logs for {date_str}:\n\n{new_logs}"
+
+    insight_system = _config.get("insight_prompt") or _INSIGHT_PROMPT
+
+    if _config.get("provider") == "anthropic":
+        client = anthropic_sdk.Anthropic(api_key=_config["api_key"])
+        r = client.messages.create(
+            model=_config["model"], max_tokens=1024,
+            system=insight_system,
+            messages=[{"role": "user", "content": user_msg}],
+        )
+        insight = r.content[0].text.strip()
+    else:
+        r = _client.chat.completions.create(
+            model=_config["model"], max_tokens=1024,
+            messages=[
+                {"role": "system", "content": insight_system},
+                {"role": "user",   "content": user_msg},
+            ],
+        )
+        insight = r.choices[0].message.content.strip()
+
+    insight_file.write_text(
+        f"<!-- auto-generated by SpaceSelfLog — last updated {datetime.now(timezone.utc).strftime('%H:%M UTC')} -->\n\n"
+        + insight + "\n",
+        encoding="utf-8",
+    )
+    _insight_log_offset[date_str] = new_offset
+    log.info("Insight updated → %s  (offset %d→%d)", insight_file, offset, new_offset)
+
+
+# ---------------------------------------------------------------------------
+# Nightly pattern update: physical-pattern.md
+# ---------------------------------------------------------------------------
+
+_pattern_last_run_date: str | None = None   # local date string of last successful run
+
+
+def _run_nightly_pattern_update(date_str: str) -> None:
+    """Merge yesterday's insight into physical-pattern.md."""
+    global _pattern_last_run_date
+
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        log.warning("Nightly pattern: openclaw_memory_dir not set — skipping")
+        return
+
+    insight_file = Path(mem_dir).expanduser() / "physical-insights" / f"{date_str}.md"
+    if not insight_file.exists():
+        log.warning("Nightly pattern: no insight file for %s — skipping", date_str)
+        return
+
+    today_insight = insight_file.read_text(encoding="utf-8").strip()
+    if not today_insight:
+        return
+
+    pattern_file = Path(mem_dir).expanduser() / "physical-pattern.md"
+    existing_pattern = ""
+    if pattern_file.exists():
+        text = pattern_file.read_text(encoding="utf-8")
+        existing_pattern = "\n".join(
+            line for line in text.splitlines() if not line.startswith("<!--")
+        ).strip()
+
+    if existing_pattern:
+        user_msg = (
+            f"Current profile:\n\n{existing_pattern}\n\n"
+            f"---\nNew daily insight ({date_str}) to merge in:\n\n{today_insight}"
+        )
+    else:
+        user_msg = f"Daily insight ({date_str}) — no existing profile yet:\n\n{today_insight}"
+
+    pattern_system = _config.get("pattern_prompt") or _DEFAULT_PATTERN_PROMPT
+
+    try:
+        if _config.get("provider") == "anthropic":
+            client = anthropic_sdk.Anthropic(api_key=_config["api_key"])
+            r = client.messages.create(
+                model=_config["model"], max_tokens=2048,
+                system=pattern_system,
+                messages=[{"role": "user", "content": user_msg}],
+            )
+            updated = r.content[0].text.strip()
+        else:
+            r = _client.chat.completions.create(
+                model=_config["model"], max_tokens=2048,
+                messages=[
+                    {"role": "system", "content": pattern_system},
+                    {"role": "user",   "content": user_msg},
+                ],
+            )
+            updated = r.choices[0].message.content.strip()
+
+        pattern_file.write_text(
+            f"<!-- auto-generated by SpaceSelfLog — last updated {date_str} -->\n\n"
+            + updated + "\n",
+            encoding="utf-8",
+        )
+        _pattern_last_run_date = date_str
+        log.info("physical-pattern.md updated for %s", date_str)
+
+    except Exception as e:
+        log.error("Nightly pattern update failed: %s", e)
+
+
+def _nightly_scheduler() -> None:
+    """Background thread: trigger pattern update each night at 02:00 local time."""
+    import time as _time
+    while True:
+        _time.sleep(600)   # check every 10 minutes
+        now_local = datetime.now()
+        if now_local.hour != 2:
+            continue
+        # Use yesterday's date — the day that just finished
+        from datetime import timedelta
+        yesterday = (now_local - timedelta(days=1)).strftime("%Y-%m-%d")
+        if _pattern_last_run_date == yesterday:
+            continue   # already ran for this date
+        log.info("Nightly scheduler: running pattern update for %s", yesterday)
+        _run_nightly_pattern_update(yesterday)
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
@@ -512,4 +826,5 @@ if __name__ == "__main__":
     log.info("Starting on port %d  provider=%s  model=%s",
              PORT, _config["provider"], _config["model"])
     Path(_config["frames_dir"]).expanduser().mkdir(parents=True, exist_ok=True)
+    threading.Thread(target=_nightly_scheduler, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False)

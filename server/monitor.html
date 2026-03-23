@@ -528,14 +528,25 @@
     </div>
 
     <div class="field">
-      <label>Insight Prompt (rolling summary)</label>
-      <textarea id="insight-prompt" spellcheck="false"></textarea>
+      <label>Incremental Prompt 🧪 (per-update · new highlights only)</label>
+      <textarea id="incremental-prompt" spellcheck="false"></textarea>
     </div>
 
     <div class="btn-row">
-      <button class="btn-ghost" id="btn-reset-insight-prompt">Reset</button>
-      <button class="btn-ghost" id="btn-copy-insight-prompt">Copy</button>
-      <button class="btn-primary" id="btn-save-insight-prompt">Save</button>
+      <button class="btn-ghost" id="btn-reset-incremental-prompt">Reset</button>
+      <button class="btn-ghost" id="btn-copy-incremental-prompt">Copy</button>
+      <button class="btn-primary" id="btn-save-incremental-prompt">Save</button>
+    </div>
+
+    <div class="field">
+      <label>Consolidation Prompt 🧪 (periodic · merge &amp; deduplicate highlights)</label>
+      <textarea id="consolidation-prompt" spellcheck="false"></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-ghost" id="btn-reset-consolidation-prompt">Reset</button>
+      <button class="btn-ghost" id="btn-copy-consolidation-prompt">Copy</button>
+      <button class="btn-primary" id="btn-save-consolidation-prompt">Save</button>
     </div>
 
     <div class="field">
@@ -590,6 +601,11 @@
     <div class="field">
       <label>Min minutes between runs</label>
       <input id="insight-min-minutes" type="number" min="1" max="1440" step="1" placeholder="30">
+    </div>
+
+    <div class="field">
+      <label>Consolidation every N updates 🧪</label>
+      <input id="consolidation-every-n" type="number" min="1" max="100" step="1" placeholder="4">
     </div>
 
     <div class="btn-row">
@@ -688,12 +704,14 @@ async function loadConfig() {
     document.getElementById("openclaw-dir").value  = cfg.openclaw_memory_dir || "";
     document.getElementById("project-dir").value   = cfg.project_dir || "";
     document.getElementById("frames-dir").value    = cfg.frames_dir || "";
-    document.getElementById("nightly-hour").value         = (cfg.nightly_hour ?? 2).toString();
-    document.getElementById("insight-min-batches").value  = cfg.insight_min_batches ?? 5;
-    document.getElementById("insight-min-minutes").value  = cfg.insight_min_minutes ?? 30;
-    document.getElementById("prompt").value          = cfg.prompt || "";
-    document.getElementById("insight-prompt").value  = cfg.insight_prompt || "";
-    document.getElementById("pattern-prompt").value  = cfg.pattern_prompt || "";
+    document.getElementById("nightly-hour").value           = (cfg.nightly_hour ?? 2).toString();
+    document.getElementById("insight-min-batches").value    = cfg.insight_min_batches ?? 5;
+    document.getElementById("insight-min-minutes").value    = cfg.insight_min_minutes ?? 30;
+    document.getElementById("consolidation-every-n").value  = cfg.consolidation_every_n ?? 4;
+    document.getElementById("prompt").value                 = cfg.prompt || "";
+    document.getElementById("incremental-prompt").value     = cfg.incremental_prompt || "";
+    document.getElementById("consolidation-prompt").value   = cfg.consolidation_prompt || "";
+    document.getElementById("pattern-prompt").value         = cfg.pattern_prompt || "";
     updateModelRowVisibility();
     configLoaded = true;
   } catch(e) { console.error("loadConfig:", e); }
@@ -783,26 +801,29 @@ async function resetPrompt() {
   } catch(e) { alert("Reset failed: " + e); }
 }
 
-async function saveInsightPrompt() {
-  const btn = document.getElementById("btn-save-insight-prompt");
-  btn.disabled = true;
-  try {
-    await fetch("/api/config", { method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({insight_prompt: document.getElementById("insight-prompt").value}) });
-    btn.textContent = "Saved ✓";
-    setTimeout(() => { btn.textContent = "Save"; btn.disabled = false; }, 1500);
-  } catch(e) { btn.disabled = false; alert("Save failed: " + e); }
-}
-
-async function resetInsightPrompt() {
-  try {
-    await fetch("/api/config", { method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({insight_prompt: ""}) });
-    const cfg = await (await fetch("/api/config")).json();
-    document.getElementById("insight-prompt").value = cfg.insight_prompt || "";
-  } catch(e) { alert("Reset failed: " + e); }
+function makePromptHandlers(textareaId, configKey, saveBtnId, resetBtnId) {
+  async function save() {
+    const btn = document.getElementById(saveBtnId);
+    btn.disabled = true;
+    try {
+      await fetch("/api/config", { method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({[configKey]: document.getElementById(textareaId).value}) });
+      btn.textContent = "Saved ✓";
+      setTimeout(() => { btn.textContent = "Save"; btn.disabled = false; }, 1500);
+    } catch(e) { btn.disabled = false; alert("Save failed: " + e); }
+  }
+  async function reset() {
+    try {
+      await fetch("/api/config", { method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({[configKey]: ""}) });
+      const cfg = await (await fetch("/api/config")).json();
+      document.getElementById(textareaId).value = cfg[configKey] || "";
+    } catch(e) { alert("Reset failed: " + e); }
+  }
+  document.getElementById(saveBtnId).addEventListener("click", save);
+  document.getElementById(resetBtnId).addEventListener("click", reset);
 }
 
 function makeCopyHandler(textareaId) {
@@ -821,9 +842,10 @@ document.getElementById("btn-save-dirs").addEventListener("click", saveDirs);
 document.getElementById("btn-test").addEventListener("click", testConnection);
 document.getElementById("btn-reset-prompt").addEventListener("click", resetPrompt);
 document.getElementById("btn-copy-prompt").addEventListener("click", makeCopyHandler("prompt"));
-document.getElementById("btn-save-insight-prompt").addEventListener("click", saveInsightPrompt);
-document.getElementById("btn-reset-insight-prompt").addEventListener("click", resetInsightPrompt);
-document.getElementById("btn-copy-insight-prompt").addEventListener("click", makeCopyHandler("insight-prompt"));
+makePromptHandlers("incremental-prompt",   "incremental_prompt",   "btn-save-incremental-prompt",   "btn-reset-incremental-prompt");
+makePromptHandlers("consolidation-prompt", "consolidation_prompt", "btn-save-consolidation-prompt", "btn-reset-consolidation-prompt");
+document.getElementById("btn-copy-incremental-prompt").addEventListener("click",   makeCopyHandler("incremental-prompt"));
+document.getElementById("btn-copy-consolidation-prompt").addEventListener("click", makeCopyHandler("consolidation-prompt"));
 
 async function savePatternPrompt() {
   const btn = document.getElementById("btn-save-pattern-prompt");
@@ -1028,9 +1050,10 @@ async function saveInsightCfg() {
     await fetch("/api/config", { method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
-        nightly_hour:        parseInt(document.getElementById("nightly-hour").value, 10),
-        insight_min_batches: parseInt(document.getElementById("insight-min-batches").value, 10),
-        insight_min_minutes: parseInt(document.getElementById("insight-min-minutes").value, 10),
+        nightly_hour:          parseInt(document.getElementById("nightly-hour").value, 10),
+        insight_min_batches:   parseInt(document.getElementById("insight-min-batches").value, 10),
+        insight_min_minutes:   parseInt(document.getElementById("insight-min-minutes").value, 10),
+        consolidation_every_n: parseInt(document.getElementById("consolidation-every-n").value, 10),
       }) });
     btn.textContent = "Saved ✓";
     setTimeout(() => { btn.textContent = "Save"; btn.disabled = false; }, 1500);

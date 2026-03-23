@@ -137,43 +137,69 @@ Guidelines:
   every turn of every session.\
 """
 
-_INSIGHT_PROMPT = """\
-You are distilling today's physical-world perception logs into a daily \
-summary for a personal AI agent whose job is to proactively help its \
-user — anticipating needs, offering timely suggestions, and adapting \
-responses to what is actually happening in the user's life. This \
-summary is the agent's only window into the physical world, so include \
-anything that could inform a helpful action.
+_INCREMENTAL_INSIGHT_PROMPT = """\
+You are processing a new batch of physical-world perception logs for a personal AI agent.
 
 Inputs:
-1. Previous version of today's insights file (empty on first run)
-2. Perception logs since the last run
+1. Existing insight file for today (for context only — do not repeat its highlights)
+2. New perception logs since the last update
 
-Carry forward previous highlights that still pass the filter. Drop an \
-item only when later observations clearly contradict or supersede it, \
-not simply because it is from earlier in the day.
+Your task:
+1. Rewrite **Current State**: 2-3 sentences on what the user is doing right now, where, \
+   with whom, and in what mode (focused, relaxed, transitioning, social).
+2. List any **New Highlights** found only in the new logs: events, objects, or schedule \
+   deviations the agent could use to help the user.
+
+Respond with exactly this structure — no preamble:
 
 ## Current State (as of [timestamp of most recent log entry])
-2-3 sentences. What is the user doing, where, with whom, and in what \
-mode (focused, relaxed, transitioning, social)?
+<2-3 sentences>
 
-## Today's Highlights
-Bullet list. For each candidate item, ask: could the agent use this to \
-help the user — answer a question better, make a timely suggestion, or \
-anticipate an upcoming need? If not, omit it.
-
-Each item should be specific to today — a behavior, schedule deviation, \
-object, or event that suggests a need or preference. Typical days \
-produce 3-8 items; fewer is fine.
+## New Highlights
+<bullet list — omit this section entirely if nothing new is worth noting>
 
 Guidelines:
-- Write for the agent, not for a diary.
-- No patterns or habits — that belongs in the separate pattern file.
-- Third person. Markdown only, no preamble.\
+- New Highlights must be new to this batch — do not echo items already in the existing file.
+- Apply the filter: could the agent use this to answer a question better, make a timely \
+  suggestion, or anticipate a need? If not, omit.
+- No patterns or habits — those belong in the pattern file.
+- Third person. Markdown only.\
 """
 
-_INSIGHT_MIN_BATCHES  = 5
-_INSIGHT_MIN_MINUTES  = 30
+_CONSOLIDATION_INSIGHT_PROMPT = """\
+You are consolidating today's accumulated insight highlights for a personal AI agent.
+
+The insight file has grown through multiple incremental updates and may contain \
+duplicate, overlapping, or superseded highlights.
+
+Inputs:
+1. Full accumulated insight file for today
+
+Your task:
+- Keep the existing **Current State** section unchanged.
+- Rewrite **Today's Highlights**: merge duplicates, remove items superseded by later \
+  observations, and condense where possible. Preserve everything that could help the agent.
+
+Output the complete insight file with this structure — no preamble:
+
+## Current State (as of [timestamp])
+<keep existing, unchanged>
+
+## Today's Highlights
+<merged, deduplicated, condensed bullet list>
+
+Guidelines:
+- Do not lose information unless it is clearly redundant or contradicted by a later entry.
+- No patterns or habits.
+- Third person. Markdown only.\
+"""
+
+# Keep old name as alias so any saved config value in insight_prompt still works
+_INSIGHT_PROMPT = _INCREMENTAL_INSIGHT_PROMPT
+
+_INSIGHT_MIN_BATCHES    = 5
+_INSIGHT_MIN_MINUTES    = 30
+_CONSOLIDATION_EVERY_N  = 4
 
 _DEFAULTS: dict = {
     "provider":            "openrouter",
@@ -184,12 +210,14 @@ _DEFAULTS: dict = {
     "project_dir":         os.environ.get("PROJECT_DIR", ""),
     "frames_dir":          os.environ.get("FRAMES_DIR",
                                str(Path("~/.spaceselflog/frames").expanduser())),
-    "prompt":              _DEFAULT_PROMPT,
-    "insight_prompt":      _INSIGHT_PROMPT,
-    "pattern_prompt":      _DEFAULT_PATTERN_PROMPT,
-    "nightly_hour":        2,
-    "insight_min_batches": _INSIGHT_MIN_BATCHES,
-    "insight_min_minutes": _INSIGHT_MIN_MINUTES,
+    "prompt":               _DEFAULT_PROMPT,
+    "incremental_prompt":   _INCREMENTAL_INSIGHT_PROMPT,
+    "consolidation_prompt": _CONSOLIDATION_INSIGHT_PROMPT,
+    "pattern_prompt":       _DEFAULT_PATTERN_PROMPT,
+    "nightly_hour":         2,
+    "insight_min_batches":  _INSIGHT_MIN_BATCHES,
+    "insight_min_minutes":  _INSIGHT_MIN_MINUTES,
+    "consolidation_every_n": _CONSOLIDATION_EVERY_N,
     "telegram_bot_token":  os.environ.get("TELEGRAM_BOT_TOKEN", ""),
     "telegram_chat_id":    os.environ.get("TELEGRAM_CHAT_ID", ""),
     "telegram_gap_minutes": 30,
@@ -200,7 +228,11 @@ def _load_config() -> dict:
     cfg = dict(_DEFAULTS)
     if CONFIG_FILE.exists():
         try:
-            cfg.update(json.loads(CONFIG_FILE.read_text()))
+            saved = json.loads(CONFIG_FILE.read_text())
+            # Backward compat: migrate insight_prompt → incremental_prompt
+            if "insight_prompt" in saved and "incremental_prompt" not in saved:
+                saved["incremental_prompt"] = saved.pop("insight_prompt")
+            cfg.update(saved)
         except Exception:
             pass
     return cfg
@@ -245,6 +277,7 @@ _insight_batch_count  = 0               # batches since last insight update
 _insight_last_time: datetime | None = None   # UTC time of last insight update
 _insight_log_offset: dict[str, int] = {}     # date_str -> byte offset already incorporated
 _insight_runs_today: dict[str, int] = {}     # date_str -> successful run count
+_incremental_count: dict[str, int]  = {}     # date_str -> incremental runs since last consolidation
 
 
 # ---------------------------------------------------------------------------
@@ -283,9 +316,10 @@ def get_config():
     key = safe.get("api_key", "")
     safe["api_key_masked"] = ("•" * max(0, len(key) - 6) + key[-6:]) if key else ""
     # Return effective prompt values so the UI reflects what will actually be used.
-    safe["prompt"]         = safe.get("prompt")         or _DEFAULT_PROMPT
-    safe["insight_prompt"] = safe.get("insight_prompt") or _INSIGHT_PROMPT
-    safe["pattern_prompt"] = safe.get("pattern_prompt") or _DEFAULT_PATTERN_PROMPT
+    safe["prompt"]               = safe.get("prompt")               or _DEFAULT_PROMPT
+    safe["incremental_prompt"]   = safe.get("incremental_prompt")   or _INCREMENTAL_INSIGHT_PROMPT
+    safe["consolidation_prompt"] = safe.get("consolidation_prompt") or _CONSOLIDATION_INSIGHT_PROMPT
+    safe["pattern_prompt"]       = safe.get("pattern_prompt")       or _DEFAULT_PATTERN_PROMPT
     return jsonify(safe)
 
 
@@ -295,8 +329,8 @@ def post_config():
     body = request.get_json(force=True, silent=True) or {}
     # Merge into current config; ignore unknown keys
     allowed = {"provider", "api_key", "model", "openclaw_memory_dir", "project_dir", "frames_dir",
-               "prompt", "insight_prompt", "pattern_prompt", "nightly_hour",
-               "insight_min_batches", "insight_min_minutes",
+               "prompt", "incremental_prompt", "consolidation_prompt", "pattern_prompt",
+               "nightly_hour", "insight_min_batches", "insight_min_minutes", "consolidation_every_n",
                "telegram_bot_token", "telegram_chat_id", "telegram_gap_minutes"}
     for k in allowed:
         if k in body:
@@ -685,9 +719,56 @@ def _write_physical_log(batch_id, session_id, batch_created,
 # Rolling insight: physical-insights/YYYY-MM-DD.md
 # ---------------------------------------------------------------------------
 
+def _split_insight_sections(text: str) -> dict[str, str]:
+    """Parse markdown sections from an insight file. Returns {header_text: body_text}.
+    Comment lines (<!-- ... -->) are stripped before parsing."""
+    lines = [l for l in text.splitlines() if not l.startswith("<!--")]
+    text = "\n".join(lines).strip()
+
+    sections: dict[str, str] = {}
+    current_header: str | None = None
+    current_lines: list[str] = []
+
+    for line in text.splitlines():
+        if line.startswith("## "):
+            if current_header is not None:
+                sections[current_header] = "\n".join(current_lines).strip()
+            current_header = line[3:].strip()
+            current_lines = []
+        else:
+            if current_header is not None:
+                current_lines.append(line)
+
+    if current_header is not None:
+        sections[current_header] = "\n".join(current_lines).strip()
+
+    return sections
+
+
+def _call_insight_vlm(system_prompt: str, user_msg: str, max_tokens: int = 1024) -> str:
+    """Call the configured LLM and return the text response."""
+    if _config.get("provider") == "anthropic":
+        client = anthropic_sdk.Anthropic(api_key=_config["api_key"])
+        r = client.messages.create(
+            model=_config["model"], max_tokens=max_tokens,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_msg}],
+        )
+        return r.content[0].text.strip()
+    r = _client.chat.completions.create(
+        model=_config["model"], max_tokens=max_tokens,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user",   "content": user_msg},
+        ],
+    )
+    return r.choices[0].message.content.strip()
+
+
 def _maybe_update_today_insight(date_str: str) -> None:
-    """Increment batch counter; trigger insight update if conditions are met."""
-    global _insight_batch_count, _insight_last_time, _insight_runs_today
+    """Increment batch counter; trigger incremental update if conditions are met.
+    After every consolidation_every_n incremental updates, run a consolidation pass."""
+    global _insight_batch_count, _insight_last_time, _insight_runs_today, _incremental_count
     with _insight_lock:
         _insight_batch_count += 1
         now = datetime.now(timezone.utc)
@@ -707,19 +788,32 @@ def _maybe_update_today_insight(date_str: str) -> None:
         _insight_batch_count = 0
         _insight_last_time   = now
         _insight_runs_today[date_str] = _insight_runs_today.get(date_str, 0) + 1
+        _incremental_count[date_str]  = _incremental_count.get(date_str, 0) + 1
+        every_n = int(_config.get("consolidation_every_n", _CONSOLIDATION_EVERY_N))
+        run_consolidation = (_incremental_count[date_str] >= every_n)
+        if run_consolidation:
+            _incremental_count[date_str] = 0
 
-    # Run outside the lock — this is a slow LLM call
+    # Run outside the lock — these are slow LLM calls
     try:
-        _update_today_insight(date_str)
+        _run_incremental_update(date_str)
         _append_event("insight", status="ok", date=date_str,
                       run=_insight_runs_today.get(date_str, 1))
     except Exception as e:
-        log.error("Insight update error: %s", e)
+        log.error("Insight incremental update error: %s", e)
         _append_event("insight", status="error", date=date_str, error=str(e))
+        return  # Don't consolidate if incremental failed
+
+    if run_consolidation:
+        try:
+            _run_consolidation_pass(date_str)
+        except Exception as e:
+            log.error("Insight consolidation error: %s", e)
+            _append_event("insight_consolidation", status="error", date=date_str, error=str(e))
 
 
-def _update_today_insight(date_str: str) -> None:
-    """Incorporate new log entries into today's insight file (incremental)."""
+def _run_incremental_update(date_str: str) -> None:
+    """Read new log entries, generate new highlights + updated Current State, append to insight file."""
     global _insight_log_offset
 
     mem_dir = _config.get("openclaw_memory_dir", "")
@@ -744,13 +838,21 @@ def _update_today_insight(date_str: str) -> None:
     insights_dir.mkdir(parents=True, exist_ok=True)
     insight_file = insights_dir / f"{date_str}.md"
 
-    existing_insight = ""
+    existing_text = ""
     if insight_file.exists():
-        # Strip the auto-generated comment header before feeding to model
-        text = insight_file.read_text(encoding="utf-8")
-        existing_insight = "\n".join(
-            line for line in text.splitlines() if not line.startswith("<!--")
-        ).strip()
+        existing_text = insight_file.read_text(encoding="utf-8")
+
+    # Parse existing sections to extract accumulated highlights
+    existing_sections = _split_insight_sections(existing_text)
+    existing_highlights_key = next(
+        (k for k in existing_sections if k.startswith("Today's Highlights")), None
+    )
+    existing_highlights_body = existing_sections.get(existing_highlights_key, "") if existing_highlights_key else ""
+
+    # Strip comment lines for context passed to VLM
+    existing_insight_clean = "\n".join(
+        l for l in existing_text.splitlines() if not l.startswith("<!--")
+    ).strip()
 
     # Read and consume pending human comments
     pending_comments = []
@@ -766,10 +868,10 @@ def _update_today_insight(date_str: str) -> None:
             if pending_comments:
                 PENDING_COMMENTS_FILE.write_text("", encoding="utf-8")  # clear
 
-    if existing_insight:
+    if existing_insight_clean:
         user_msg = (
-            f"Existing summary for {date_str}:\n\n{existing_insight}\n\n"
-            f"---\nNew perception logs to incorporate:\n\n{new_logs}"
+            f"Existing insight file for {date_str} (for context):\n\n{existing_insight_clean}\n\n"
+            f"---\nNew perception logs to process:\n\n{new_logs}"
         )
     else:
         user_msg = f"Physical perception logs for {date_str}:\n\n{new_logs}"
@@ -783,35 +885,69 @@ def _update_today_insight(date_str: str) -> None:
         user_msg += f"\n\n---\nHuman annotations (prioritize incorporating these):\n\n{annotations}"
         log.info("Insight: including %d human comment(s)", len(pending_comments))
 
-    insight_system = _config.get("insight_prompt") or _INSIGHT_PROMPT
+    incremental_system = _config.get("incremental_prompt") or _INCREMENTAL_INSIGHT_PROMPT
+    vlm_output = _call_insight_vlm(incremental_system, user_msg)
 
-    if _config.get("provider") == "anthropic":
-        client = anthropic_sdk.Anthropic(api_key=_config["api_key"])
-        r = client.messages.create(
-            model=_config["model"], max_tokens=1024,
-            system=insight_system,
-            messages=[{"role": "user", "content": user_msg}],
-        )
-        insight = r.content[0].text.strip()
-    else:
-        r = _client.chat.completions.create(
-            model=_config["model"], max_tokens=1024,
-            messages=[
-                {"role": "system", "content": insight_system},
-                {"role": "user",   "content": user_msg},
-            ],
-        )
-        insight = r.choices[0].message.content.strip()
+    # Parse VLM output: extract new Current State and New Highlights sections
+    vlm_sections = _split_insight_sections(vlm_output)
+    new_state_key      = next((k for k in vlm_sections if k.startswith("Current State")), None)
+    new_highlights_key = next((k for k in vlm_sections if k.startswith("New Highlights")), None)
 
+    new_state_header = f"## {new_state_key}" if new_state_key else "## Current State"
+    new_state_body   = vlm_sections.get(new_state_key, "").strip()   if new_state_key else ""
+    new_highlights_body = vlm_sections.get(new_highlights_key, "").strip() if new_highlights_key else ""
+
+    # Code-append: preserve existing highlights, add new ones below
+    merged_parts = [existing_highlights_body] if existing_highlights_body.strip() else []
+    if new_highlights_body:
+        merged_parts.append(new_highlights_body)
+    merged_highlights = "\n".join(merged_parts)
+
+    # Write insight file
     runs = _insight_runs_today.get(date_str, 1)
     now_str = datetime.now(timezone.utc).strftime("%H:%M UTC")
-    insight_file.write_text(
-        f"<!-- auto-generated by SpaceSelfLog — update #{runs} — last updated {now_str} -->\n\n"
-        + insight + "\n",
-        encoding="utf-8",
-    )
+    header = f"<!-- auto-generated by SpaceSelfLog — update #{runs} — last updated {now_str} -->"
+
+    content_parts = [header, ""]
+    if new_state_body:
+        content_parts.append(f"{new_state_header}\n{new_state_body}")
+        content_parts.append("")
+    if merged_highlights:
+        content_parts.append(f"## Today's Highlights\n{merged_highlights}")
+        content_parts.append("")
+
+    insight_file.write_text("\n".join(content_parts), encoding="utf-8")
     _insight_log_offset[date_str] = new_offset
-    log.info("Insight updated → %s  (offset %d→%d)", insight_file, offset, new_offset)
+    log.info("Insight (incremental) → %s  (offset %d→%d)", insight_file, offset, new_offset)
+
+
+def _run_consolidation_pass(date_str: str) -> None:
+    """Consolidate accumulated highlights: merge duplicates, remove superseded items."""
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        return
+
+    insight_file = Path(mem_dir).expanduser() / "physical-insights" / f"{date_str}.md"
+    if not insight_file.exists():
+        return
+
+    full_text = insight_file.read_text(encoding="utf-8").strip()
+    if not full_text:
+        return
+
+    clean_text = "\n".join(
+        l for l in full_text.splitlines() if not l.startswith("<!--")
+    ).strip()
+
+    user_msg = f"Today's accumulated insight file for {date_str}:\n\n{clean_text}"
+    consolidation_system = _config.get("consolidation_prompt") or _CONSOLIDATION_INSIGHT_PROMPT
+    consolidated = _call_insight_vlm(consolidation_system, user_msg)
+
+    runs = _insight_runs_today.get(date_str, 0)
+    now_str = datetime.now(timezone.utc).strftime("%H:%M UTC")
+    header = f"<!-- auto-generated by SpaceSelfLog — update #{runs} (consolidated) — last updated {now_str} -->"
+    insight_file.write_text(header + "\n\n" + consolidated + "\n", encoding="utf-8")
+    log.info("Insight (consolidation) → %s", insight_file)
 
 
 # ---------------------------------------------------------------------------

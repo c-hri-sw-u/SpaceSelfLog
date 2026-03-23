@@ -608,6 +608,11 @@
       <input id="consolidation-every-n" type="number" min="1" max="100" step="1" placeholder="4">
     </div>
 
+    <div class="field" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <label>Hook: insights re-inject interval (min)</label>
+      <input id="hook-insight-interval" type="number" min="1" max="480" step="1" placeholder="30">
+    </div>
+
     <div class="btn-row">
       <button class="btn-primary" id="btn-save-insight-cfg">Save</button>
     </div>
@@ -712,6 +717,7 @@ async function loadConfig() {
     document.getElementById("incremental-prompt").value     = cfg.incremental_prompt || "";
     document.getElementById("consolidation-prompt").value   = cfg.consolidation_prompt || "";
     document.getElementById("pattern-prompt").value         = cfg.pattern_prompt || "";
+    document.getElementById("hook-insight-interval").value  = cfg.hook_insight_interval_minutes ?? 30;
     updateModelRowVisibility();
     configLoaded = true;
   } catch(e) { console.error("loadConfig:", e); }
@@ -1053,7 +1059,8 @@ async function saveInsightCfg() {
         nightly_hour:          parseInt(document.getElementById("nightly-hour").value, 10),
         insight_min_batches:   parseInt(document.getElementById("insight-min-batches").value, 10),
         insight_min_minutes:   parseInt(document.getElementById("insight-min-minutes").value, 10),
-        consolidation_every_n: parseInt(document.getElementById("consolidation-every-n").value, 10),
+        consolidation_every_n:        parseInt(document.getElementById("consolidation-every-n").value, 10),
+        hook_insight_interval_minutes: parseInt(document.getElementById("hook-insight-interval").value, 10),
       }) });
     btn.textContent = "Saved ✓";
     setTimeout(() => { btn.textContent = "Save"; btn.disabled = false; }, 1500);

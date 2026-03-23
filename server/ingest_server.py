@@ -51,6 +51,7 @@ JOURNAL_FILE          = Path(os.environ.get("JOURNAL_FILE", "~/.spaceselflog/jou
 TRANSCRIPTS_DIR       = Path(os.environ.get("TRANSCRIPTS_DIR", "~/.spaceselflog/transcripts")).expanduser()
 OPENCLAW_SESSIONS_DIR = Path(os.environ.get("OPENCLAW_SESSIONS_DIR", "~/.openclaw/agents/main/sessions")).expanduser()
 OPENCLAW_SESSION_KEY  = os.environ.get("OPENCLAW_SESSION_KEY", "agent:main:telegram:group:-5158989830")
+HOOK_CONFIG_FILE      = Path(os.environ.get("HOOK_CONFIG_FILE", "~/.spaceselflog/hook-config.json")).expanduser()
 PORT         = int(os.environ.get("PORT", 8000))
 
 _events_lock = threading.Lock()
@@ -221,6 +222,7 @@ _DEFAULTS: dict = {
     "telegram_bot_token":  os.environ.get("TELEGRAM_BOT_TOKEN", ""),
     "telegram_chat_id":    os.environ.get("TELEGRAM_CHAT_ID", ""),
     "telegram_gap_minutes": 30,
+    "hook_insight_interval_minutes": 30,
 }
 
 
@@ -241,6 +243,14 @@ def _load_config() -> dict:
 def _save_config(cfg: dict) -> None:
     CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
     CONFIG_FILE.write_text(json.dumps(cfg, indent=2, ensure_ascii=False))
+    # Write hook-config.json so the OpenClaw hook can read settings without touching openclaw.json
+    try:
+        HOOK_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        HOOK_CONFIG_FILE.write_text(json.dumps({
+            "intervalMinutes": cfg.get("hook_insight_interval_minutes", 30),
+        }, indent=2))
+    except Exception as e:
+        log.warning("Failed to write hook-config.json: %s", e)
 
 
 _config: dict = _load_config()
@@ -331,7 +341,8 @@ def post_config():
     allowed = {"provider", "api_key", "model", "openclaw_memory_dir", "project_dir", "frames_dir",
                "prompt", "incremental_prompt", "consolidation_prompt", "pattern_prompt",
                "nightly_hour", "insight_min_batches", "insight_min_minutes", "consolidation_every_n",
-               "telegram_bot_token", "telegram_chat_id", "telegram_gap_minutes"}
+               "telegram_bot_token", "telegram_chat_id", "telegram_gap_minutes",
+               "hook_insight_interval_minutes"}
     for k in allowed:
         if k in body:
             _config[k] = body[k]

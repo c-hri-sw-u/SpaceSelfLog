@@ -147,18 +147,18 @@ Inputs:
 1. Today's existing summary (current state + highlights — for context and deduplication)
 2. New perception logs since the last update
 
-Respond with a single JSON object and nothing else:
-{
-  "current_state": "<2-3 sentences: what the user is doing right now, where, with whom, and in what mode>",
-  "new_highlights": [
-    "<highlight text>",
-    "<highlight text>"
-  ]
-}
+Respond using exactly these two markdown sections and nothing else:
+
+## Current State
+<2-3 sentences: what the user is doing right now, where, with whom, and in what mode>
+
+## New Highlights
+- <highlight text>
+- <highlight text>
 
 Guidelines:
-- new_highlights: only items from the new logs not already covered by
-  existing highlights. Return [] if nothing new is worth noting.
+- New Highlights: only items from the new logs not already covered by
+  existing highlights. Leave the section empty if nothing new is worth noting.
 - For each candidate, ask: could the agent use this to answer a question
   better, make a timely suggestion, or anticipate an upcoming need?
   If not, omit.
@@ -729,6 +729,15 @@ def _write_physical_log(batch_id, session_id, batch_created,
 # Rolling insight: physical-insights/YYYY-MM-DD.md
 # ---------------------------------------------------------------------------
 
+def _find_section(sections: dict[str, str], keyword: str) -> tuple[str | None, str]:
+    """Return (key, body) for the first section whose header contains keyword (case-insensitive).
+    Returns (None, '') if not found."""
+    key = next((k for k in sections if keyword in k.lower()), None)
+    if key is None:
+        return None, ""
+    return key, sections[key].strip()
+
+
 def _split_insight_sections(text: str) -> dict[str, str]:
     """Parse markdown sections from an insight file. Returns {header_text: body_text}.
     Comment lines (<!-- ... -->) are stripped before parsing."""
@@ -854,10 +863,7 @@ def _run_incremental_update(date_str: str) -> None:
 
     # Parse existing sections to extract accumulated highlights
     existing_sections = _split_insight_sections(existing_text)
-    existing_highlights_key = next(
-        (k for k in existing_sections if k.startswith("Today's Highlights")), None
-    )
-    existing_highlights_body = existing_sections.get(existing_highlights_key, "") if existing_highlights_key else ""
+    existing_highlights_key, existing_highlights_body = _find_section(existing_sections, "highlight")
 
     # Strip comment lines for context passed to VLM
     existing_insight_clean = "\n".join(
@@ -897,28 +903,30 @@ def _run_incremental_update(date_str: str) -> None:
 
     incremental_system = _config.get("incremental_prompt") or _INCREMENTAL_INSIGHT_PROMPT
 
-    # Retry once on JSON parse failure
-    vlm_data = None
+    def _parse_incremental_markdown(raw: str) -> tuple[str, str] | None:
+        """Parse VLM markdown response into (current_state_body, new_highlights_body).
+        Returns None if either section is missing."""
+        sections = _split_insight_sections(raw)
+        state_key,      state_body      = _find_section(sections, "current")
+        highlights_key, highlights_body = _find_section(sections, "highlight")
+        if state_key is None or highlights_key is None:
+            return None
+        return state_body, highlights_body
+
+    # Retry once on section-parse failure
+    parsed = None
     for attempt in range(2):
         raw = _call_insight_vlm(incremental_system, user_msg)
-        try:
-            # Strip markdown code fences if present
-            stripped = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-            vlm_data = json.loads(stripped)
+        parsed = _parse_incremental_markdown(raw)
+        if parsed is not None:
             break
-        except json.JSONDecodeError:
-            if attempt == 0:
-                log.warning("Insight incremental: JSON parse failed, retrying")
-            else:
-                log.error("Insight incremental: JSON parse failed after retry — skipping")
-                return
+        if attempt == 0:
+            log.warning("Insight incremental: section parse failed, retrying")
+        else:
+            log.error("Insight incremental: section parse failed after retry — skipping")
+            return
 
-    new_state_body      = vlm_data.get("current_state", "").strip()
-    new_highlights_raw  = vlm_data.get("new_highlights", [])
-    if isinstance(new_highlights_raw, list):
-        new_highlights_text = "\n".join(str(h).strip() for h in new_highlights_raw if str(h).strip())
-    else:
-        new_highlights_text = str(new_highlights_raw).strip()
+    new_state_body, new_highlights_text = parsed
 
     # Code-append: preserve existing highlights, add new ones below
     merged_parts = [existing_highlights_body] if existing_highlights_body.strip() else []
@@ -961,17 +969,13 @@ def _run_consolidation_pass(date_str: str) -> None:
     existing_text = insight_file.read_text(encoding="utf-8")
     existing_sections = _split_insight_sections(existing_text)
 
-    highlights_key = next(
-        (k for k in existing_sections if k.startswith("Today's Highlights")), None
-    )
-    existing_highlights = existing_sections.get(highlights_key, "").strip() if highlights_key else ""
+    highlights_key, existing_highlights = _find_section(existing_sections, "highlight")
     if not existing_highlights:
         return  # Nothing to consolidate
 
     # Preserve Current State section verbatim
-    state_key = next((k for k in existing_sections if k.startswith("Current State")), None)
+    state_key, state_body = _find_section(existing_sections, "current")
     state_header = f"## {state_key}" if state_key else None
-    state_body   = existing_sections.get(state_key, "").strip() if state_key else ""
 
     user_msg = f"Today's accumulated highlights for {date_str}:\n\n{existing_highlights}"
     consolidation_system = _config.get("consolidation_prompt") or _CONSOLIDATION_INSIGHT_PROMPT

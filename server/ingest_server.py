@@ -158,7 +158,7 @@ Respond using exactly these two markdown sections and nothing else:
 
 Guidelines:
 - New Highlights: only items from the new logs not already covered by
-  existing highlights. Leave the section empty if nothing new is worth noting.
+  existing highlights. Write (none) if nothing new is worth noting.
 - For each candidate, ask: could the agent use this to answer a question
   better, make a timely suggestion, or anticipate an upcoming need?
   If not, omit.
@@ -166,6 +166,7 @@ Guidelines:
   object, or event that suggests a need or preference.
 - Write for the agent, not for a diary.
 - No patterns or habits — those belong in the pattern file.
+- Do not describe what is on screen unless it reveals a habit, preference, or need.
 - Third person.\
 """
 

@@ -1454,9 +1454,20 @@ def get_transcript(date: str):
 # OpenClaw session transcript (reads local .jsonl session files directly)
 # ---------------------------------------------------------------------------
 
-def _read_openclaw_session_messages(session_file: Path, today_local: str) -> list[dict]:
-    """Read user/assistant messages from one OpenClaw session JSONL file, filtered to today (local date)."""
-    messages = []
+HOOK_EVENTS_FILE = Path(os.environ.get("HOOK_EVENTS_FILE", "~/.spaceselflog/hook-events.jsonl")).expanduser()
+_hook_events_lock = threading.Lock()
+
+
+def _local_date(ts: str) -> str:
+    try:
+        return datetime.fromisoformat(ts.replace("Z", "+00:00")).astimezone().strftime("%Y-%m-%d")
+    except Exception:
+        return ts[:10]
+
+
+def _read_openclaw_session_events(session_file: Path, today_local: str) -> list[dict]:
+    """Read all events from one OpenClaw session JSONL file, filtered to today (local date)."""
+    events = []
     try:
         with session_file.open("r", encoding="utf-8") as f:
             for line in f:
@@ -1467,61 +1478,114 @@ def _read_openclaw_session_messages(session_file: Path, today_local: str) -> lis
                     obj = json.loads(line)
                 except json.JSONDecodeError:
                     continue
-                if obj.get("type") != "message":
-                    continue
-                msg = obj.get("message", {})
-                role = msg.get("role")
-                if role not in ("user", "assistant"):
-                    continue
+
                 ts = obj.get("timestamp", "")
-                # timestamp is UTC ISO string; convert to local date for filtering
-                try:
-                    dt_utc = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-                    local_date = dt_utc.astimezone().strftime("%Y-%m-%d")
-                except Exception:
-                    local_date = ts[:10]
-                if local_date != today_local:
+                kind = obj.get("type", "")
+
+                # Session-level metadata (no timestamp filter — always show session start)
+                if kind == "session":
+                    events.append({
+                        "ts": ts or obj.get("ts", ""),
+                        "kind": "session_start",
+                        "data": {k: v for k, v in obj.items() if k not in ("type",)},
+                    })
                     continue
-                content_parts = msg.get("content", [])
-                text = " ".join(
-                    c.get("text", "") for c in content_parts
-                    if isinstance(c, dict) and c.get("type") == "text"
-                ).strip()
-                if not text:
+
+                if kind in ("model_change", "thinking_level_change", "custom"):
+                    if _local_date(ts) != today_local:
+                        continue
+                    events.append({"ts": ts, "kind": kind, "data": obj})
                     continue
-                messages.append({
-                    "ts":   ts,
-                    "role": role,
-                    "text": text,
-                })
+
+                if kind != "message":
+                    continue
+
+                if _local_date(ts) != today_local:
+                    continue
+
+                msg = obj.get("message", {})
+                role = msg.get("role", "")
+                content = msg.get("content", [])
+
+                if role == "user":
+                    # Extract text, strip OpenClaw metadata injections
+                    text_parts = [c.get("text", "") for c in content
+                                  if isinstance(c, dict) and c.get("type") == "text"]
+                    text = " ".join(text_parts).strip()
+                    events.append({"ts": ts, "kind": "user_message", "data": {"text": text}})
+
+                elif role == "assistant":
+                    # Split into sub-events: text blocks, tool calls, thinking blocks
+                    for c in content:
+                        if not isinstance(c, dict):
+                            continue
+                        ctype = c.get("type")
+                        if ctype == "text":
+                            if c.get("text", "").strip():
+                                events.append({"ts": ts, "kind": "assistant_text",
+                                               "data": {"text": c["text"]}})
+                        elif ctype == "toolCall":
+                            events.append({"ts": ts, "kind": "tool_call", "data": {
+                                "id":        c.get("id"),
+                                "name":      c.get("name"),
+                                "arguments": c.get("arguments", {}),
+                            }})
+                        elif ctype == "thinking":
+                            events.append({"ts": ts, "kind": "thinking",
+                                           "data": {"text": c.get("thinking", c.get("text", ""))}})
+
+                elif role == "toolResult":
+                    text_parts = [c.get("text", "") for c in content
+                                  if isinstance(c, dict) and c.get("type") == "text"]
+                    events.append({"ts": ts, "kind": "tool_result", "data": {
+                        "tool_call_id": msg.get("toolCallId"),
+                        "tool_name":    msg.get("toolName"),
+                        "text":         "\n".join(text_parts),
+                    }})
+
     except Exception as e:
         log.warning("Failed to read session file %s: %s", session_file, e)
-    return messages
+    return events
+
+
+def _read_hook_events(today_local: str) -> list[dict]:
+    """Read hook injection events from hook-events.jsonl, filtered to today."""
+    events = []
+    if not HOOK_EVENTS_FILE.exists():
+        return events
+    with _hook_events_lock:
+        with HOOK_EVENTS_FILE.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    obj = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if _local_date(obj.get("ts", "")) == today_local:
+                    events.append({"ts": obj["ts"], "kind": "hook_inject", "data": obj})
+    return events
 
 
 @app.get("/api/openclaw-transcript/today")
 def get_openclaw_transcript_today():
     """
-    Return today's user/assistant messages from OpenClaw session files.
-    Handles /reset by including both the current session file and any
-    .reset.{today}* files created today.
+    Return today's full event stream from OpenClaw session files + hook injection log.
+    Handles /reset by including both the current session file and any .reset.{today}* files.
     """
     today_local = datetime.now().strftime("%Y-%m-%d")
-    yesterday_local = (datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-                       .__class__.fromtimestamp(
-                           datetime.now().timestamp() - 86400
-                       ).strftime("%Y-%m-%d"))
+    yesterday_local = (datetime.fromtimestamp(datetime.now().timestamp() - 86400)
+                       .strftime("%Y-%m-%d"))
 
     session_files: list[Path] = []
 
-    # 1. Current session file from sessions.json
     sessions_index = OPENCLAW_SESSIONS_DIR / "sessions.json"
     if sessions_index.exists():
         try:
             with sessions_index.open("r", encoding="utf-8") as f:
                 index = json.load(f)
-            session_info = index.get(OPENCLAW_SESSION_KEY, {})
-            current_file = session_info.get("sessionFile", "")
+            current_file = index.get(OPENCLAW_SESSION_KEY, {}).get("sessionFile", "")
             if current_file:
                 p = Path(current_file)
                 if p.exists():
@@ -1529,30 +1593,18 @@ def get_openclaw_transcript_today():
         except Exception as e:
             log.warning("Failed to read sessions.json: %s", e)
 
-    # 2. Any .reset. files created today or yesterday (catches midnight-local resets)
     if OPENCLAW_SESSIONS_DIR.exists():
         for f in OPENCLAW_SESSIONS_DIR.iterdir():
-            name = f.name
-            if ".reset." not in name:
-                continue
-            # filename: <uuid>.jsonl.reset.<ISO-UTC-timestamp>
-            # e.g. abc123.jsonl.reset.2026-03-23T08-22-40.078Z
-            reset_ts_part = name.split(".reset.")[-1].replace("-", ":", 2)[:10]  # "2026:03:23" → fix
-            # simpler: just check if today or yesterday date string appears in the filename
-            if today_local in name or yesterday_local in name:
+            if ".reset." in f.name and (today_local in f.name or yesterday_local in f.name):
                 if f not in session_files:
                     session_files.append(f)
 
-    if not session_files:
-        return jsonify([])
-
-    all_messages: list[dict] = []
+    all_events: list[dict] = []
     for sf in session_files:
-        all_messages.extend(_read_openclaw_session_messages(sf, today_local))
-
-    # Sort by timestamp
-    all_messages.sort(key=lambda m: m["ts"])
-    return jsonify(all_messages)
+        all_events.extend(_read_openclaw_session_events(sf, today_local))
+    all_events.extend(_read_hook_events(today_local))
+    all_events.sort(key=lambda e: e.get("ts", ""))
+    return jsonify(all_events)
 
 
 # ---------------------------------------------------------------------------

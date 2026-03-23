@@ -381,6 +381,79 @@
     padding: 0 4px;
   }
 
+  /* ── Session divider ── */
+  .ev-session {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+  }
+  .ev-session-line { flex: 1; height: 1px; background: var(--border); }
+  .ev-session-label {
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    padding: 2px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  /* ── Meta row (model_change, thinking_level_change, hook_inject) ── */
+  .ev-meta {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    padding: 2px 0;
+  }
+
+  /* ── Tool call / result rows ── */
+  .ev-tool {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    font-size: 12px;
+  }
+  .ev-tool-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .ev-tool-header:hover { background: rgba(255,255,255,.03); }
+  .ev-tool-name { font-weight: 600; color: var(--text); }
+  .ev-tool-arg  { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .ev-tool-ts   { font-size: 10px; color: var(--muted); margin-left: auto; flex-shrink: 0; }
+  .ev-tool-body {
+    display: none;
+    padding: 6px 10px 8px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .ev-tool-body.open { display: block; }
+
+  /* ── Thinking block ── */
+  .ev-thinking {
+    border-left: 2px solid var(--border);
+    margin-left: 8px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    cursor: pointer;
+    user-select: none;
+  }
+  .ev-thinking-text { display: none; white-space: pre-wrap; }
+  .ev-thinking-text.open { display: block; }
+
   #transcript-empty { color: var(--muted); font-size: 13px; text-align: center; margin-top: 40px; }
 
   /* ── Date group ── */
@@ -905,43 +978,159 @@ async function loadTranscript() {
       status.textContent = 'No messages today';
       return;
     }
-    msgs.forEach(m => container.appendChild(renderMessage(m)));
-    // scroll to bottom
+    msgs.forEach(m => container.appendChild(renderEvent(m)));
     container.scrollTop = container.scrollHeight;
-    const userCount = msgs.filter(m => m.role === 'user').length;
-    status.textContent = `${msgs.length} turns (${userCount} from you) · updated ${new Date().toLocaleTimeString(undefined, {hour:'2-digit',minute:'2-digit'})}`;
+    const userCount = msgs.filter(m => m.kind === 'user_message').length;
+    const assistantCount = msgs.filter(m => m.kind === 'assistant_text').length;
+    status.textContent = `${userCount} user · ${assistantCount} assistant · updated ${new Date().toLocaleTimeString(undefined, {hour:'2-digit',minute:'2-digit'})}`;
   } catch(e) {
     if (status) status.textContent = 'Failed to load transcript';
     console.error('Transcript load error:', e);
   }
 }
 
-function renderMessage(m) {
-  const bubble = document.createElement('div');
-  bubble.className = `msg-bubble ${m.role}`;
-
-  const text = document.createElement('div');
-  text.className = 'msg-text';
-  // Strip system metadata preamble that OpenClaw injects (Conversation info blocks)
-  let displayText = m.text || '';
-  displayText = displayText.replace(/^Conversation info \(untrusted metadata\):\s*```json[\s\S]*?```\s*/m, '').trim();
-  text.textContent = displayText || '(empty)';
-
-  const ts = document.createElement('div');
-  ts.className = 'msg-ts';
-  try {
-    ts.textContent = new Date(m.ts).toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'});
-  } catch { ts.textContent = ''; }
-
-  if (m.role === 'user') {
-    bubble.appendChild(text);
-    bubble.appendChild(ts);
-  } else {
-    bubble.appendChild(ts);
-    bubble.appendChild(text);
-  }
-  return bubble;
+function fmtTs(ts) {
+  try { return new Date(ts).toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'}); }
+  catch { return ''; }
 }
+
+function stripMetadata(text) {
+  text = text.replace(/^Conversation info \(untrusted metadata\):\s*```json[\s\S]*?```\s*/m, '');
+  const senderMatch = text.match(/^Sender \(untrusted metadata\):\s*```json\s*([\s\S]*?)\s*```\s*/m);
+  if (senderMatch) {
+    try {
+      const s = JSON.parse(senderMatch[1]);
+      text = text.replace(senderMatch[0], (s.name || s.label) ? `${s.name || s.label}: ` : '');
+    } catch { text = text.replace(senderMatch[0], ''); }
+  }
+  return text.trim();
+}
+
+function renderEvent(ev) {
+  const kind = ev.kind;
+  const data = ev.data || {};
+  const ts   = ev.ts || '';
+
+  if (kind === 'session_start') {
+    const el = document.createElement('div');
+    el.className = 'ev-session';
+    el.innerHTML = `<div class="ev-session-line"></div>
+      <div class="ev-session-label">🔄 New session · ${fmtTs(ts)}</div>
+      <div class="ev-session-line"></div>`;
+    return el;
+  }
+
+  if (kind === 'model_change') {
+    const el = document.createElement('div');
+    el.className = 'ev-meta';
+    el.textContent = `🤖 model: ${data.modelId || ''} · ${fmtTs(ts)}`;
+    return el;
+  }
+
+  if (kind === 'thinking_level_change') {
+    const el = document.createElement('div');
+    el.className = 'ev-meta';
+    el.textContent = `💭 thinking: ${data.thinkingLevel || ''} · ${fmtTs(ts)}`;
+    return el;
+  }
+
+  if (kind === 'hook_inject') {
+    const el = document.createElement('div');
+    el.className = 'ev-meta';
+    el.textContent = `📍 injected: ${data.file || ''} · ${fmtTs(ts)}`;
+    return el;
+  }
+
+  if (kind === 'user_message') {
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble user';
+    const text = document.createElement('div');
+    text.className = 'msg-text';
+    text.textContent = stripMetadata(data.text || '') || '(empty)';
+    const tsEl = document.createElement('div');
+    tsEl.className = 'msg-ts';
+    tsEl.textContent = fmtTs(ts);
+    bubble.appendChild(text);
+    bubble.appendChild(tsEl);
+    return bubble;
+  }
+
+  if (kind === 'assistant_text') {
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble assistant';
+    const tsEl = document.createElement('div');
+    tsEl.className = 'msg-ts';
+    tsEl.textContent = fmtTs(ts);
+    const text = document.createElement('div');
+    text.className = 'msg-text';
+    text.textContent = data.text || '';
+    bubble.appendChild(tsEl);
+    bubble.appendChild(text);
+    return bubble;
+  }
+
+  if (kind === 'thinking') {
+    const el = document.createElement('div');
+    el.className = 'ev-thinking';
+    const preview = document.createElement('div');
+    preview.textContent = `💭 thinking… (click to expand) · ${fmtTs(ts)}`;
+    const body = document.createElement('div');
+    body.className = 'ev-thinking-text';
+    body.textContent = data.text || '';
+    el.addEventListener('click', () => body.classList.toggle('open'));
+    el.appendChild(preview);
+    el.appendChild(body);
+    return el;
+  }
+
+  if (kind === 'tool_call') {
+    const args = data.arguments || {};
+    const inlineArg = args.file_path || args.path || args.command || args.query || JSON.stringify(args).slice(0, 80);
+    const el = document.createElement('div');
+    el.className = 'ev-tool';
+    const header = document.createElement('div');
+    header.className = 'ev-tool-header';
+    header.innerHTML = `<span style="color:var(--yellow)">⚙</span>
+      <span class="ev-tool-name">${esc(data.name || '')}</span>
+      <span class="ev-tool-arg">${esc(String(inlineArg))}</span>
+      <span class="ev-tool-ts">${fmtTs(ts)}</span>`;
+    const body = document.createElement('div');
+    body.className = 'ev-tool-body';
+    body.textContent = JSON.stringify(args, null, 2);
+    header.addEventListener('click', () => body.classList.toggle('open'));
+    el.appendChild(header);
+    el.appendChild(body);
+    return el;
+  }
+
+  if (kind === 'tool_result') {
+    const preview = (data.text || '').slice(0, 60).replace(/\n/g, ' ');
+    const el = document.createElement('div');
+    el.className = 'ev-tool';
+    const header = document.createElement('div');
+    header.className = 'ev-tool-header';
+    header.innerHTML = `<span style="color:var(--green)">✓</span>
+      <span class="ev-tool-name">${esc(data.tool_name || 'result')}</span>
+      <span class="ev-tool-arg">${esc(preview)}…</span>
+      <span class="ev-tool-ts">${fmtTs(ts)}</span>`;
+    const body = document.createElement('div');
+    body.className = 'ev-tool-body';
+    body.textContent = data.text || '';
+    header.addEventListener('click', () => body.classList.toggle('open'));
+    el.appendChild(header);
+    el.appendChild(body);
+    return el;
+  }
+
+  // Fallback
+  const el = document.createElement('div');
+  el.className = 'ev-meta';
+  el.textContent = `[${kind}] ${fmtTs(ts)}`;
+  return el;
+}
+
+// legacy alias (no longer called but kept for safety)
+function renderMessage(m) { return renderEvent(m); }
 
 function formatDate(dateStr) {
   try {

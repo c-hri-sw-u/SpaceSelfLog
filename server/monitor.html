@@ -452,10 +452,11 @@
     padding: 1px 6px;
     border-radius: 3px;
   }
-  .ev-badge.batch   { background: #1e3a5f; color: #60a5fa; }
-  .ev-badge.insight { background: #1e3a2f; color: #4ade80; }
-  .ev-badge.pattern { background: #3a2a1e; color: #fb923c; }
-  .ev-badge.error   { background: #3a1e1e; color: var(--red); }
+  .ev-badge.batch                { background: #1e3a5f; color: #60a5fa; }
+  .ev-badge.insight              { background: #1e3a2f; color: #4ade80; }
+  .ev-badge.insight_consolidation{ background: #1e3540; color: #38bdf8; }
+  .ev-badge.pattern              { background: #3a2a1e; color: #fb923c; }
+  .ev-badge.error                { background: #3a1e1e; color: var(--red); }
   .ev-detail { color: var(--text); flex: 1; }
   .ev-error  { color: var(--red); font-size: 11px; }
 
@@ -629,7 +630,11 @@
     <div id="insight-status">
       <span class="isb-label">Insight</span>
       <span class="isb-sep">·</span>
-      <span>Today</span><span class="isb-val" id="isb-runs">—</span><span>runs</span>
+      <span>Today</span><span class="isb-val" id="isb-runs">—</span><span>incremental</span>
+      <span class="isb-sep">·</span>
+      <span class="isb-val" id="isb-consolidations">—</span><span>consolidated</span>
+      <span class="isb-sep">·</span>
+      <span>Next consolidation in</span><span class="isb-val" id="isb-next-consolidation">—</span>
       <span class="isb-sep">·</span>
       <span>Batch</span>
       <span class="isb-bar"><span class="isb-bar-fill" id="isb-batch-bar" style="width:0%"></span></span>
@@ -1079,6 +1084,14 @@ async function updateInsightStatus() {
     const curB = s.batches_since, curM = s.minutes_since;
 
     document.getElementById("isb-runs").textContent = " " + s.runs_today + " ";
+    document.getElementById("isb-consolidations").textContent = " " + s.consolidations_today + "x ";
+
+    // Next consolidation countdown
+    const everyN = s.consolidation_every_n ?? 4;
+    const sinceLast = s.incremental_since ?? 0;
+    const toNext = everyN - sinceLast;
+    document.getElementById("isb-next-consolidation").textContent =
+      " " + toNext + "/" + everyN + " ";
 
     // Batch progress
     const bPct = Math.min(100, Math.round(curB / minB * 100));
@@ -1281,7 +1294,14 @@ async function loadEvents() {
           ? `${ev.frames ?? "?"} frames · ${ev.session_id?.slice(0,10) ?? ""}`
           : `${ev.frames} frames · ${ev.session_id?.slice(0,10) ?? ""}${ev.mem_error ? " ⚠ mem" : ""}`;
       } else if (ev.type === "insight") {
-        detail.textContent = isError ? ev.date : `${ev.date} · run #${ev.run}`;
+        detail.textContent = isError
+          ? `${ev.date} · ${ev.error ?? ""}`
+          : `${ev.date} · run #${ev.run}`;
+      } else if (ev.type === "insight_consolidation") {
+        badge.textContent = "consolidation";
+        detail.textContent = isError
+          ? `${ev.date} · ${ev.error ?? ""}`
+          : `${ev.date} · pass #${ev.pass_num}`;
       } else if (ev.type === "pattern") {
         detail.textContent = ev.date + (ev.extra_date ? ` + ${ev.extra_date}` : "");
       }

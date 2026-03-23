@@ -139,45 +139,57 @@ Guidelines:
 """
 
 _INCREMENTAL_INSIGHT_PROMPT = """\
-You are processing a new batch of physical-world perception logs for a personal AI agent.
+You are adding to today's physical-world summary for a personal AI agent.
+This summary is the agent's only window into the physical world, so
+anything that could inform a helpful action should be captured.
 
 Inputs:
-1. Existing insight file for today (for context only — do not repeat its highlights)
+1. Today's existing summary (current state + highlights — for context and deduplication)
 2. New perception logs since the last update
 
 Respond with a single JSON object and nothing else:
 {
-  "current_state": "<2-3 sentences: what the user is doing right now, where, with whom, \
-and in what mode (focused, relaxed, transitioning, social)>",
+  "current_state": "<2-3 sentences: what the user is doing right now, where, with whom, and in what mode>",
   "new_highlights": [
-    "- <highlight item>",
-    "- <highlight item>"
+    "<highlight text>",
+    "<highlight text>"
   ]
 }
 
 Guidelines:
-- new_highlights must contain only items new to this batch — do not echo items already \
-  in the existing file. Use an empty array [] if nothing new is worth noting.
-- Apply the filter: could the agent use this to answer a question better, make a timely \
-  suggestion, or anticipate a need? If not, omit.
+- new_highlights: only items from the new logs not already covered by
+  existing highlights. Return [] if nothing new is worth noting.
+- For each candidate, ask: could the agent use this to answer a question
+  better, make a timely suggestion, or anticipate an upcoming need?
+  If not, omit.
+- Each item should be specific to today — a behavior, schedule deviation,
+  object, or event that suggests a need or preference.
+- Write for the agent, not for a diary.
 - No patterns or habits — those belong in the pattern file.
 - Third person.\
 """
 
 _CONSOLIDATION_INSIGHT_PROMPT = """\
-You are consolidating today's accumulated insight highlights for a personal AI agent.
+You are consolidating today's accumulated physical-world highlights for
+a personal AI agent. This summary is the agent's only window into the
+physical world — err toward keeping an item rather than dropping it.
 
-The highlights list has grown through multiple incremental updates and may contain \
-duplicate, overlapping, or superseded items.
+Input: the full accumulated "Today's Highlights" bullet list.
+Output: only the consolidated bullet list — no header, no preamble,
+no current state.
 
-Input: the full accumulated "Today's Highlights" bullet list for today.
-
-Output only the consolidated bullet list — no section header, no preamble, \
-no current state. Just the merged, deduplicated, condensed bullet items.
+Merge rules:
+- Combine items that describe the same activity or theme across different
+  times into one entry that preserves key specifics.
+- Drop an item only when a later entry clearly contradicts or supersedes
+  it — not simply because it is from earlier in the day.
+- For each surviving item, ask: could the agent use this to help the
+  user today or tomorrow? If not, drop it.
 
 Guidelines:
-- Do not lose information unless it is clearly redundant or contradicted by a later entry.
-- No patterns or habits.
+- Write for the agent, not for a diary.
+- Typical days produce 3-8 items after consolidation; fewer is fine.
+- No patterns or habits — those belong in the pattern file.
 - Third person.\
 """
 
@@ -272,8 +284,9 @@ _insight_lock         = threading.Lock()
 _insight_batch_count  = 0               # batches since last insight update
 _insight_last_time: datetime | None = None   # UTC time of last insight update
 _insight_log_offset: dict[str, int] = {}     # date_str -> byte offset already incorporated
-_insight_runs_today: dict[str, int] = {}     # date_str -> successful run count
-_incremental_count: dict[str, int]  = {}     # date_str -> incremental runs since last consolidation
+_insight_runs_today: dict[str, int]       = {}  # date_str -> incremental run count
+_consolidation_runs_today: dict[str, int] = {}  # date_str -> consolidation pass count
+_incremental_count: dict[str, int]        = {}  # date_str -> incremental runs since last consolidation
 
 
 # ---------------------------------------------------------------------------
@@ -867,11 +880,11 @@ def _run_incremental_update(date_str: str) -> None:
 
     if existing_insight_clean:
         user_msg = (
-            f"Existing insight file for {date_str} (for context):\n\n{existing_insight_clean}\n\n"
+            f"Today's existing summary for {date_str}:\n\n{existing_insight_clean}\n\n"
             f"---\nNew perception logs to process:\n\n{new_logs}"
         )
     else:
-        user_msg = f"Physical perception logs for {date_str}:\n\n{new_logs}"
+        user_msg = f"New perception logs for {date_str}:\n\n{new_logs}"
 
     if pending_comments:
         annotations = "\n\n".join(
@@ -976,7 +989,11 @@ def _run_consolidation_pass(date_str: str) -> None:
     content_parts.append("")
 
     insight_file.write_text("\n".join(content_parts), encoding="utf-8")
-    log.info("Insight (consolidation) → %s", insight_file)
+    _consolidation_runs_today[date_str] = _consolidation_runs_today.get(date_str, 0) + 1
+    log.info("Insight (consolidation) → %s  (pass #%d today)",
+             insight_file, _consolidation_runs_today[date_str])
+    _append_event("insight_consolidation", status="ok", date=date_str,
+                  pass_num=_consolidation_runs_today[date_str])
 
 
 # ---------------------------------------------------------------------------
@@ -1117,10 +1134,16 @@ def get_insight_status():
             if _insight_last_time else None
         )
         today = datetime.now().strftime("%Y-%m-%d")
-        runs_today = _insight_runs_today.get(today, 0)
+        runs_today           = _insight_runs_today.get(today, 0)
+        consolidations_today = _consolidation_runs_today.get(today, 0)
+        incremental_since    = _incremental_count.get(today, 0)
+        every_n              = int(_config.get("consolidation_every_n", _CONSOLIDATION_EVERY_N))
         last_run_at = _insight_last_time.isoformat() if _insight_last_time else None
     return jsonify({
         "runs_today":            runs_today,
+        "consolidations_today":  consolidations_today,
+        "incremental_since":     incremental_since,
+        "consolidation_every_n": every_n,
         "batches_since":         batches_since,
         "min_batches":           min_batches,
         "minutes_since":         minutes_since,

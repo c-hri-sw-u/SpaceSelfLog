@@ -23,11 +23,13 @@ Config (env vars or .env, overridden by ~/.spaceselflog/config.json via UI):
   VLM_MODEL       (default: anthropic/claude-sonnet-4-6)
 """
 
-import os, sys, json, base64, logging
+import os, sys, json, base64, logging, uuid
 from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
 import threading
+import urllib.request as _urllib_req
+import urllib.error   as _urllib_err
 
 import anthropic as anthropic_sdk
 from openai import OpenAI
@@ -46,6 +48,7 @@ EVENTS_FILE           = Path(os.environ.get("EVENTS_FILE",  "~/.spaceselflog/eve
 PENDING_COMMENTS_FILE = Path(os.environ.get("PENDING_COMMENTS_FILE", "~/.spaceselflog/pending_comments.jsonl")).expanduser()
 ITERATION_LOG_FILE    = Path(os.environ.get("ITERATION_LOG_FILE", "~/.spaceselflog/iteration_log.jsonl")).expanduser()
 JOURNAL_FILE          = Path(os.environ.get("JOURNAL_FILE", "~/.spaceselflog/journal.jsonl")).expanduser()
+TRANSCRIPTS_DIR       = Path(os.environ.get("TRANSCRIPTS_DIR", "~/.spaceselflog/transcripts")).expanduser()
 PORT         = int(os.environ.get("PORT", 8000))
 
 _events_lock = threading.Lock()
@@ -185,6 +188,9 @@ _DEFAULTS: dict = {
     "nightly_hour":        2,
     "insight_min_batches": _INSIGHT_MIN_BATCHES,
     "insight_min_minutes": _INSIGHT_MIN_MINUTES,
+    "telegram_bot_token":  os.environ.get("TELEGRAM_BOT_TOKEN", ""),
+    "telegram_chat_id":    os.environ.get("TELEGRAM_CHAT_ID", ""),
+    "telegram_gap_minutes": 30,
 }
 
 
@@ -288,7 +294,8 @@ def post_config():
     # Merge into current config; ignore unknown keys
     allowed = {"provider", "api_key", "model", "openclaw_memory_dir", "project_dir", "frames_dir",
                "prompt", "insight_prompt", "pattern_prompt", "nightly_hour",
-               "insight_min_batches", "insight_min_minutes"}
+               "insight_min_batches", "insight_min_minutes",
+               "telegram_bot_token", "telegram_chat_id", "telegram_gap_minutes"}
     for k in allowed:
         if k in body:
             _config[k] = body[k]
@@ -1309,6 +1316,139 @@ def _journal_to_markdown(entry: dict) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Telegram transcript capture
+# ---------------------------------------------------------------------------
+
+_tg_lock             = threading.Lock()
+_tg_offset           = 0        # Telegram update_id watermark
+_tg_last_msg_time: datetime | None = None
+_tg_current_conv_id  = ""
+
+
+def _tg_api(token: str, method: str, **params) -> dict:
+    url  = f"https://api.telegram.org/bot{token}/{method}"
+    data = json.dumps(params).encode() if params else None
+    req  = _urllib_req.Request(
+        url, data=data,
+        headers={"Content-Type": "application/json"} if data else {},
+    )
+    with _urllib_req.urlopen(req, timeout=30) as resp:
+        return json.loads(resp.read())
+
+
+def _save_tg_message(ts_utc: datetime, role: str, text: str, conv_id: str) -> None:
+    date_str = ts_utc.astimezone().strftime("%Y-%m-%d")
+    TRANSCRIPTS_DIR.mkdir(parents=True, exist_ok=True)
+    entry = {
+        "ts":              ts_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "role":            role,
+        "text":            text,
+        "conversation_id": conv_id,
+    }
+    with _tg_lock:
+        with (TRANSCRIPTS_DIR / f"{date_str}.jsonl").open("a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
+def _telegram_poller() -> None:
+    """Background thread: long-poll Telegram getUpdates and save to transcripts."""
+    global _tg_offset, _tg_last_msg_time, _tg_current_conv_id
+    import time as _time
+
+    while True:
+        token   = _config.get("telegram_bot_token", "")
+        chat_id = str(_config.get("telegram_chat_id", ""))
+        if not token or not chat_id:
+            _time.sleep(15)
+            continue
+        try:
+            result = _tg_api(token, "getUpdates",
+                             offset=_tg_offset, timeout=20,
+                             allowed_updates=["message"])
+            if not result.get("ok"):
+                _time.sleep(5)
+                continue
+            for update in result.get("result", []):
+                _tg_offset = update["update_id"] + 1
+                msg = update.get("message")
+                if not msg:
+                    continue
+                if str(msg.get("chat", {}).get("id")) != chat_id:
+                    continue
+                text = (msg.get("text") or "").strip()
+                if not text:
+                    continue
+                from_info = msg.get("from", {})
+                role = "assistant" if from_info.get("is_bot") else "user"
+                ts   = datetime.fromtimestamp(msg["date"], tz=timezone.utc)
+
+                # New conversation if gap > telegram_gap_minutes
+                gap_min = int(_config.get("telegram_gap_minutes", 30))
+                if (_tg_last_msg_time is None
+                        or (ts - _tg_last_msg_time).total_seconds() > gap_min * 60):
+                    _tg_current_conv_id = str(uuid.uuid4())[:8]
+                _tg_last_msg_time = ts
+
+                _save_tg_message(ts, role, text, _tg_current_conv_id)
+                log.info("Telegram [%s] %s: %.80s", _tg_current_conv_id, role, text)
+
+        except _urllib_err.URLError as e:
+            log.warning("Telegram poll network error: %s", e)
+            _time.sleep(10)
+        except Exception as e:
+            log.warning("Telegram poll error: %s", e)
+            _time.sleep(5)
+
+
+@app.get("/api/transcripts/<date>/counts")
+def get_transcript_counts(date: str):
+    """Return conversation and turn counts for a given date."""
+    if not _re.match(r'^\d{4}-\d{2}-\d{2}$', date):
+        return jsonify({"error": "invalid date"}), 400
+    path = TRANSCRIPTS_DIR / f"{date}.jsonl"
+    if not path.exists():
+        return jsonify({"conversations": 0, "turns": 0, "user_turns": 0})
+    convs: set = set()
+    turns = user_turns = 0
+    with _tg_lock:
+        with path.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    m = json.loads(line)
+                    convs.add(m.get("conversation_id", ""))
+                    turns += 1
+                    if m.get("role") == "user":
+                        user_turns += 1
+                except json.JSONDecodeError:
+                    pass
+    return jsonify({"conversations": len(convs), "turns": turns, "user_turns": user_turns})
+
+
+@app.get("/api/transcripts/<date>")
+def get_transcript(date: str):
+    """Return full transcript for a given date as a list of messages."""
+    if not _re.match(r'^\d{4}-\d{2}-\d{2}$', date):
+        return jsonify({"error": "invalid date"}), 400
+    path = TRANSCRIPTS_DIR / f"{date}.jsonl"
+    if not path.exists():
+        return jsonify([])
+    messages = []
+    with _tg_lock:
+        with path.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        messages.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        pass
+    return jsonify(messages)
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
@@ -1319,4 +1459,5 @@ if __name__ == "__main__":
              PORT, _config["provider"], _config["model"])
     Path(_config["frames_dir"]).expanduser().mkdir(parents=True, exist_ok=True)
     threading.Thread(target=_nightly_scheduler, daemon=True).start()
+    threading.Thread(target=_telegram_poller, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False)

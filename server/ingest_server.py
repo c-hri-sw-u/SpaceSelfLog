@@ -145,54 +145,40 @@ Inputs:
 1. Existing insight file for today (for context only — do not repeat its highlights)
 2. New perception logs since the last update
 
-Your task:
-1. Rewrite **Current State**: 2-3 sentences on what the user is doing right now, where, \
-   with whom, and in what mode (focused, relaxed, transitioning, social).
-2. List any **New Highlights** found only in the new logs: events, objects, or schedule \
-   deviations the agent could use to help the user.
-
-Respond with exactly this structure — no preamble:
-
-## Current State (as of [timestamp of most recent log entry])
-<2-3 sentences>
-
-## New Highlights
-<bullet list — omit this section entirely if nothing new is worth noting>
+Respond with a single JSON object and nothing else:
+{
+  "current_state": "<2-3 sentences: what the user is doing right now, where, with whom, \
+and in what mode (focused, relaxed, transitioning, social)>",
+  "new_highlights": [
+    "- <highlight item>",
+    "- <highlight item>"
+  ]
+}
 
 Guidelines:
-- New Highlights must be new to this batch — do not echo items already in the existing file.
+- new_highlights must contain only items new to this batch — do not echo items already \
+  in the existing file. Use an empty array [] if nothing new is worth noting.
 - Apply the filter: could the agent use this to answer a question better, make a timely \
   suggestion, or anticipate a need? If not, omit.
 - No patterns or habits — those belong in the pattern file.
-- Third person. Markdown only.\
+- Third person.\
 """
 
 _CONSOLIDATION_INSIGHT_PROMPT = """\
 You are consolidating today's accumulated insight highlights for a personal AI agent.
 
-The insight file has grown through multiple incremental updates and may contain \
-duplicate, overlapping, or superseded highlights.
+The highlights list has grown through multiple incremental updates and may contain \
+duplicate, overlapping, or superseded items.
 
-Inputs:
-1. Full accumulated insight file for today
+Input: the full accumulated "Today's Highlights" bullet list for today.
 
-Your task:
-- Keep the existing **Current State** section unchanged.
-- Rewrite **Today's Highlights**: merge duplicates, remove items superseded by later \
-  observations, and condense where possible. Preserve everything that could help the agent.
-
-Output the complete insight file with this structure — no preamble:
-
-## Current State (as of [timestamp])
-<keep existing, unchanged>
-
-## Today's Highlights
-<merged, deduplicated, condensed bullet list>
+Output only the consolidated bullet list — no section header, no preamble, \
+no current state. Just the merged, deduplicated, condensed bullet items.
 
 Guidelines:
 - Do not lose information unless it is clearly redundant or contradicted by a later entry.
 - No patterns or habits.
-- Third person. Markdown only.\
+- Third person.\
 """
 
 # Keep old name as alias so any saved config value in insight_prompt still works
@@ -897,31 +883,47 @@ def _run_incremental_update(date_str: str) -> None:
         log.info("Insight: including %d human comment(s)", len(pending_comments))
 
     incremental_system = _config.get("incremental_prompt") or _INCREMENTAL_INSIGHT_PROMPT
-    vlm_output = _call_insight_vlm(incremental_system, user_msg)
 
-    # Parse VLM output: extract new Current State and New Highlights sections
-    vlm_sections = _split_insight_sections(vlm_output)
-    new_state_key      = next((k for k in vlm_sections if k.startswith("Current State")), None)
-    new_highlights_key = next((k for k in vlm_sections if k.startswith("New Highlights")), None)
+    # Retry once on JSON parse failure
+    vlm_data = None
+    for attempt in range(2):
+        raw = _call_insight_vlm(incremental_system, user_msg)
+        try:
+            # Strip markdown code fences if present
+            stripped = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+            vlm_data = json.loads(stripped)
+            break
+        except json.JSONDecodeError:
+            if attempt == 0:
+                log.warning("Insight incremental: JSON parse failed, retrying")
+            else:
+                log.error("Insight incremental: JSON parse failed after retry — skipping")
+                return
 
-    new_state_header = f"## {new_state_key}" if new_state_key else "## Current State"
-    new_state_body   = vlm_sections.get(new_state_key, "").strip()   if new_state_key else ""
-    new_highlights_body = vlm_sections.get(new_highlights_key, "").strip() if new_highlights_key else ""
+    new_state_body      = vlm_data.get("current_state", "").strip()
+    new_highlights_raw  = vlm_data.get("new_highlights", [])
+    if isinstance(new_highlights_raw, list):
+        new_highlights_text = "\n".join(str(h).strip() for h in new_highlights_raw if str(h).strip())
+    else:
+        new_highlights_text = str(new_highlights_raw).strip()
 
     # Code-append: preserve existing highlights, add new ones below
     merged_parts = [existing_highlights_body] if existing_highlights_body.strip() else []
-    if new_highlights_body:
-        merged_parts.append(new_highlights_body)
+    if new_highlights_text:
+        merged_parts.append(new_highlights_text)
     merged_highlights = "\n".join(merged_parts)
+
+    # Programmatic timestamp for Current State header
+    time_str = datetime.now().strftime("%H:%M")
 
     # Write insight file
     runs = _insight_runs_today.get(date_str, 1)
-    now_str = datetime.now(timezone.utc).strftime("%H:%M UTC")
-    header = f"<!-- auto-generated by SpaceSelfLog — update #{runs} — last updated {now_str} -->"
+    now_utc = datetime.now(timezone.utc).strftime("%H:%M UTC")
+    header = f"<!-- auto-generated by SpaceSelfLog — update #{runs} — last updated {now_utc} -->"
 
     content_parts = [header, ""]
     if new_state_body:
-        content_parts.append(f"{new_state_header}\n{new_state_body}")
+        content_parts.append(f"## Current State (as of {time_str})\n{new_state_body}")
         content_parts.append("")
     if merged_highlights:
         content_parts.append(f"## Today's Highlights\n{merged_highlights}")
@@ -933,7 +935,8 @@ def _run_incremental_update(date_str: str) -> None:
 
 
 def _run_consolidation_pass(date_str: str) -> None:
-    """Consolidate accumulated highlights: merge duplicates, remove superseded items."""
+    """Consolidate accumulated highlights: merge duplicates, remove superseded items.
+    Current State section is preserved unchanged."""
     mem_dir = _config.get("openclaw_memory_dir", "")
     if not mem_dir:
         return
@@ -942,22 +945,37 @@ def _run_consolidation_pass(date_str: str) -> None:
     if not insight_file.exists():
         return
 
-    full_text = insight_file.read_text(encoding="utf-8").strip()
-    if not full_text:
-        return
+    existing_text = insight_file.read_text(encoding="utf-8")
+    existing_sections = _split_insight_sections(existing_text)
 
-    clean_text = "\n".join(
-        l for l in full_text.splitlines() if not l.startswith("<!--")
-    ).strip()
+    highlights_key = next(
+        (k for k in existing_sections if k.startswith("Today's Highlights")), None
+    )
+    existing_highlights = existing_sections.get(highlights_key, "").strip() if highlights_key else ""
+    if not existing_highlights:
+        return  # Nothing to consolidate
 
-    user_msg = f"Today's accumulated insight file for {date_str}:\n\n{clean_text}"
+    # Preserve Current State section verbatim
+    state_key = next((k for k in existing_sections if k.startswith("Current State")), None)
+    state_header = f"## {state_key}" if state_key else None
+    state_body   = existing_sections.get(state_key, "").strip() if state_key else ""
+
+    user_msg = f"Today's accumulated highlights for {date_str}:\n\n{existing_highlights}"
     consolidation_system = _config.get("consolidation_prompt") or _CONSOLIDATION_INSIGHT_PROMPT
-    consolidated = _call_insight_vlm(consolidation_system, user_msg)
+    consolidated_highlights = _call_insight_vlm(consolidation_system, user_msg).strip()
 
     runs = _insight_runs_today.get(date_str, 0)
-    now_str = datetime.now(timezone.utc).strftime("%H:%M UTC")
-    header = f"<!-- auto-generated by SpaceSelfLog — update #{runs} (consolidated) — last updated {now_str} -->"
-    insight_file.write_text(header + "\n\n" + consolidated + "\n", encoding="utf-8")
+    now_utc = datetime.now(timezone.utc).strftime("%H:%M UTC")
+    header = f"<!-- auto-generated by SpaceSelfLog — update #{runs} (consolidated) — last updated {now_utc} -->"
+
+    content_parts = [header, ""]
+    if state_header and state_body:
+        content_parts.append(f"{state_header}\n{state_body}")
+        content_parts.append("")
+    content_parts.append(f"## Today's Highlights\n{consolidated_highlights}")
+    content_parts.append("")
+
+    insight_file.write_text("\n".join(content_parts), encoding="utf-8")
     log.info("Insight (consolidation) → %s", insight_file)
 
 

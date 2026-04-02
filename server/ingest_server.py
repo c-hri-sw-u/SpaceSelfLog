@@ -632,7 +632,7 @@ def _run_vlm_openrouter(frames, meta_by_file, preamble, t0) -> str:
         messages=[{"role": "system", "content": _system_prompt()},
                   {"role": "user",   "content": content}],
     )
-    return r.choices[0].message.content.strip()
+    return (r.choices[0].message.content or "").strip()
 
 
 def _run_vlm_anthropic(frames, meta_by_file, preamble, t0) -> str:
@@ -653,7 +653,7 @@ def _run_vlm_anthropic(frames, meta_by_file, preamble, t0) -> str:
         system=_system_prompt(),
         messages=[{"role": "user", "content": content}],
     )
-    return r.content[0].text.strip()
+    return (r.content[0].text or "").strip()
 
 
 # ---------------------------------------------------------------------------
@@ -774,7 +774,7 @@ def _call_insight_vlm(system_prompt: str, user_msg: str, max_tokens: int = 1024)
             system=system_prompt,
             messages=[{"role": "user", "content": user_msg}],
         )
-        return r.content[0].text.strip()
+        return (r.content[0].text or "").strip()
     r = _client.chat.completions.create(
         model=_config["model"], max_tokens=max_tokens,
         messages=[
@@ -782,7 +782,7 @@ def _call_insight_vlm(system_prompt: str, user_msg: str, max_tokens: int = 1024)
             {"role": "user",   "content": user_msg},
         ],
     )
-    return r.choices[0].message.content.strip()
+    return (r.choices[0].message.content or "").strip()
 
 
 def _maybe_update_today_insight(date_str: str) -> None:

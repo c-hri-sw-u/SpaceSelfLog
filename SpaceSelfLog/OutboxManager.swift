@@ -278,13 +278,34 @@ final class OutboxManager {
     // MARK: - Manifest builder
 
     private func buildManifest(batch: ProcessedBatch, entryId: String) -> [String: Any] {
-        [
+        let ud = UserDefaults.standard
+        let config: [String: Any] = [
+            "captureMinInterval": ud.integer(forKey: "CaptureMinInterval"),
+            "captureMaxInterval": ud.integer(forKey: "CaptureMaxInterval"),
+            "rampRatio": ud.double(forKey: "RampRatio"),
+            "sustainedMotionThreshold": ud.integer(forKey: "SustainedMotionThreshold"),
+            "firstBatchWindow": ud.integer(forKey: "FirstBatchWindow"),
+            "batchMaxWindow": ud.integer(forKey: "BatchMaxWindow"),
+            "ssimThreshold": ud.double(forKey: "SSIMThreshold"),
+            "ssimDedupThreshold": ud.double(forKey: "SSIMDedupThreshold"),
+            "kDensityPerMin": ud.double(forKey: "KDensityPerMin"),
+            "kMin": ud.integer(forKey: "KMin"),
+            "kMax": ud.integer(forKey: "KMax"),
+            "scoreThreshold": ud.double(forKey: "ScoreThreshold"),
+            "vadSensitivity": ud.string(forKey: "VADSensitivity") ?? "Med",
+            "transcriptionEnabled": ud.bool(forKey: "TranscriptionEnabled"),
+            "varianceLowThreshold": ud.double(forKey: "VarianceLowThreshold"),
+            "varianceHighThreshold": ud.double(forKey: "VarianceHighThreshold")
+        ]
+        
+        return [
             "entry_id":     entryId,
             "batch_id":     batch.batchId,
             "session_id":   batch.sessionDirectory.lastPathComponent,
             "created_at":   iso8601.string(from: batch.createdAt),
             "frame_count":  batch.frames.count,
             "input_frames": batch.inputFrameCount,
+            "config":       config,
             "frames_meta":  batch.frames.sorted { $0.capturedAt < $1.capturedAt }
                 .enumerated().map { (i, frame) -> [String: Any] in
                 [

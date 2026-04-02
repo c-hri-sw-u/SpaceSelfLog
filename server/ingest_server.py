@@ -609,8 +609,8 @@ def _run_vlm(frames: list[tuple[str, bytes]], frames_meta: list[dict],
             return cleaned
         except (json.JSONDecodeError, ValueError) as e:
             last_error = e
-            log.warning("JSON validation failed (attempt %d/%d): %s",
-                        attempt, max_retries, e)
+            log.warning("JSON validation failed (attempt %d/%d): %s — raw[:200]=%r",
+                        attempt, max_retries, e, cleaned[:200])
 
     raise ValueError(f"VLM returned invalid JSON after {max_retries} attempts: {last_error}")
 
@@ -632,7 +632,10 @@ def _run_vlm_openrouter(frames, meta_by_file, preamble, t0) -> str:
         messages=[{"role": "system", "content": _system_prompt()},
                   {"role": "user",   "content": content}],
     )
-    return (r.choices[0].message.content or "").strip()
+    raw = (r.choices[0].message.content or "").strip()
+    if not raw:
+        raise ValueError("VLM returned empty response (possible rate limit or content filter)")
+    return raw
 
 
 def _run_vlm_anthropic(frames, meta_by_file, preamble, t0) -> str:
@@ -653,7 +656,10 @@ def _run_vlm_anthropic(frames, meta_by_file, preamble, t0) -> str:
         system=_system_prompt(),
         messages=[{"role": "user", "content": content}],
     )
-    return (r.content[0].text or "").strip()
+    raw = (r.content[0].text or "").strip()
+    if not raw:
+        raise ValueError("VLM returned empty response (possible rate limit or content filter)")
+    return raw
 
 
 # ---------------------------------------------------------------------------

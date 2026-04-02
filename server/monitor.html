@@ -127,14 +127,14 @@
   .btn-primary { background: var(--accent); color: #fff; }
   .btn-ghost   { background: var(--border); color: var(--text); }
 
-  #test-result {
+  #test-result, #text-test-result {
     font-size: 12px;
     padding: 7px 10px;
     border-radius: 6px;
     display: none;
   }
-  #test-result.ok    { background: #16331e; color: var(--green); }
-  #test-result.error { background: #2d1414; color: var(--red); }
+  #test-result.ok, #text-test-result.ok    { background: #16331e; color: var(--green); }
+  #test-result.error, #text-test-result.error { background: #2d1414; color: var(--red); }
 
   .divider { border: none; border-top: 1px solid var(--border); }
 
@@ -498,7 +498,7 @@
     <h2>Configuration</h2>
 
     <div class="field">
-      <label>Provider</label>
+      <label>Vision Provider</label>
       <select id="provider">
         <option value="openrouter">OpenRouter</option>
         <option value="anthropic">Anthropic</option>
@@ -506,12 +506,12 @@
     </div>
 
     <div class="field">
-      <label>API Key</label>
+      <label>Vision API Key</label>
       <input id="api-key" type="password" placeholder="sk-or-… / sk-ant-…">
     </div>
 
     <div class="field" id="model-row">
-      <label>Model</label>
+      <label>Vision Model</label>
       <input id="model" type="text" placeholder="anthropic/claude-sonnet-4-6">
     </div>
 
@@ -520,6 +520,36 @@
     <div class="btn-row">
       <button class="btn-ghost" id="btn-test">Test Connection</button>
     </div>
+
+    <hr class="divider" style="margin-top: 2px;">
+    <h2>Text Model (Optional)</h2>
+
+    <div class="field">
+      <label>Text Provider</label>
+      <select id="text-provider">
+        <option value="">(Same as Vision)</option>
+        <option value="openrouter">OpenRouter</option>
+        <option value="anthropic">Anthropic</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Text API Key</label>
+      <input id="text-api-key" type="password" placeholder="(Same as Vision)">
+    </div>
+
+    <div class="field" id="text-model-row">
+      <label>Text Model</label>
+      <input id="text-model" type="text" placeholder="(Same as Vision)">
+    </div>
+
+    <div id="text-test-result"></div>
+
+    <div class="btn-row">
+      <button class="btn-ghost" id="btn-test-text">Test Text Connection</button>
+    </div>
+
+    <hr class="divider" style="margin-top: 8px;">
 
     <div class="field">
       <label>VLM Prompt (per-batch)</label>
@@ -713,6 +743,9 @@ async function loadConfig() {
     document.getElementById("provider").value      = cfg.provider || "openrouter";
     document.getElementById("api-key").placeholder = cfg.api_key_masked || "";
     document.getElementById("model").value         = cfg.model || "";
+    document.getElementById("text-provider").value = cfg.text_provider || "";
+    document.getElementById("text-api-key").placeholder = cfg.text_api_key_masked || "(Same as Vision)";
+    document.getElementById("text-model").value    = cfg.text_model || "";
     document.getElementById("openclaw-dir").value  = cfg.openclaw_memory_dir || "";
     document.getElementById("project-dir").value   = cfg.project_dir || "";
     document.getElementById("frames-dir").value    = cfg.frames_dir || "";
@@ -726,6 +759,7 @@ async function loadConfig() {
     document.getElementById("pattern-prompt").value         = cfg.pattern_prompt || "";
     document.getElementById("hook-insight-interval").value  = cfg.hook_insight_interval_minutes ?? 30;
     updateModelRowVisibility();
+    updateTextModelRowVisibility();
     configLoaded = true;
   } catch(e) { console.error("loadConfig:", e); }
 }
@@ -737,16 +771,29 @@ function updateModelRowVisibility() {
 }
 document.getElementById("provider").addEventListener("change", updateModelRowVisibility);
 
+function updateTextModelRowVisibility() {
+  const textProvider = document.getElementById("text-provider").value;
+  const p = textProvider || document.getElementById("provider").value;
+  document.getElementById("text-model-row").style.display = 
+    p === "openrouter" ? "flex" : "none";
+}
+document.getElementById("text-provider").addEventListener("change", updateTextModelRowVisibility);
+document.getElementById("provider").addEventListener("change", updateTextModelRowVisibility);
+
 async function saveConfig() {
   const btn = document.getElementById("btn-save");
   btn.disabled = true;
   const key = document.getElementById("api-key").value.trim();
+  const textKey = document.getElementById("text-api-key").value.trim();
   const body = {
     provider: document.getElementById("provider").value,
     model:    document.getElementById("model").value.trim(),
+    text_provider: document.getElementById("text-provider").value,
+    text_model:    document.getElementById("text-model").value.trim(),
     prompt:   document.getElementById("prompt").value,
   };
   if (key) body.api_key = key;
+  if (textKey) body.text_api_key = textKey;
   try {
     await fetch("/api/config", { method: "POST",
       headers: {"Content-Type": "application/json"}, body: JSON.stringify(body) });
@@ -792,6 +839,45 @@ async function testConnection() {
     if (data.ok) {
       el.className   = "ok";
       el.textContent = `✓ Connected — model replied: "${data.reply}"`;
+    } else {
+      el.className   = "error";
+      el.textContent = `✗ ${data.error}`;
+    }
+  } catch(e) {
+    el.style.display = "block";
+    el.className     = "error";
+    el.textContent   = `✗ ${e}`;
+  }
+  btn.disabled = false;
+}
+
+async function testTextConnection() {
+  const btn = document.getElementById("btn-test-text");
+  const el  = document.getElementById("text-test-result");
+  btn.disabled = true;
+  el.className = ""; el.style.display = "none";
+
+  const key   = document.getElementById("text-api-key").value.trim();
+  const provider = document.getElementById("text-provider").value || document.getElementById("provider").value;
+  const model = document.getElementById("text-model").value.trim() || document.getElementById("model").value.trim();
+  
+  const body  = { provider, model };
+  if (key) {
+    body.api_key = key;
+  } else if (!document.getElementById("text-provider").value || document.getElementById("text-provider").value === document.getElementById("provider").value) {
+    // Fallback to main API key
+    const mainKey = document.getElementById("api-key").value.trim();
+    if (mainKey) body.api_key = mainKey;
+  }
+
+  try {
+    const r   = await fetch("/api/test", { method: "POST",
+      headers: {"Content-Type": "application/json"}, body: JSON.stringify(body) });
+    const data = await r.json();
+    el.style.display = "block";
+    if (data.ok) {
+      el.className   = "ok";
+      el.textContent = `✓ Text Connection OK — replied: "${data.reply}"`;
     } else {
       el.className   = "error";
       el.textContent = `✗ ${data.error}`;
@@ -853,6 +939,7 @@ function makeCopyHandler(textareaId) {
 document.getElementById("btn-save").addEventListener("click", saveConfig);
 document.getElementById("btn-save-dirs").addEventListener("click", saveDirs);
 document.getElementById("btn-test").addEventListener("click", testConnection);
+document.getElementById("btn-test-text").addEventListener("click", testTextConnection);
 document.getElementById("btn-reset-prompt").addEventListener("click", resetPrompt);
 document.getElementById("btn-copy-prompt").addEventListener("click", makeCopyHandler("prompt"));
 makePromptHandlers("incremental-prompt",   "incremental_prompt",   "btn-save-incremental-prompt",   "btn-reset-incremental-prompt");

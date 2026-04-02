@@ -206,6 +206,9 @@ _DEFAULTS: dict = {
     "api_key":             os.environ.get("OPENROUTER_API_KEY")
                            or os.environ.get("ANTHROPIC_API_KEY", ""),
     "model":               os.environ.get("VLM_MODEL", "anthropic/claude-sonnet-4-6"),
+    "text_provider":       os.environ.get("TEXT_PROVIDER", ""),
+    "text_api_key":        os.environ.get("TEXT_API_KEY", ""),
+    "text_model":          os.environ.get("TEXT_MODEL", ""),
     "openclaw_memory_dir": os.environ.get("OPENCLAW_MEMORY_DIR", ""),
     "project_dir":         os.environ.get("PROJECT_DIR", ""),
     "frames_dir":          os.environ.get("FRAMES_DIR",
@@ -264,7 +267,16 @@ def _make_client(cfg: dict):
     return OpenAI(api_key=cfg["api_key"], base_url="https://openrouter.ai/api/v1")
 
 
+def _text_cfg(cfg: dict) -> dict:
+    return {
+        "provider": cfg.get("text_provider") or cfg.get("provider"),
+        "api_key":  cfg.get("text_api_key") or cfg.get("api_key"),
+        "model":    cfg.get("text_model") or cfg.get("model"),
+    }
+
+
 _client = _make_client(_config)
+_text_client = _make_client(_text_cfg(_config))
 
 # ---------------------------------------------------------------------------
 # Batch history  (in-memory, last 50)
@@ -325,6 +337,8 @@ def get_config():
     # Mask key for display (show last 6 chars only)
     key = safe.get("api_key", "")
     safe["api_key_masked"] = ("•" * max(0, len(key) - 6) + key[-6:]) if key else ""
+    t_key = safe.get("text_api_key", "")
+    safe["text_api_key_masked"] = ("•" * max(0, len(t_key) - 6) + t_key[-6:]) if t_key else ""
     # Return effective prompt values so the UI reflects what will actually be used.
     safe["prompt"]               = safe.get("prompt")               or _DEFAULT_PROMPT
     safe["incremental_prompt"]   = safe.get("incremental_prompt")   or _INCREMENTAL_INSIGHT_PROMPT
@@ -335,10 +349,12 @@ def get_config():
 
 @app.post("/api/config")
 def post_config():
-    global _config, _client
+    global _config, _client, _text_client
     body = request.get_json(force=True, silent=True) or {}
     # Merge into current config; ignore unknown keys
-    allowed = {"provider", "api_key", "model", "openclaw_memory_dir", "project_dir", "frames_dir",
+    allowed = {"provider", "api_key", "model", 
+               "text_provider", "text_api_key", "text_model",
+               "openclaw_memory_dir", "project_dir", "frames_dir",
                "prompt", "incremental_prompt", "consolidation_prompt", "pattern_prompt",
                "nightly_hour", "insight_min_batches", "insight_min_minutes", "consolidation_every_n",
                "telegram_bot_token", "telegram_chat_id", "telegram_gap_minutes",
@@ -348,7 +364,10 @@ def post_config():
             _config[k] = body[k]
     _save_config(_config)
     _client = _make_client(_config)
-    log.info("Config updated: provider=%s model=%s", _config["provider"], _config["model"])
+    _text_client = _make_client(_text_cfg(_config))
+    log.info("Config updated: provider=%s model=%s, text_provider=%s text_model=%s",
+             _config["provider"], _config["model"],
+             _text_cfg(_config)["provider"], _text_cfg(_config)["model"])
     return jsonify({"ok": True})
 
 
@@ -773,16 +792,16 @@ def _split_insight_sections(text: str) -> dict[str, str]:
 
 def _call_insight_vlm(system_prompt: str, user_msg: str, max_tokens: int = 1024) -> str:
     """Call the configured LLM and return the text response."""
-    if _config.get("provider") == "anthropic":
-        client = anthropic_sdk.Anthropic(api_key=_config["api_key"])
-        r = client.messages.create(
-            model=_config["model"], max_tokens=max_tokens,
+    t_cfg = _text_cfg(_config)
+    if t_cfg.get("provider") == "anthropic":
+        r = _text_client.messages.create(
+            model=t_cfg["model"], max_tokens=max_tokens,
             system=system_prompt,
             messages=[{"role": "user", "content": user_msg}],
         )
         return (r.content[0].text or "").strip()
-    r = _client.chat.completions.create(
-        model=_config["model"], max_tokens=max_tokens,
+    r = _text_client.chat.completions.create(
+        model=t_cfg["model"], max_tokens=max_tokens,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user",   "content": user_msg},
@@ -1068,17 +1087,17 @@ def _run_nightly_pattern_update(date_str: str, extra_date_str: str | None = None
     pattern_system = _config.get("pattern_prompt") or _DEFAULT_PATTERN_PROMPT
 
     try:
-        if _config.get("provider") == "anthropic":
-            client = anthropic_sdk.Anthropic(api_key=_config["api_key"])
-            r = client.messages.create(
-                model=_config["model"], max_tokens=2048,
+        t_cfg = _text_cfg(_config)
+        if t_cfg.get("provider") == "anthropic":
+            r = _text_client.messages.create(
+                model=t_cfg["model"], max_tokens=2048,
                 system=pattern_system,
                 messages=[{"role": "user", "content": user_msg}],
             )
             updated = r.content[0].text.strip()
         else:
-            r = _client.chat.completions.create(
-                model=_config["model"], max_tokens=2048,
+            r = _text_client.chat.completions.create(
+                model=t_cfg["model"], max_tokens=2048,
                 messages=[
                     {"role": "system", "content": pattern_system},
                     {"role": "user",   "content": user_msg},

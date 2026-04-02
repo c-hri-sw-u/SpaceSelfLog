@@ -738,7 +738,7 @@ let configLoaded  = false;
 // ── Config ──
 async function loadConfig() {
   try {
-    const r   = await fetch("/api/config");
+    const r   = await fetch("/api/config?t=" + Date.now());
     const cfg = await r.json();
     document.getElementById("provider").value      = cfg.provider || "openrouter";
     document.getElementById("api-key").placeholder = cfg.api_key_masked || "";
@@ -765,17 +765,14 @@ async function loadConfig() {
 }
 
 function updateModelRowVisibility() {
-  const provider = document.getElementById("provider").value;
-  document.getElementById("model-row").style.display =
-    provider === "openrouter" ? "flex" : "none";
+  // Always show the model row so users can configure model names for Anthropic too
+  document.getElementById("model-row").style.display = "flex";
 }
 document.getElementById("provider").addEventListener("change", updateModelRowVisibility);
 
 function updateTextModelRowVisibility() {
-  const textProvider = document.getElementById("text-provider").value;
-  const p = textProvider || document.getElementById("provider").value;
-  document.getElementById("text-model-row").style.display = 
-    p === "openrouter" ? "flex" : "none";
+  // Always show the text model row
+  document.getElementById("text-model-row").style.display = "flex";
 }
 document.getElementById("text-provider").addEventListener("change", updateTextModelRowVisibility);
 document.getElementById("provider").addEventListener("change", updateTextModelRowVisibility);

@@ -315,7 +315,7 @@
 
   /* ── Right panel ── */
   #right-panel {
-    width: 320px;
+    width: 400px;
     flex-shrink: 0;
     border-left: 1px solid var(--border);
     display: flex;
@@ -621,6 +621,17 @@
       <button class="btn-primary" id="btn-save-pattern-prompt">Save</button>
     </div>
 
+    <div class="field">
+      <label>Timeline Prompt (nightly · generate structured timeline from states)</label>
+      <textarea id="timeline-prompt" spellcheck="false"></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-ghost" id="btn-reset-timeline-prompt">Reset</button>
+      <button class="btn-ghost" id="btn-copy-timeline-prompt">Copy</button>
+      <button class="btn-primary" id="btn-save-timeline-prompt">Save</button>
+    </div>
+
 
     <hr class="divider">
     <h2>Directories</h2>
@@ -743,6 +754,8 @@
     <div class="panel-tabs">
       <button class="tab-btn active" data-tab="log">Daily Log</button>
       <button class="tab-btn" data-tab="insight">Insights</button>
+      <button class="tab-btn" data-tab="states">States</button>
+      <button class="tab-btn" data-tab="timeline">Timeline</button>
       <button class="tab-btn" data-tab="pattern">Pattern</button>
       <button class="tab-btn" data-tab="events">Events</button>
     </div>
@@ -765,6 +778,26 @@
         <button id="btn-next-insight" title="Next day">›</button>
       </div>
       <div id="insight-content" class="mem-content"><div class="md-muted">Loading…</div></div>
+    </div>
+
+    <!-- States tab -->
+    <div id="tab-states" class="tab-content hidden">
+      <div class="date-nav">
+        <button id="btn-prev-states" title="Previous day">‹</button>
+        <span id="current-states-date">—</span>
+        <button id="btn-next-states" title="Next day">›</button>
+      </div>
+      <div id="states-content" class="mem-content"><div class="md-muted">Loading…</div></div>
+    </div>
+
+    <!-- Timeline tab -->
+    <div id="tab-timeline" class="tab-content hidden">
+      <div class="date-nav">
+        <button id="btn-prev-timeline" title="Previous day">‹</button>
+        <span id="current-timeline-date">—</span>
+        <button id="btn-next-timeline" title="Next day">›</button>
+      </div>
+      <div id="timeline-content" class="mem-content"><div class="md-muted">Loading…</div></div>
     </div>
 
     <!-- Pattern tab -->
@@ -812,6 +845,7 @@ async function loadConfig() {
     document.getElementById("incremental-prompt").value     = cfg.incremental_prompt || "";
     document.getElementById("consolidation-prompt").value   = cfg.consolidation_prompt || "";
     document.getElementById("pattern-prompt").value         = cfg.pattern_prompt || "";
+    document.getElementById("timeline-prompt").value        = cfg.timeline_prompt || "";
     document.getElementById("hook-insight-interval").value  = cfg.hook_insight_interval_minutes ?? 30;
     document.getElementById("email-to").value               = cfg.email_to || "";
     document.getElementById("email-smtp-host").value        = cfg.email_smtp_host || "smtp.gmail.com";
@@ -1063,6 +1097,9 @@ async function resetPatternPrompt() {
 document.getElementById("btn-save-pattern-prompt").addEventListener("click", savePatternPrompt);
 document.getElementById("btn-reset-pattern-prompt").addEventListener("click", resetPatternPrompt);
 document.getElementById("btn-copy-pattern-prompt").addEventListener("click", makeCopyHandler("pattern-prompt"));
+
+makePromptHandlers("timeline-prompt", "timeline_prompt", "btn-save-timeline-prompt", "btn-reset-timeline-prompt");
+document.getElementById("btn-copy-timeline-prompt").addEventListener("click", makeCopyHandler("timeline-prompt"));
 
 // ── Feed ──
 function formatTime(isoStr) {
@@ -1409,6 +1446,8 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
     document.getElementById("tab-" + btn.dataset.tab).classList.remove("hidden");
     if (btn.dataset.tab === "pattern") loadPattern();
     if (btn.dataset.tab === "insight") insightViewer.loadDates();
+    if (btn.dataset.tab === "states") statesViewer.loadDates();
+    if (btn.dataset.tab === "timeline") timelineViewer.loadDates();
     if (btn.dataset.tab === "events") loadEvents();
   });
 });
@@ -1468,7 +1507,8 @@ function inlineFormat(s) {
 }
 
 // ── Generic dated-file viewer ──
-function makeDatedViewer({ apiList, apiFile, prevBtn, nextBtn, dateSpan, contentEl, emptyMsg, transform }) {
+function makeDatedViewer(opts) {
+  const { apiList, apiFile, prevBtn, nextBtn, dateSpan, contentEl, emptyMsg, transform } = opts;
   let dates = [], idx = 0;
 
   async function loadDates() {
@@ -1501,7 +1541,8 @@ function makeDatedViewer({ apiList, apiFile, prevBtn, nextBtn, dateSpan, content
     const el = document.getElementById(contentEl);
     el.innerHTML = '<div class="md-muted">Loading…</div>';
     try {
-      const r = await fetch(apiFile + "/" + date);
+      const suffix = opts.fileSuffix || "";
+      const r = await fetch(apiFile + "/" + date + suffix);
       if (!r.ok) { el.innerHTML = '<div class="md-muted">Not found.</div>'; return; }
       let text = await r.text();
       if (transform) text = transform(text);
@@ -1542,6 +1583,22 @@ const insightViewer = makeDatedViewer({
   emptyMsg: "No insight files found.",
 });
 
+const statesViewer = makeDatedViewer({
+  apiList: "/api/memory/narrative/dates", apiFile: "/api/memory/narrative",
+  prevBtn: "btn-prev-states", nextBtn: "btn-next-states",
+  dateSpan: "current-states-date", contentEl: "states-content",
+  emptyMsg: "No states files found.",
+  fileSuffix: "/states",
+});
+
+const timelineViewer = makeDatedViewer({
+  apiList: "/api/memory/narrative/dates", apiFile: "/api/memory/narrative",
+  prevBtn: "btn-prev-timeline", nextBtn: "btn-next-timeline",
+  dateSpan: "current-timeline-date", contentEl: "timeline-content",
+  emptyMsg: "No timeline files found.",
+  fileSuffix: "/timeline",
+});
+
 // ── Events ──
 async function loadEvents() {
   const el = document.getElementById("events-list");
@@ -1552,7 +1609,7 @@ async function loadEvents() {
     const events = await r.json();
     if (!events.length) { el.innerHTML = '<div class="md-muted">No events recorded yet.</div>'; return; }
     el.innerHTML = "";
-    const BADGE_LABELS = { batch: "batch", insight: "insight", insight_consolidation: "consol.", pattern: "pattern" };
+    const BADGE_LABELS = { batch: "batch", insight: "insight", insight_consolidation: "consol.", pattern: "pattern", timeline: "timeline" };
     let lastDate = null;
     events.forEach(ev => {
       const d = new Date(ev.ts);

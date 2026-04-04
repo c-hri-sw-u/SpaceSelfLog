@@ -194,6 +194,41 @@ Guidelines:
 - Third person.\
 """
 
+_DEFAULT_TIMELINE_PROMPT = """\
+You are reconstructing a structured daily timeline from a series of \
+"current state" snapshots captured throughout the day. Each snapshot \
+has a timestamp and a brief description of what the user was doing.
+
+Input: the full states file for a given date (markdown with ## HH:MM \
+headers and body text).
+
+Output: a single JSON object with this schema (and nothing else):
+{
+  "date": "YYYY-MM-DD",
+  "segments": [
+    {
+      "start_time": "HH:MM",
+      "end_time": "HH:MM",
+      "activity": "<short label>",
+      "location": "<where>",
+      "social": "<alone / with others / ...>",
+      "summary": "<1-2 sentence description>"
+    }
+  ],
+  "day_summary": "<2-3 sentence overview of how the day went>"
+}
+
+Rules:
+- Merge consecutive states that describe the same activity into one \
+segment.
+- Set end_time to the timestamp of the next segment's start (or the \
+last known state time for the final segment).
+- If there is a gap between states (e.g. no data 12:00–14:00), \
+create a gap segment with activity "unknown" rather than merging \
+across it.
+- Keep the JSON compact. No markdown fences.\
+"""
+
 # Keep old name as alias so any saved config value in insight_prompt still works
 _INSIGHT_PROMPT = _INCREMENTAL_INSIGHT_PROMPT
 
@@ -217,6 +252,7 @@ _DEFAULTS: dict = {
     "incremental_prompt":   _INCREMENTAL_INSIGHT_PROMPT,
     "consolidation_prompt": _CONSOLIDATION_INSIGHT_PROMPT,
     "pattern_prompt":       _DEFAULT_PATTERN_PROMPT,
+    "timeline_prompt":      _DEFAULT_TIMELINE_PROMPT,
     "nightly_hour":         2,
     "insight_min_batches":  _INSIGHT_MIN_BATCHES,
     "insight_min_minutes":  _INSIGHT_MIN_MINUTES,
@@ -361,6 +397,7 @@ def get_config():
     safe["incremental_prompt"]   = safe.get("incremental_prompt")   or _INCREMENTAL_INSIGHT_PROMPT
     safe["consolidation_prompt"] = safe.get("consolidation_prompt") or _CONSOLIDATION_INSIGHT_PROMPT
     safe["pattern_prompt"]       = safe.get("pattern_prompt")       or _DEFAULT_PATTERN_PROMPT
+    safe["timeline_prompt"]      = safe.get("timeline_prompt")      or _DEFAULT_TIMELINE_PROMPT
     safe["config_file"]          = str(CONFIG_FILE)
     return jsonify(safe)
 
@@ -373,7 +410,7 @@ def post_config():
     allowed = {"provider", "api_key", "model", 
                "text_provider", "text_api_key", "text_model",
                "openclaw_memory_dir", "project_dir", "frames_dir",
-               "prompt", "incremental_prompt", "consolidation_prompt", "pattern_prompt",
+               "prompt", "incremental_prompt", "consolidation_prompt", "pattern_prompt", "timeline_prompt",
                "nightly_hour", "insight_min_batches", "insight_min_minutes", "consolidation_every_n",
                "telegram_bot_token", "telegram_chat_id", "telegram_gap_minutes",
                "hook_insight_interval_minutes",
@@ -1079,6 +1116,17 @@ def _run_incremental_update(date_str: str) -> None:
     _insight_log_offset[date_str] = new_offset
     log.info("Insight (incremental) → %s  (offset %d→%d)", insight_file, offset, new_offset)
 
+    # Append current state snapshot to daily narrative states file
+    if new_state_body:
+        narrative_dir = Path(mem_dir).expanduser() / "physical-daily-narrative"
+        narrative_dir.mkdir(parents=True, exist_ok=True)
+        states_file = narrative_dir / f"{date_str}-states.md"
+        if not states_file.exists():
+            states_file.write_text(f"# Daily States — {date_str}\n", encoding="utf-8")
+        with states_file.open("a", encoding="utf-8") as sf:
+            sf.write(f"\n## {time_str}\n{new_state_body}\n")
+        log.info("Narrative state appended → %s", states_file)
+
 
 def _run_consolidation_pass(date_str: str) -> None:
     """Consolidate accumulated highlights: merge duplicates, remove superseded items.
@@ -1126,6 +1174,53 @@ def _run_consolidation_pass(date_str: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Daily timeline generation
+# ---------------------------------------------------------------------------
+
+def _generate_daily_timeline(date_str: str) -> None:
+    """Read the states file for a date and generate a structured timeline JSON."""
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        log.warning("Timeline generation: openclaw_memory_dir not set — skipping")
+        return
+
+    narrative_dir = Path(mem_dir).expanduser() / "physical-daily-narrative"
+    states_file = narrative_dir / f"{date_str}-states.md"
+    if not states_file.exists():
+        log.info("Timeline generation: no states file for %s — skipping", date_str)
+        return
+
+    states_text = states_file.read_text(encoding="utf-8").strip()
+    # Strip HTML comments
+    states_clean = "\n".join(
+        line for line in states_text.splitlines() if not line.startswith("<!--")
+    ).strip()
+    if not states_clean:
+        return
+
+    timeline_system = _config.get("timeline_prompt") or _DEFAULT_TIMELINE_PROMPT
+    user_msg = f"States file for {date_str}:\n\n{states_clean}"
+
+    try:
+        raw = _call_insight_vlm(timeline_system, user_msg, max_tokens=2048)
+        cleaned = _strip_json_fences(raw)
+        # Validate it's valid JSON
+        json.loads(cleaned)
+
+        timeline_file = narrative_dir / f"{date_str}-timeline.md"
+        timeline_file.write_text(
+            f"<!-- auto-generated by SpaceSelfLog — {date_str} -->\n\n"
+            + cleaned + "\n",
+            encoding="utf-8",
+        )
+        log.info("Timeline generated → %s", timeline_file)
+        _append_event("timeline", status="ok", date=date_str)
+    except Exception as e:
+        log.error("Timeline generation failed for %s: %s", date_str, e)
+        _append_event("timeline", status="error", date=date_str, error=str(e))
+
+
+# ---------------------------------------------------------------------------
 # Nightly pattern update: physical-pattern.md
 # ---------------------------------------------------------------------------
 
@@ -1138,6 +1233,14 @@ def _run_nightly_pattern_update(date_str: str, extra_date_str: str | None = None
     date_str is always the primary date (yesterday when triggered after midnight).
     extra_date_str is an optional second date (today) to include when the trigger
     fires after midnight and today already has some logged activity.
+
+    Flow:
+      0. Generate timeline from states for primary date
+      1. Read insight + states + timeline for primary date
+      2. Optionally read insight + states + timeline for extra date
+      3. Read existing physical-pattern.md
+      4. Call LLM with all gathered context
+      5. Overwrite physical-pattern.md
     """
     global _pattern_last_run_date
 
@@ -1146,27 +1249,77 @@ def _run_nightly_pattern_update(date_str: str, extra_date_str: str | None = None
         log.warning("Nightly pattern: openclaw_memory_dir not set — skipping")
         return
 
-    insights_dir = Path(mem_dir).expanduser() / "physical-insights"
+    base_dir     = Path(mem_dir).expanduser()
+    insights_dir = base_dir / "physical-insights"
+    narrative_dir = base_dir / "physical-daily-narrative"
 
+    # Step 0: Generate timeline from states for primary date
+    _generate_daily_timeline(date_str)
+
+    # Step 1: Read insight + states + timeline for primary date
     insight_file = insights_dir / f"{date_str}.md"
     if not insight_file.exists():
         log.warning("Nightly pattern: no insight file for %s — skipping", date_str)
         return
 
-    combined_insight = insight_file.read_text(encoding="utf-8").strip()
-    if not combined_insight:
+    combined_parts: list[str] = []
+
+    insight_text = insight_file.read_text(encoding="utf-8").strip()
+    if insight_text:
+        combined_parts.append(f"### Daily Insight ({date_str})\n{insight_text}")
+
+    states_file = narrative_dir / f"{date_str}-states.md"
+    if states_file.exists():
+        states_text = states_file.read_text(encoding="utf-8").strip()
+        states_clean = "\n".join(
+            line for line in states_text.splitlines() if not line.startswith("<!--")
+        ).strip()
+        if states_clean:
+            combined_parts.append(f"### Daily States ({date_str})\n{states_clean}")
+
+    timeline_file = narrative_dir / f"{date_str}-timeline.md"
+    if timeline_file.exists():
+        timeline_text = timeline_file.read_text(encoding="utf-8").strip()
+        timeline_clean = "\n".join(
+            line for line in timeline_text.splitlines() if not line.startswith("<!--")
+        ).strip()
+        if timeline_clean:
+            combined_parts.append(f"### Daily Timeline ({date_str})\n{timeline_clean}")
+
+    # Step 2: Optionally read insight + states + timeline for extra date
+    if extra_date_str:
+        _generate_daily_timeline(extra_date_str)
+
+        extra_insight = insights_dir / f"{extra_date_str}.md"
+        if extra_insight.exists():
+            extra_text = extra_insight.read_text(encoding="utf-8").strip()
+            if extra_text:
+                combined_parts.append(f"### Partial Insight ({extra_date_str})\n{extra_text}")
+
+        extra_states = narrative_dir / f"{extra_date_str}-states.md"
+        if extra_states.exists():
+            extra_states_text = extra_states.read_text(encoding="utf-8").strip()
+            extra_states_clean = "\n".join(
+                line for line in extra_states_text.splitlines() if not line.startswith("<!--")
+            ).strip()
+            if extra_states_clean:
+                combined_parts.append(f"### Partial States ({extra_date_str})\n{extra_states_clean}")
+
+        extra_timeline = narrative_dir / f"{extra_date_str}-timeline.md"
+        if extra_timeline.exists():
+            extra_tl_text = extra_timeline.read_text(encoding="utf-8").strip()
+            extra_tl_clean = "\n".join(
+                line for line in extra_tl_text.splitlines() if not line.startswith("<!--")
+            ).strip()
+            if extra_tl_clean:
+                combined_parts.append(f"### Partial Timeline ({extra_date_str})\n{extra_tl_clean}")
+
+    combined_input = "\n\n---\n\n".join(combined_parts)
+    if not combined_input:
         return
 
-    # Append today's partial insight if it exists and has content
-    if extra_date_str:
-        extra_file = insights_dir / f"{extra_date_str}.md"
-        if extra_file.exists():
-            extra_text = extra_file.read_text(encoding="utf-8").strip()
-            if extra_text:
-                combined_insight += f"\n\n---\nPartial insight for {extra_date_str}:\n\n{extra_text}"
-                log.info("Nightly pattern: also including partial insight for %s", extra_date_str)
-
-    pattern_file = Path(mem_dir).expanduser() / "physical-pattern.md"
+    # Step 3: Read existing pattern
+    pattern_file = base_dir / "physical-pattern.md"
     existing_pattern = ""
     if pattern_file.exists():
         text = pattern_file.read_text(encoding="utf-8")
@@ -1174,17 +1327,19 @@ def _run_nightly_pattern_update(date_str: str, extra_date_str: str | None = None
             line for line in text.splitlines() if not line.startswith("<!--")
         ).strip()
 
+    # Step 4: Call LLM
     dates_label = f"{date_str}" + (f" + {extra_date_str}" if extra_date_str else "")
     if existing_pattern:
         user_msg = (
             f"Current profile:\n\n{existing_pattern}\n\n"
-            f"---\nNew daily insight ({dates_label}) to merge in:\n\n{combined_insight}"
+            f"---\nNew daily data ({dates_label}) to merge in:\n\n{combined_input}"
         )
     else:
-        user_msg = f"Daily insight ({dates_label}) — no existing profile yet:\n\n{combined_insight}"
+        user_msg = f"Daily data ({dates_label}) — no existing profile yet:\n\n{combined_input}"
 
     pattern_system = _config.get("pattern_prompt") or _DEFAULT_PATTERN_PROMPT
 
+    # Step 5: Write result
     try:
         t_cfg = _text_cfg(_config)
         if t_cfg.get("provider") == "anthropic":
@@ -1578,6 +1733,55 @@ def get_pattern_file():
     if not pattern_file.exists():
         return "not found", 404
     return pattern_file.read_text(encoding="utf-8"), 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+
+# ---------------------------------------------------------------------------
+# Daily narrative API
+# ---------------------------------------------------------------------------
+
+@app.get("/api/memory/narrative/dates")
+def list_narrative_dates():
+    """Return sorted list of dates (desc) that have any narrative files."""
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        return jsonify([])
+    narrative_dir = Path(mem_dir).expanduser() / "physical-daily-narrative"
+    if not narrative_dir.exists():
+        return jsonify([])
+    dates: set[str] = set()
+    for f in narrative_dir.glob("*-states.md"):
+        dates.add(f.stem.replace("-states", ""))
+    for f in narrative_dir.glob("*-timeline.md"):
+        dates.add(f.stem.replace("-timeline", ""))
+    return jsonify(sorted(dates, reverse=True))
+
+
+@app.get("/api/memory/narrative/<date>/states")
+def get_narrative_states(date: str):
+    """Return raw markdown content of daily states file."""
+    if not _re.match(r'^\d{4}-\d{2}-\d{2}$', date):
+        return "invalid date", 400
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        return "openclaw_memory_dir not configured", 404
+    states_file = Path(mem_dir).expanduser() / "physical-daily-narrative" / f"{date}-states.md"
+    if not states_file.exists():
+        return "not found", 404
+    return states_file.read_text(encoding="utf-8"), 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+
+@app.get("/api/memory/narrative/<date>/timeline")
+def get_narrative_timeline(date: str):
+    """Return raw content of daily timeline file (JSON in markdown)."""
+    if not _re.match(r'^\d{4}-\d{2}-\d{2}$', date):
+        return "invalid date", 400
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        return "openclaw_memory_dir not configured", 404
+    timeline_file = Path(mem_dir).expanduser() / "physical-daily-narrative" / f"{date}-timeline.md"
+    if not timeline_file.exists():
+        return "not found", 404
+    return timeline_file.read_text(encoding="utf-8"), 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 
 # ---------------------------------------------------------------------------

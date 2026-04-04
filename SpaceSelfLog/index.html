@@ -1649,6 +1649,28 @@
         document.getElementById('ssimToggleBtn').classList.add('open');
 
         setInterval(refresh, 1500); refresh();
+
+        // ── Heartbeat ──
+        // Derives the ingest server base URL from outboxEndpoint and POSTs /heartbeat every 30s.
+        let _heartbeatEndpoint = null;
+        async function _updateHeartbeatEndpoint() {
+            try {
+                const s = await fetch('/status').then(r => r.json());
+                const ep = s.outboxEndpoint;
+                if (!ep) { _heartbeatEndpoint = null; return; }
+                // e.g. "http://100.x.x.x:8000/ingest" → "http://100.x.x.x:8000/heartbeat"
+                const url = new URL(ep);
+                url.pathname = '/heartbeat';
+                _heartbeatEndpoint = url.toString();
+            } catch(e) { /* ignore */ }
+        }
+        async function sendHeartbeat() {
+            await _updateHeartbeatEndpoint();
+            if (!_heartbeatEndpoint) return;
+            fetch(_heartbeatEndpoint, { method: 'POST' }).catch(() => {});
+        }
+        setInterval(sendHeartbeat, 30000);
+        sendHeartbeat();
     </script>
 </body>
 </html>

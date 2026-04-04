@@ -288,6 +288,10 @@ _text_client = _make_client(_text_cfg(_config))
 
 _batches: deque = deque(maxlen=50)  # each entry: dict
 
+# Heartbeat tracking
+_last_heartbeat: float | None = None   # time.time() of last /heartbeat POST
+_heartbeat_alerted: bool = False       # True while we are in "offline" alert state
+
 
 def _record_batch(entry: dict) -> None:
     _batches.appendleft(entry)   # newest first
@@ -321,6 +325,8 @@ def monitor():
 @app.get("/status")
 def status():
     cfg = _config
+    now = time.time()
+    hb_age = round(now - _last_heartbeat) if _last_heartbeat else None
     return jsonify({
         "ok":                  True,
         "provider":            cfg.get("provider"),
@@ -328,6 +334,8 @@ def status():
         "openclaw_memory_dir": cfg.get("openclaw_memory_dir"),
         "frames_dir":          cfg.get("frames_dir"),
         "batches_received":    len(_batches),
+        "heartbeat_age":       hb_age,   # seconds since last heartbeat, or null
+        "heartbeat_alerted":   _heartbeat_alerted,
     })
 
 
@@ -402,6 +410,20 @@ def test_connection():
         return jsonify({"ok": True, "reply": reply})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 400
+
+
+# ---------------------------------------------------------------------------
+# Heartbeat
+# ---------------------------------------------------------------------------
+
+@app.post("/heartbeat")
+def heartbeat():
+    global _last_heartbeat, _heartbeat_alerted
+    _last_heartbeat = time.time()
+    if _heartbeat_alerted:
+        _heartbeat_alerted = False
+        log.info("Heartbeat resumed — app is back online")
+    return jsonify({"ok": True})
 
 
 # ---------------------------------------------------------------------------
@@ -1173,6 +1195,29 @@ def _run_nightly_pattern_update(date_str: str, extra_date_str: str | None = None
     except Exception as e:
         log.error("Nightly pattern update failed: %s", e)
         _append_event("pattern", status="error", date=date_str, error=str(e))
+
+
+HEARTBEAT_TIMEOUT = 180   # seconds without a heartbeat before alerting
+HEARTBEAT_RECHECK = 60    # how often the monitor thread wakes up (seconds)
+
+def _heartbeat_monitor() -> None:
+    """Background thread: notify via macOS notification if app goes silent."""
+    import time as _time, subprocess as _subprocess
+    while True:
+        _time.sleep(HEARTBEAT_RECHECK)
+        global _heartbeat_alerted
+        if _last_heartbeat is None:
+            continue   # no heartbeat ever received — nothing to alert on
+        age = _time.time() - _last_heartbeat
+        if age > HEARTBEAT_TIMEOUT and not _heartbeat_alerted:
+            _heartbeat_alerted = True
+            mins = int(age // 60)
+            log.warning("No heartbeat for %d min — sending macOS notification", mins)
+            _subprocess.run([
+                "osascript", "-e",
+                f'display notification "No heartbeat for {mins}+ min — app may have crashed or closed" '
+                f'with title "SpaceSelfLog" subtitle "App offline" sound name "Funk"'
+            ], check=False)
 
 
 def _nightly_scheduler() -> None:
@@ -1989,4 +2034,5 @@ if __name__ == "__main__":
     Path(_config["frames_dir"]).expanduser().mkdir(parents=True, exist_ok=True)
     threading.Thread(target=_nightly_scheduler, daemon=True).start()
     threading.Thread(target=_telegram_poller, daemon=True).start()
+    threading.Thread(target=_heartbeat_monitor, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False)

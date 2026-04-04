@@ -209,14 +209,13 @@
   .card-meta   { font-size: 11px; color: var(--muted); }
   .btn-retry, .btn-delete {
     font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px;
-    border: none; cursor: pointer; flex: none; transition: opacity .15s;
+    border: none; cursor: pointer; flex: none; transition: opacity .15s; font-family: inherit;
   }
   .btn-retry { background: #2d1414; color: var(--red); }
   .btn-retry:hover:not(:disabled) { opacity: .75; }
   .btn-retry:disabled { opacity: .45; cursor: default; }
   .btn-delete { background: #1a1a1a; color: var(--muted); }
   .btn-delete:hover { color: var(--text); }
-  .btn-delete:hover { color: var(--red); }
 
   .card-frames {
     display: flex;
@@ -577,7 +576,7 @@
     <div class="btn-row">
       <button class="btn-ghost" id="btn-reset-prompt">Reset</button>
       <button class="btn-ghost" id="btn-copy-prompt">Copy</button>
-      <button class="btn-ghost" id="btn-save-prompt">Save Prompt</button>
+      <button class="btn-ghost" id="btn-save-prompt">Save</button>
     </div>
 
     <div class="field">

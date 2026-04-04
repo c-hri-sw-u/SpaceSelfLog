@@ -210,7 +210,7 @@
   .btn-retry, .btn-delete {
     font-size: 10px; padding: 0 2px; border-radius: 99px; border: none; cursor: pointer;
     font-weight: 600; line-height: 1; height: 16px; display: inline-flex; align-items: center;
-    transition: opacity .15s;
+    transition: opacity .15s; flex: none; align-self: center; width: auto;
   }
   .btn-retry { background: #2d1414; color: var(--red); }
   .btn-retry:hover:not(:disabled) { opacity: .75; }
@@ -1024,12 +1024,11 @@ function makeCard(b) {
     const dur = data.vlm_ms != null
       ? (data.vlm_ms >= 1000 ? `${(data.vlm_ms/1000).toFixed(1)}s` : `${data.vlm_ms}ms`) : "";
 
-    // Left side: time · id · badge [· retry]
-    // Right side (margin-left:auto): vlm · meta · delete
     hdr.innerHTML = `
       <span class="card-time">${formatTime(data.received_at)}</span>
       <span class="card-id">${data.batch_id.slice(0, 24)}</span>
       <span class="badge ${sc}">${data.status || "…"}</span>
+      ${data.status === "error" ? `<button class="btn-retry" data-retry>↺ Retry</button>` : ""}
       <span class="card-hdr-right">
         ${modelShort ? `<span class="card-vlm-model">${modelShort}</span>` : ""}
         ${dur        ? `<span class="card-vlm-ms">${dur}</span>` : ""}
@@ -1038,12 +1037,10 @@ function makeCard(b) {
     `;
 
     if (data.status === "error") {
-      const retryBtn = document.createElement("button");
-      retryBtn.className = "btn-retry";
-      retryBtn.textContent = "↺ Retry";
-      retryBtn.addEventListener("click", async () => {
-        retryBtn.disabled = true;
-        retryBtn.textContent = "…";
+      hdr.querySelector("[data-retry]").addEventListener("click", async (e) => {
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        btn.textContent = "…";
         try {
           const res = await fetch(`/api/retry/${data.batch_id}`, {method: "POST"});
           const updated = await res.json();
@@ -1055,13 +1052,11 @@ function makeCard(b) {
           }
           renderHeader(updated);
         } catch (err) {
-          retryBtn.disabled = false;
-          retryBtn.textContent = "↺ Retry";
+          btn.disabled = false;
+          btn.textContent = "↺ Retry";
           alert("Retry failed: " + err.message);
         }
       });
-      const badge = hdr.querySelector(".badge");
-      badge.insertAdjacentElement("afterend", retryBtn);
     }
 
     const delBtn = document.createElement("button");

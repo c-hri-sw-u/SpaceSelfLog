@@ -203,22 +203,19 @@
 
   .card-time   { font-size: 12px; color: var(--muted); }
   .card-id     { font-size: 12px; font-family: monospace; color: var(--text); }
-  .card-vlm    { font-size: 11px; color: var(--muted); margin-left: auto; display: flex; gap: 8px; align-items: center; }
-  .card-vlm-model { font-family: monospace; color: var(--text); }
-  .card-vlm-ms    { color: var(--accent); }
-  .card-meta   { font-size: 11px; color: var(--muted); margin-left: 12px; }
-  .btn-retry {
-    font-size: 11px; padding: 1px 6px; border-radius: 99px; border: none; cursor: pointer;
-    background: #2d1414; color: var(--red); font-weight: 600;
-    transition: opacity .15s; line-height: 16px; height: 18px;
+  .card-hdr-right { margin-left: auto; display: flex; gap: 8px; align-items: center; font-size: 11px; color: var(--muted); }
+  .card-vlm-model { font-family: monospace; color: var(--text); font-size: 11px; }
+  .card-vlm-ms    { color: var(--accent); font-size: 11px; }
+  .card-meta   { font-size: 11px; color: var(--muted); }
+  .btn-retry, .btn-delete {
+    font-size: 10px; padding: 0 2px; border-radius: 99px; border: none; cursor: pointer;
+    font-weight: 600; line-height: 1; height: 16px; display: inline-flex; align-items: center;
+    transition: opacity .15s;
   }
+  .btn-retry { background: #2d1414; color: var(--red); }
   .btn-retry:hover:not(:disabled) { opacity: .75; }
   .btn-retry:disabled { opacity: .45; cursor: default; }
-  .btn-delete {
-    font-size: 11px; padding: 1px 6px; border-radius: 99px; border: none; cursor: pointer;
-    background: transparent; color: var(--muted); font-weight: 600;
-    transition: color .15s; line-height: 16px; height: 18px; margin-left: auto;
-  }
+  .btn-delete { background: transparent; color: var(--muted); margin-left: auto; }
   .btn-delete:hover { color: var(--red); }
 
   .card-frames {
@@ -1026,18 +1023,20 @@ function makeCard(b) {
     const modelShort = (data.vlm_model || "").replace(/^[^/]+\//, "");
     const dur = data.vlm_ms != null
       ? (data.vlm_ms >= 1000 ? `${(data.vlm_ms/1000).toFixed(1)}s` : `${data.vlm_ms}ms`) : "";
-    const vlmHtml = (modelShort || dur) ? `
-      <span class="card-vlm">
-        ${modelShort ? `<span class="card-vlm-model">${modelShort}</span>` : ""}
-        ${dur        ? `<span class="card-vlm-ms">${dur}</span>` : ""}
-      </span>` : "";
+
+    // Left side: time · id · badge [· retry]
+    // Right side (margin-left:auto): vlm · meta · delete
     hdr.innerHTML = `
       <span class="card-time">${formatTime(data.received_at)}</span>
       <span class="card-id">${data.batch_id.slice(0, 24)}</span>
       <span class="badge ${sc}">${data.status || "…"}</span>
-      ${vlmHtml}
-      <span class="card-meta">${data.frame_count}/${data.input_frames} frames · ${data.session_id.slice(0,12)}</span>
+      <span class="card-hdr-right">
+        ${modelShort ? `<span class="card-vlm-model">${modelShort}</span>` : ""}
+        ${dur        ? `<span class="card-vlm-ms">${dur}</span>` : ""}
+        <span class="card-meta">${data.frame_count}/${data.input_frames} frames · ${data.session_id.slice(0,12)}</span>
+      </span>
     `;
+
     if (data.status === "error") {
       const retryBtn = document.createElement("button");
       retryBtn.className = "btn-retry";
@@ -1065,7 +1064,6 @@ function makeCard(b) {
       badge.insertAdjacentElement("afterend", retryBtn);
     }
 
-    // Delete button — always shown, far right
     const delBtn = document.createElement("button");
     delBtn.className = "btn-delete";
     delBtn.textContent = "✕";
@@ -1080,7 +1078,7 @@ function makeCard(b) {
         alert("Delete failed: " + err.message);
       }
     });
-    hdr.appendChild(delBtn);
+    hdr.querySelector(".card-hdr-right").appendChild(delBtn);
   }
 
   renderHeader(b);

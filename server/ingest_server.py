@@ -23,7 +23,7 @@ Config (env vars or .env, overridden by ~/.spaceselflog/config.json via UI):
   VLM_MODEL       (default: anthropic/claude-sonnet-4-6)
 """
 
-import os, sys, json, base64, logging, uuid
+import os, sys, json, base64, logging, uuid, time
 from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
@@ -243,8 +243,12 @@ def _load_config() -> dict:
 
 
 def _save_config(cfg: dict) -> None:
-    CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
-    CONFIG_FILE.write_text(json.dumps(cfg, indent=2, ensure_ascii=False))
+    try:
+        CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        CONFIG_FILE.write_text(json.dumps(cfg, indent=2, ensure_ascii=False))
+    except Exception as e:
+        log.error("Failed to write config file %s: %s", CONFIG_FILE, e)
+        raise
     # Write hook-config.json so the OpenClaw hook can read settings without touching openclaw.json
     try:
         HOOK_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -344,6 +348,7 @@ def get_config():
     safe["incremental_prompt"]   = safe.get("incremental_prompt")   or _INCREMENTAL_INSIGHT_PROMPT
     safe["consolidation_prompt"] = safe.get("consolidation_prompt") or _CONSOLIDATION_INSIGHT_PROMPT
     safe["pattern_prompt"]       = safe.get("pattern_prompt")       or _DEFAULT_PATTERN_PROMPT
+    safe["config_file"]          = str(CONFIG_FILE)
     return jsonify(safe)
 
 
@@ -362,7 +367,10 @@ def post_config():
     for k in allowed:
         if k in body:
             _config[k] = body[k]
-    _save_config(_config)
+    try:
+        _save_config(_config)
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
     _client = _make_client(_config)
     _text_client = _make_client(_text_cfg(_config))
     log.info("Config updated: provider=%s model=%s, text_provider=%s text_model=%s",
@@ -445,7 +453,10 @@ def ingest():
     # 3. Run VLM
     batch_created = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
     summary = error_msg = None
+    vlm_ms: int | None = None
+    vlm_model: str = _config.get("model", "")
     try:
+        _t0 = time.monotonic()
         summary = _run_vlm(
             frames=frame_paths,
             frames_meta=frames_meta,
@@ -453,8 +464,9 @@ def ingest():
             input_frames=input_frames,
             prior_summary=prior_summary,
         )
+        vlm_ms = int((time.monotonic() - _t0) * 1000)
         _save_prior_context(session_id, summary)
-        log.info("VLM ok — %d chars", len(summary))
+        log.info("VLM ok — %d chars  model=%s  %.1fs", len(summary), vlm_model, vlm_ms / 1000)
     except Exception as e:
         error_msg = str(e)
         log.error("VLM error: %s", e)
@@ -490,6 +502,8 @@ def ingest():
         "summary":     summary,
         "status":      "error" if error_msg else "ok",
         "error":       error_msg or mem_error,
+        "vlm_model":   vlm_model,
+        "vlm_ms":      vlm_ms,
     })
 
     if error_msg:
@@ -713,22 +727,13 @@ def _save_prior_context(session_id: str, summary: str) -> None:
 _ISO = "%Y-%m-%dT%H:%M:%SZ"
 
 
-def _write_physical_log(batch_id, session_id, batch_created,
-                         summary, frame_count, input_frames) -> None:
-    mem_dir = _config.get("openclaw_memory_dir", "")
-    if not mem_dir:
-        log.warning("openclaw_memory_dir not set — skipping memory write")
-        return
-
-    logs_dir = Path(mem_dir).expanduser() / "physical-logs"
-    logs_dir.mkdir(parents=True, exist_ok=True)
-
+def _build_log_entry(batch_id, session_id, batch_created, summary,
+                     frame_count, input_frames) -> tuple[str, str, str]:
+    """Return (date_str, time_str, entry_text) for a physical log entry."""
     local_created = batch_created.astimezone()
     date_str = local_created.strftime("%Y-%m-%d")
-    log_file = logs_dir / f"{date_str}.md"
     time_str = local_created.strftime("%H:%M")
 
-    # Parse JSON output from VLM; fall back to raw text if malformed
     try:
         data = json.loads(summary)
         fields = ["activity", "location", "objects", "social_context", "notable_events"]
@@ -743,10 +748,51 @@ def _write_physical_log(batch_id, session_id, batch_created,
                   f"<!-- session={session_id}  frames={frame_count}/{input_frames} -->\n\n"
                   f"{summary}\n")
 
+    return date_str, time_str, entry
+
+
+def _write_physical_log(batch_id, session_id, batch_created,
+                        summary, frame_count, input_frames,
+                        insert_sorted: bool = False) -> None:
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        log.warning("openclaw_memory_dir not set — skipping memory write")
+        return
+
+    logs_dir = Path(mem_dir).expanduser() / "physical-logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+
+    date_str, time_str, entry = _build_log_entry(
+        batch_id, session_id, batch_created, summary, frame_count, input_frames)
+    log_file = logs_dir / f"{date_str}.md"
+
     if not log_file.exists():
         log_file.write_text(f"# Physical Log — {date_str}\n")
-    with log_file.open("a", encoding="utf-8") as fh:
-        fh.write(entry)
+
+    if not insert_sorted:
+        with log_file.open("a", encoding="utf-8") as fh:
+            fh.write(entry)
+    else:
+        # Insert entry in chronological order by HH:MM header.
+        # Find the first existing section whose time is strictly after ours and
+        # splice before it; if none, append.
+        text = log_file.read_text(encoding="utf-8")
+        # Match positions of every "## HH:MM" section header
+        pattern = _re.compile(r'\n(?=## \d{2}:\d{2})')
+        splits = [(m.start(), text[m.start():].split('\n')[1][3:8]) for m in pattern.finditer(text)]
+        insert_pos = None
+        for pos, hdr_time in splits:
+            if hdr_time > time_str:
+                insert_pos = pos
+                break
+        if insert_pos is None:
+            with log_file.open("a", encoding="utf-8") as fh:
+                fh.write(entry)
+        else:
+            new_text = text[:insert_pos] + entry + text[insert_pos:]
+            log_file.write_text(new_text, encoding="utf-8")
+        log.info("Memory write (sorted insert at %s) → %s", time_str, log_file)
+        return
 
     log.info("Memory write → %s", log_file)
 
@@ -1260,6 +1306,103 @@ def post_comment():
             log.warning("Failed to write comment archive: %s", e)
 
     return jsonify({"ok": True})
+
+
+# ---------------------------------------------------------------------------
+# Batch retry
+# ---------------------------------------------------------------------------
+
+@app.post("/api/retry/<batch_id>")
+def retry_batch(batch_id: str):
+    """Re-run VLM on a previously failed batch using saved frames on disk."""
+    # Find the batch record in memory
+    rec = None
+    for b in _batches:
+        if b["batch_id"] == batch_id:
+            rec = b
+            break
+    if rec is None:
+        return jsonify({"error": "batch not found"}), 404
+
+    session_id = rec["session_id"]
+    frames_dir = Path(_config["frames_dir"])
+    batch_dir  = frames_dir / session_id / batch_id
+
+    # Load saved frames from disk
+    manifest_path = batch_dir / "manifest.json"
+    if not manifest_path.exists():
+        return jsonify({"error": "manifest not found on disk"}), 404
+
+    try:
+        manifest = json.loads(manifest_path.read_text())
+    except Exception as e:
+        return jsonify({"error": f"failed to read manifest: {e}"}), 500
+
+    frames_meta  = manifest.get("frames_meta", [])
+    created_at   = manifest.get("created_at", rec.get("created_at", datetime.now(timezone.utc).isoformat()))
+    input_frames = manifest.get("input_frames", rec.get("input_frames", 0))
+
+    # Reload frame files in order
+    frame_paths: list[tuple[str, bytes]] = []
+    for fn in (rec.get("filenames") or []):
+        fpath = batch_dir / fn
+        if fpath.exists():
+            frame_paths.append((fn, fpath.read_bytes()))
+    if not frame_paths:
+        return jsonify({"error": "no frame files found on disk"}), 404
+
+    batch_created = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+    prior_summary = _load_prior_context(session_id)
+
+    vlm_model = _config.get("model", "")
+    vlm_ms: int | None = None
+    try:
+        _t0 = time.monotonic()
+        summary = _run_vlm(
+            frames=frame_paths,
+            frames_meta=frames_meta,
+            batch_created=batch_created,
+            input_frames=input_frames,
+            prior_summary=prior_summary,
+        )
+        vlm_ms = int((time.monotonic() - _t0) * 1000)
+        _save_prior_context(session_id, summary)
+        log.info("Retry VLM ok — batch=%s  model=%s  %.1fs", batch_id, vlm_model, vlm_ms / 1000)
+    except Exception as e:
+        log.error("Retry VLM error: %s", e)
+        rec["status"] = "error"
+        rec["error"]  = str(e)
+        return jsonify({"error": str(e)}), 500
+
+    # Write to physical log, inserting in chronological order
+    mem_error = None
+    try:
+        _write_physical_log(
+            batch_id=batch_id, session_id=session_id,
+            batch_created=batch_created, summary=summary,
+            frame_count=len(frame_paths), input_frames=input_frames,
+            insert_sorted=True,
+        )
+        date_str = batch_created.astimezone().strftime("%Y-%m-%d")
+        threading.Thread(
+            target=_maybe_update_today_insight,
+            args=(date_str,),
+            daemon=True,
+        ).start()
+    except Exception as e:
+        mem_error = str(e)
+        log.error("Retry memory write error: %s", e)
+
+    # Update record in-place
+    rec["summary"]   = summary
+    rec["status"]    = "ok"
+    rec["error"]     = mem_error
+    rec["vlm_model"] = vlm_model
+    rec["vlm_ms"]    = vlm_ms
+
+    _append_event("batch", status="ok", batch_id=batch_id,
+                  session_id=session_id, frames=len(frame_paths), retried=True)
+    return jsonify({**rec})
 
 
 @app.get("/api/memory/logs")

@@ -203,7 +203,17 @@
 
   .card-time   { font-size: 12px; color: var(--muted); }
   .card-id     { font-size: 12px; font-family: monospace; color: var(--text); }
-  .card-meta   { font-size: 11px; color: var(--muted); margin-left: auto; }
+  .card-vlm    { font-size: 11px; color: var(--muted); margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .card-vlm-model { font-family: monospace; color: var(--text); }
+  .card-vlm-ms    { color: var(--accent); }
+  .card-meta   { font-size: 11px; color: var(--muted); margin-left: 12px; }
+  .btn-retry {
+    font-size: 11px; padding: 2px 8px; border-radius: 99px; border: none; cursor: pointer;
+    background: #2d1414; color: var(--red); font-weight: 600;
+    transition: opacity .15s;
+  }
+  .btn-retry:hover:not(:disabled) { opacity: .75; }
+  .btn-retry:disabled { opacity: .45; cursor: default; }
 
   .card-frames {
     display: flex;
@@ -496,6 +506,7 @@
   <!-- ── Config sidebar ── -->
   <aside>
     <h2>Configuration</h2>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;word-break:break-all;">Config: <span id="config-file-path">~/.spaceselflog/config.json</span></div>
 
     <div class="field">
       <label>Vision Provider</label>
@@ -758,6 +769,10 @@ async function loadConfig() {
     document.getElementById("consolidation-prompt").value   = cfg.consolidation_prompt || "";
     document.getElementById("pattern-prompt").value         = cfg.pattern_prompt || "";
     document.getElementById("hook-insight-interval").value  = cfg.hook_insight_interval_minutes ?? 30;
+    if (cfg.config_file) {
+      const el = document.getElementById("config-file-path");
+      if (el) el.textContent = cfg.config_file;
+    }
     updateModelRowVisibility();
     updateTextModelRowVisibility();
     configLoaded = true;
@@ -792,8 +807,14 @@ async function saveConfig() {
   if (key) body.api_key = key;
   if (textKey) body.text_api_key = textKey;
   try {
-    await fetch("/api/config", { method: "POST",
+    const r = await fetch("/api/config", { method: "POST",
       headers: {"Content-Type": "application/json"}, body: JSON.stringify(body) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || data.ok === false) {
+      btn.disabled = false;
+      alert("Save failed: " + (data.error || r.status));
+      return;
+    }
     btn.textContent = "Saved ✓";
     setTimeout(() => { btn.textContent = "Save"; btn.disabled = false; }, 1500);
   } catch(e) { btn.disabled = false; alert("Save failed: " + e); }
@@ -808,8 +829,14 @@ async function saveDirs() {
     frames_dir:          document.getElementById("frames-dir").value.trim(),
   };
   try {
-    await fetch("/api/config", { method: "POST",
+    const r = await fetch("/api/config", { method: "POST",
       headers: {"Content-Type": "application/json"}, body: JSON.stringify(body) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || data.ok === false) {
+      btn.disabled = false;
+      alert("Save failed: " + (data.error || r.status));
+      return;
+    }
     btn.textContent = "Saved ✓";
     setTimeout(() => { btn.textContent = "Save Dirs"; btn.disabled = false; }, 1500);
   } catch(e) { btn.disabled = false; alert("Save failed: " + e); }
@@ -987,12 +1014,55 @@ function makeCard(b) {
   // Header
   const hdr = document.createElement("div");
   hdr.className = "card-header";
-  hdr.innerHTML = `
-    <span class="card-time">${formatTime(b.received_at)}</span>
-    <span class="card-id">${b.batch_id.slice(0, 24)}</span>
-    <span class="badge ${statusClass}">${b.status || "…"}</span>
-    <span class="card-meta">${b.frame_count}/${b.input_frames} frames · ${b.session_id.slice(0,12)}</span>
-  `;
+
+  function renderHeader(data) {
+    const sc = data.status === "ok" ? "ok" : data.status === "error" ? "error" : "processing";
+    const modelShort = (data.vlm_model || "").replace(/^[^/]+\//, "");
+    const dur = data.vlm_ms != null
+      ? (data.vlm_ms >= 1000 ? `${(data.vlm_ms/1000).toFixed(1)}s` : `${data.vlm_ms}ms`) : "";
+    const vlmHtml = (modelShort || dur) ? `
+      <span class="card-vlm">
+        ${modelShort ? `<span class="card-vlm-model">${modelShort}</span>` : ""}
+        ${dur        ? `<span class="card-vlm-ms">${dur}</span>` : ""}
+      </span>` : "";
+    hdr.innerHTML = `
+      <span class="card-time">${formatTime(data.received_at)}</span>
+      <span class="card-id">${data.batch_id.slice(0, 24)}</span>
+      <span class="badge ${sc}">${data.status || "…"}</span>
+      ${vlmHtml}
+      <span class="card-meta">${data.frame_count}/${data.input_frames} frames · ${data.session_id.slice(0,12)}</span>
+    `;
+    if (data.status === "error") {
+      const retryBtn = document.createElement("button");
+      retryBtn.className = "btn-retry";
+      retryBtn.textContent = "↺ Retry";
+      retryBtn.addEventListener("click", async () => {
+        retryBtn.disabled = true;
+        retryBtn.textContent = "…";
+        try {
+          const res = await fetch(`/api/retry/${data.batch_id}`, {method: "POST"});
+          const updated = await res.json();
+          if (!res.ok) throw new Error(updated.error || res.statusText);
+          // Update summary text
+          const summaryEl = card.querySelector(".card-summary");
+          if (summaryEl) {
+            summaryEl.className = "card-summary";
+            summaryEl.textContent = updated.summary || "";
+          }
+          renderHeader(updated);
+        } catch (err) {
+          retryBtn.disabled = false;
+          retryBtn.textContent = "↺ Retry";
+          alert("Retry failed: " + err.message);
+        }
+      });
+      // Insert retry button right after the error badge
+      const badge = hdr.querySelector(".badge");
+      badge.insertAdjacentElement("afterend", retryBtn);
+    }
+  }
+
+  renderHeader(b);
   card.appendChild(hdr);
 
   // Frames

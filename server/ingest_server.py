@@ -225,6 +225,11 @@ _DEFAULTS: dict = {
     "telegram_chat_id":    os.environ.get("TELEGRAM_CHAT_ID", ""),
     "telegram_gap_minutes": 30,
     "hook_insight_interval_minutes": 30,
+    "email_to":            os.environ.get("ALERT_EMAIL_TO", ""),
+    "email_smtp_host":     os.environ.get("ALERT_SMTP_HOST", "smtp.gmail.com"),
+    "email_smtp_port":     int(os.environ.get("ALERT_SMTP_PORT", "587")),
+    "email_smtp_user":     os.environ.get("ALERT_SMTP_USER", ""),
+    "email_smtp_password": os.environ.get("ALERT_SMTP_PASSWORD", ""),
 }
 
 
@@ -371,7 +376,9 @@ def post_config():
                "prompt", "incremental_prompt", "consolidation_prompt", "pattern_prompt",
                "nightly_hour", "insight_min_batches", "insight_min_minutes", "consolidation_every_n",
                "telegram_bot_token", "telegram_chat_id", "telegram_gap_minutes",
-               "hook_insight_interval_minutes"}
+               "hook_insight_interval_minutes",
+               "email_to", "email_smtp_host", "email_smtp_port",
+               "email_smtp_user", "email_smtp_password"}
     for k in allowed:
         if k in body:
             _config[k] = body[k]
@@ -390,6 +397,21 @@ def post_config():
 # ---------------------------------------------------------------------------
 # Test API
 # ---------------------------------------------------------------------------
+
+@app.post("/api/test-email")
+def test_email():
+    cfg = _config
+    if not cfg.get("email_to") or not cfg.get("email_smtp_host") or not cfg.get("email_smtp_user"):
+        return jsonify({"ok": False, "error": "Email not configured"}), 400
+    try:
+        _send_alert_email(
+            subject="[SpaceSelfLog] Test email",
+            body="This is a test notification from SpaceSelfLog.",
+        )
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
 
 @app.post("/api/test")
 def test_connection():
@@ -1200,8 +1222,37 @@ def _run_nightly_pattern_update(date_str: str, extra_date_str: str | None = None
 HEARTBEAT_TIMEOUT = 180   # seconds without a heartbeat before alerting
 HEARTBEAT_RECHECK = 60    # how often the monitor thread wakes up (seconds)
 
+
+def _send_alert_email(subject: str, body: str) -> None:
+    """Send an alert email using the configured SMTP settings. Silently skips if not configured."""
+    import smtplib
+    from email.message import EmailMessage
+    cfg = _config
+    to   = cfg.get("email_to", "").strip()
+    host = cfg.get("email_smtp_host", "").strip()
+    user = cfg.get("email_smtp_user", "").strip()
+    pwd  = cfg.get("email_smtp_password", "").strip()
+    port = int(cfg.get("email_smtp_port", 587))
+    if not (to and host and user and pwd):
+        return
+    try:
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"]    = user
+        msg["To"]      = to
+        msg.set_content(body)
+        with smtplib.SMTP(host, port, timeout=15) as s:
+            s.ehlo()
+            s.starttls()
+            s.login(user, pwd)
+            s.send_message(msg)
+        log.info("Alert email sent to %s", to)
+    except Exception as e:
+        log.warning("Failed to send alert email: %s", e)
+
+
 def _heartbeat_monitor() -> None:
-    """Background thread: notify via macOS notification if app goes silent."""
+    """Background thread: notify via macOS notification + email if app goes silent."""
     import time as _time, subprocess as _subprocess
     while True:
         _time.sleep(HEARTBEAT_RECHECK)
@@ -1212,12 +1263,16 @@ def _heartbeat_monitor() -> None:
         if age > HEARTBEAT_TIMEOUT and not _heartbeat_alerted:
             _heartbeat_alerted = True
             mins = int(age // 60)
-            log.warning("No heartbeat for %d min — sending macOS notification", mins)
+            log.warning("No heartbeat for %d min — sending notifications", mins)
             _subprocess.run([
                 "osascript", "-e",
                 f'display notification "No heartbeat for {mins}+ min — app may have crashed or closed" '
                 f'with title "SpaceSelfLog" subtitle "App offline" sound name "Funk"'
             ], check=False)
+            _send_alert_email(
+                subject="[SpaceSelfLog] App offline",
+                body=f"No heartbeat received for {mins}+ minutes.\nThe app may have crashed or been closed.",
+            )
 
 
 def _nightly_scheduler() -> None:

@@ -675,6 +675,35 @@
     <div class="btn-row">
       <button class="btn-primary" id="btn-save-insight-cfg">Save</button>
     </div>
+
+    <hr class="divider">
+    <h2>Alerts (Email)</h2>
+
+    <div class="field">
+      <label>Notify email</label>
+      <input id="email-to" type="email" placeholder="you@example.com">
+    </div>
+    <div class="field">
+      <label>SMTP host</label>
+      <input id="email-smtp-host" type="text" placeholder="smtp.gmail.com">
+    </div>
+    <div class="field">
+      <label>SMTP port</label>
+      <input id="email-smtp-port" type="number" min="1" max="65535" placeholder="587">
+    </div>
+    <div class="field">
+      <label>SMTP user</label>
+      <input id="email-smtp-user" type="text" placeholder="you@gmail.com">
+    </div>
+    <div class="field">
+      <label>SMTP password / app password</label>
+      <input id="email-smtp-password" type="password" placeholder="••••••••">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" id="btn-save-email-cfg">Save</button>
+      <button class="btn-ghost"   id="btn-test-email">Test</button>
+    </div>
   </aside>
 
   <!-- ── Batch feed ── -->
@@ -784,6 +813,11 @@ async function loadConfig() {
     document.getElementById("consolidation-prompt").value   = cfg.consolidation_prompt || "";
     document.getElementById("pattern-prompt").value         = cfg.pattern_prompt || "";
     document.getElementById("hook-insight-interval").value  = cfg.hook_insight_interval_minutes ?? 30;
+    document.getElementById("email-to").value               = cfg.email_to || "";
+    document.getElementById("email-smtp-host").value        = cfg.email_smtp_host || "smtp.gmail.com";
+    document.getElementById("email-smtp-port").value        = cfg.email_smtp_port ?? 587;
+    document.getElementById("email-smtp-user").value        = cfg.email_smtp_user || "";
+    // password is write-only — never pre-fill
     if (cfg.config_file) {
       const el = document.getElementById("config-file-path");
       if (el) el.textContent = cfg.config_file;
@@ -1272,6 +1306,41 @@ async function saveInsightCfg() {
   } catch(e) { btn.disabled = false; alert("Save failed: " + e); }
 }
 document.getElementById("btn-save-insight-cfg").addEventListener("click", saveInsightCfg);
+
+// ── Email alert config ──
+async function saveEmailCfg() {
+  const btn = document.getElementById("btn-save-email-cfg");
+  btn.disabled = true;
+  const body = {
+    email_to:            document.getElementById("email-to").value.trim(),
+    email_smtp_host:     document.getElementById("email-smtp-host").value.trim(),
+    email_smtp_port:     parseInt(document.getElementById("email-smtp-port").value, 10) || 587,
+    email_smtp_user:     document.getElementById("email-smtp-user").value.trim(),
+  };
+  const pwd = document.getElementById("email-smtp-password").value;
+  if (pwd) body.email_smtp_password = pwd;
+  try {
+    await fetch("/api/config", { method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(body) });
+    btn.textContent = "Saved ✓";
+    setTimeout(() => { btn.textContent = "Save"; btn.disabled = false; }, 1500);
+  } catch(e) { btn.disabled = false; alert("Save failed: " + e); }
+}
+
+async function testEmail() {
+  const btn = document.getElementById("btn-test-email");
+  btn.disabled = true; btn.textContent = "Sending…";
+  try {
+    const r = await fetch("/api/test-email", { method: "POST" });
+    const d = await r.json();
+    btn.textContent = d.ok ? "Sent ✓" : ("Error: " + (d.error || "?"));
+  } catch(e) { btn.textContent = "Error"; }
+  setTimeout(() => { btn.textContent = "Test"; btn.disabled = false; }, 3000);
+}
+
+document.getElementById("btn-save-email-cfg").addEventListener("click", saveEmailCfg);
+document.getElementById("btn-test-email").addEventListener("click", testEmail);
 
 // ── Insight status bar ──
 async function updateInsightStatus() {

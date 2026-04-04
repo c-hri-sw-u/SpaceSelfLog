@@ -529,6 +529,15 @@ def get_batches():
     return jsonify(list(_batches))
 
 
+@app.delete("/api/batches/<batch_id>")
+def delete_batch(batch_id: str):
+    for i, b in enumerate(_batches):
+        if b["batch_id"] == batch_id:
+            del _batches[i]
+            return jsonify({"ok": True})
+    return jsonify({"error": "batch not found"}), 404
+
+
 # ---------------------------------------------------------------------------
 # Frame file serving
 # ---------------------------------------------------------------------------

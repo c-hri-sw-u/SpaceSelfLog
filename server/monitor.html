@@ -208,12 +208,18 @@
   .card-vlm-ms    { color: var(--accent); }
   .card-meta   { font-size: 11px; color: var(--muted); margin-left: 12px; }
   .btn-retry {
-    font-size: 11px; padding: 2px 8px; border-radius: 99px; border: none; cursor: pointer;
+    font-size: 11px; padding: 1px 6px; border-radius: 99px; border: none; cursor: pointer;
     background: #2d1414; color: var(--red); font-weight: 600;
-    transition: opacity .15s;
+    transition: opacity .15s; line-height: 16px; height: 18px;
   }
   .btn-retry:hover:not(:disabled) { opacity: .75; }
   .btn-retry:disabled { opacity: .45; cursor: default; }
+  .btn-delete {
+    font-size: 11px; padding: 1px 6px; border-radius: 99px; border: none; cursor: pointer;
+    background: transparent; color: var(--muted); font-weight: 600;
+    transition: color .15s; line-height: 16px; height: 18px; margin-left: auto;
+  }
+  .btn-delete:hover { color: var(--red); }
 
   .card-frames {
     display: flex;
@@ -1043,7 +1049,6 @@ function makeCard(b) {
           const res = await fetch(`/api/retry/${data.batch_id}`, {method: "POST"});
           const updated = await res.json();
           if (!res.ok) throw new Error(updated.error || res.statusText);
-          // Update summary text
           const summaryEl = card.querySelector(".card-summary");
           if (summaryEl) {
             summaryEl.className = "card-summary";
@@ -1056,10 +1061,26 @@ function makeCard(b) {
           alert("Retry failed: " + err.message);
         }
       });
-      // Insert retry button right after the error badge
       const badge = hdr.querySelector(".badge");
       badge.insertAdjacentElement("afterend", retryBtn);
     }
+
+    // Delete button — always shown, far right
+    const delBtn = document.createElement("button");
+    delBtn.className = "btn-delete";
+    delBtn.textContent = "✕";
+    delBtn.addEventListener("click", async () => {
+      delBtn.disabled = true;
+      try {
+        const res = await fetch(`/api/batches/${data.batch_id}`, {method: "DELETE"});
+        if (!res.ok) { const j = await res.json(); throw new Error(j.error || res.statusText); }
+        card.remove();
+      } catch (err) {
+        delBtn.disabled = false;
+        alert("Delete failed: " + err.message);
+      }
+    });
+    hdr.appendChild(delBtn);
   }
 
   renderHeader(b);
@@ -1355,7 +1376,7 @@ function inlineFormat(s) {
 }
 
 // ── Generic dated-file viewer ──
-function makeDatedViewer({ apiList, apiFile, prevBtn, nextBtn, dateSpan, contentEl, emptyMsg }) {
+function makeDatedViewer({ apiList, apiFile, prevBtn, nextBtn, dateSpan, contentEl, emptyMsg, transform }) {
   let dates = [], idx = 0;
 
   async function loadDates() {
@@ -1390,7 +1411,8 @@ function makeDatedViewer({ apiList, apiFile, prevBtn, nextBtn, dateSpan, content
     try {
       const r = await fetch(apiFile + "/" + date);
       if (!r.ok) { el.innerHTML = '<div class="md-muted">Not found.</div>'; return; }
-      const text = await r.text();
+      let text = await r.text();
+      if (transform) text = transform(text);
       el.innerHTML = "";
       el.appendChild(renderMarkdown(text));
     } catch(e) { el.innerHTML = '<div class="md-muted">Error loading file.</div>'; }
@@ -1402,11 +1424,23 @@ function makeDatedViewer({ apiList, apiFile, prevBtn, nextBtn, dateSpan, content
   return { loadDates };
 }
 
+function reverseSections(text) {
+  // Keep everything before the first ## section, then reverse the ## sections
+  const sectionRe = /\n(?=## )/g;
+  const firstMatch = sectionRe.exec(text);
+  if (!firstMatch) return text;
+  const header = text.slice(0, firstMatch.index);
+  const body   = text.slice(firstMatch.index + 1); // skip leading \n
+  const sections = body.split(/\n(?=## )/);
+  return header + "\n" + sections.reverse().join("\n");
+}
+
 const logViewer = makeDatedViewer({
   apiList: "/api/memory/logs", apiFile: "/api/memory/logs",
   prevBtn: "btn-prev-log", nextBtn: "btn-next-log",
   dateSpan: "current-log-date", contentEl: "log-content",
   emptyMsg: "No physical-log files found.",
+  transform: reverseSections,
 });
 
 const insightViewer = makeDatedViewer({

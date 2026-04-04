@@ -437,40 +437,49 @@
 
   /* ── Events list ── */
   .events-list {
-    padding: 12px 16px;
+    padding: 8px 0;
     overflow-y: auto;
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 4px;
   }
+  .ev-date-sep {
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    padding: 8px 16px 4px; letter-spacing: .05em; text-transform: uppercase;
+    border-top: 1px solid var(--border); margin-top: 4px;
+  }
+  .ev-date-sep:first-child { border-top: none; margin-top: 0; }
   .ev-row {
-    display: flex;
-    align-items: baseline;
+    display: grid;
+    grid-template-columns: 68px auto 1fr;
+    align-items: center;
     gap: 8px;
-    padding: 5px 8px;
-    border-radius: 5px;
+    padding: 4px 16px 4px 14px;
     font-size: 12px;
     font-variant-numeric: tabular-nums;
+    border-left: 2px solid transparent;
   }
   .ev-row:hover { background: var(--surface); }
-  .ev-ts   { color: var(--muted); flex-shrink: 0; }
+  .ev-row.type-batch                { border-color: #60a5fa; }
+  .ev-row.type-insight              { border-color: #4ade80; }
+  .ev-row.type-insight_consolidation{ border-color: #38bdf8; }
+  .ev-row.type-pattern              { border-color: #fb923c; }
+  .ev-row.is-error                  { border-color: var(--red); background: #1a0f0f; }
+  .ev-row.is-error:hover            { background: #201010; }
+  .ev-ts   { color: var(--muted); font-size: 11px; }
   .ev-badge {
-    flex-shrink: 0;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    padding: 1px 6px;
-    border-radius: 3px;
+    flex-shrink: 0; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .07em;
+    padding: 1px 6px; border-radius: 3px; justify-self: start;
   }
   .ev-badge.batch                { background: #1e3a5f; color: #60a5fa; }
   .ev-badge.insight              { background: #1e3a2f; color: #4ade80; }
   .ev-badge.insight_consolidation{ background: #1e3540; color: #38bdf8; }
   .ev-badge.pattern              { background: #3a2a1e; color: #fb923c; }
-  .ev-badge.error                { background: #3a1e1e; color: var(--red); }
-  .ev-detail { color: var(--text); flex: 1; }
-  .ev-error  { color: var(--red); font-size: 11px; }
+  .ev-badge.ev-error-badge       { background: #3a1e1e; color: var(--red); }
+  .ev-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .ev-detail { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ev-error  { color: var(--red); font-size: 11px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* ── Lightbox ── */
   #lightbox {
@@ -1474,53 +1483,57 @@ async function loadEvents() {
     const events = await r.json();
     if (!events.length) { el.innerHTML = '<div class="md-muted">No events recorded yet.</div>'; return; }
     el.innerHTML = "";
+    const BADGE_LABELS = { batch: "batch", insight: "insight", insight_consolidation: "consol.", pattern: "pattern" };
+    let lastDate = null;
     events.forEach(ev => {
+      const d = new Date(ev.ts);
+      const dateKey = d.toLocaleDateString([], {month: "short", day: "numeric", year: "numeric"});
+      if (dateKey !== lastDate) {
+        lastDate = dateKey;
+        const sep = document.createElement("div");
+        sep.className = "ev-date-sep";
+        sep.textContent = dateKey;
+        el.appendChild(sep);
+      }
+
+      const isError = ev.status === "error";
       const row = document.createElement("div");
-      row.className = "ev-row";
+      row.className = `ev-row type-${ev.type}${isError ? " is-error" : ""}`;
 
       const ts = document.createElement("span");
       ts.className = "ev-ts";
-      // Show local time from UTC iso string
-      ts.textContent = new Date(ev.ts).toLocaleString([], {
-        month: "2-digit", day: "2-digit",
-        hour: "2-digit", minute: "2-digit", second: "2-digit"
-      });
+      ts.textContent = d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"});
 
       const badge = document.createElement("span");
-      const isError = ev.status === "error";
-      badge.className = "ev-badge " + (isError ? "error" : ev.type);
-      badge.textContent = ev.type;
+      badge.className = "ev-badge " + (isError ? "ev-error-badge" : ev.type);
+      badge.textContent = BADGE_LABELS[ev.type] || ev.type;
+
+      const body = document.createElement("div");
+      body.className = "ev-body";
 
       const detail = document.createElement("span");
       detail.className = "ev-detail";
       if (ev.type === "batch") {
-        detail.textContent = isError
-          ? `${ev.frames ?? "?"} frames · ${ev.session_id?.slice(0,10) ?? ""}`
-          : `${ev.frames} frames · ${ev.session_id?.slice(0,10) ?? ""}${ev.mem_error ? " ⚠ mem" : ""}`;
+        detail.textContent = `${ev.frames ?? "?"} frames · ${ev.session_id?.slice(0,10) ?? ""}${ev.mem_error ? " ⚠ mem" : ""}${ev.retried ? " · retried" : ""}`;
       } else if (ev.type === "insight") {
-        detail.textContent = isError
-          ? `${ev.date} · ${ev.error ?? ""}`
-          : `${ev.date} · run #${ev.run}`;
+        detail.textContent = `${ev.date} · run #${ev.run}`;
       } else if (ev.type === "insight_consolidation") {
-        badge.textContent = "consolidation";
-        detail.textContent = isError
-          ? `${ev.date} · ${ev.error ?? ""}`
-          : `${ev.date} · pass #${ev.pass_num}`;
+        detail.textContent = `${ev.date} · pass #${ev.pass_num}`;
       } else if (ev.type === "pattern") {
         detail.textContent = ev.date + (ev.extra_date ? ` + ${ev.extra_date}` : "");
       }
-
-      row.appendChild(ts);
-      row.appendChild(badge);
-      row.appendChild(detail);
+      body.appendChild(detail);
 
       if (isError && ev.error) {
         const err = document.createElement("span");
         err.className = "ev-error";
         err.textContent = ev.error;
-        row.appendChild(err);
+        body.appendChild(err);
       }
 
+      row.appendChild(ts);
+      row.appendChild(badge);
+      row.appendChild(body);
       el.appendChild(row);
     });
   } catch(e) { el.innerHTML = '<div class="md-muted">Error loading events.</div>'; }

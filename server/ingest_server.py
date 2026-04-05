@@ -1772,14 +1772,17 @@ def get_narrative_states(date: str):
 
 @app.post("/api/memory/narrative/<date>/states")
 def add_narrative_state(date: str):
-    """Manually append a state entry to the daily states file."""
+    """Manually append a state entry to the daily states file.
+    Accepts {time_start, time_end?, text} where time_end is optional.
+    If time_end is provided, writes entries at both start and end times."""
     if not _re.match(r'^\d{4}-\d{2}-\d{2}$', date):
         return jsonify({"error": "invalid date"}), 400
     body = request.get_json(force=True, silent=True) or {}
-    time_str = (body.get("time") or "").strip()
-    text = (body.get("text") or "").strip()
-    if not time_str or not text:
-        return jsonify({"error": "time and text required"}), 400
+    time_start = (body.get("time_start") or "").strip()
+    time_end   = (body.get("time_end") or "").strip()
+    text       = (body.get("text") or "").strip()
+    if not time_start or not text:
+        return jsonify({"error": "time_start and text required"}), 400
 
     mem_dir = _config.get("openclaw_memory_dir", "")
     if not mem_dir:
@@ -1792,10 +1795,15 @@ def add_narrative_state(date: str):
     if not states_file.exists():
         states_file.write_text(f"# Daily States — {date}\n", encoding="utf-8")
 
-    with states_file.open("a", encoding="utf-8") as f:
-        f.write(f"\n## {time_str}\n{text}\n")
+    entries = [f"\n## {time_start}\n{text}\n"]
+    if time_end and time_end != time_start:
+        entries.append(f"\n## {time_end}\n{text}\n")
 
-    log.info("Manual state added for %s at %s", date, time_str)
+    with states_file.open("a", encoding="utf-8") as f:
+        f.write("".join(entries))
+
+    log.info("Manual state added for %s at %s%s", date, time_start,
+             f"-{time_end}" if time_end else "")
     return jsonify({"ok": True})
 
 

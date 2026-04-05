@@ -195,6 +195,19 @@
     background: #fff;
     width: 100%;
     aspect-ratio: 16 / 9;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .thumb-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1600px;
+    height: 900px;
+    border: none;
+    transform-origin: top left;
+    pointer-events: none;
   }
 
   .thumb-meta {
@@ -353,16 +366,33 @@ btnSidebar.addEventListener("click", () => {
 // ── Thumbnails ─────────────────────────────────────────────────────────────
 function renderSidebar() {
   sidebarList.innerHTML = "";
+  // sidebar-list is 200px - 16px padding = 184px thumb width
+  const thumbW = 184;
+  const scale  = thumbW / 1600;
+
   slides.forEach((s, i) => {
     const div = document.createElement("div");
     div.className = "thumb" + (i === current ? " active" : "");
-    div.innerHTML = `
-      <div class="thumb-preview"></div>
-      <div class="thumb-meta">
-        ${s.section ? `<div class="thumb-section">${s.section}</div>` : ""}
-        <div class="thumb-subtitle">${s.subtitle || "<em style='color:#555'>untitled</em>"}</div>
-        <div class="thumb-num">${i + 1}</div>
-      </div>`;
+
+    const preview = document.createElement("div");
+    preview.className = "thumb-preview";
+    if (s.src && s.src !== "about:blank") {
+      const f = document.createElement("iframe");
+      f.className = "thumb-iframe";
+      f.src = s.src;
+      f.style.transform = `scale(${scale})`;
+      preview.appendChild(f);
+    }
+
+    const meta = document.createElement("div");
+    meta.className = "thumb-meta";
+    meta.innerHTML = `
+      ${s.section ? `<div class="thumb-section">${s.section}</div>` : ""}
+      <div class="thumb-subtitle">${s.subtitle || "<em style='color:#555'>untitled</em>"}</div>
+      <div class="thumb-num">${i + 1}</div>`;
+
+    div.appendChild(preview);
+    div.appendChild(meta);
     div.addEventListener("click", () => goTo(i));
     sidebarList.appendChild(div);
   });

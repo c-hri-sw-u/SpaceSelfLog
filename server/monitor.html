@@ -313,6 +313,53 @@
   }
   #insight-status .isb-bar-fill.done { background: var(--green); }
 
+  /* ── Info tooltips ── */
+  .isb-info {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: help;
+    margin-left: 2px;
+  }
+  .isb-info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    font-size: 9px;
+    font-style: italic;
+    font-weight: 600;
+    transition: border-color .15s, color .15s;
+  }
+  .isb-info:hover .isb-info-icon { border-color: var(--text); color: var(--text); }
+  .isb-info-tip {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 240px;
+    padding: 8px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text);
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,.3);
+    pointer-events: none;
+  }
+  .isb-info:hover .isb-info-tip,
+  .isb-info.open .isb-info-tip { display: block; }
+
   /* ── Right panel ── */
   #right-panel {
     width: 400px;
@@ -831,18 +878,23 @@
       <span class="isb-label">Insight</span>
       <span class="isb-sep">·</span>
       <span>Today</span><span class="isb-val" id="isb-runs">—</span><span>incremental</span>
+      <span class="isb-info" tabindex="0"><span class="isb-info-icon">i</span><span class="isb-info-tip">Each incremental insight reads new perception logs since the last update, extracts highlights, and updates the Current State snapshot. This counter shows how many times it has run today.</span></span>
       <span class="isb-sep">·</span>
       <span class="isb-val" id="isb-consolidations">—</span><span>consolidated</span>
+      <span class="isb-info" tabindex="0"><span class="isb-info-icon">i</span><span class="isb-info-tip">Consolidation merges duplicate highlights, removes superseded items, and keeps the daily insight concise. It triggers automatically after every N incremental runs.</span></span>
       <span class="isb-sep">·</span>
       <span>Next consolidation in</span><span class="isb-val" id="isb-next-consolidation">—</span>
+      <span class="isb-info" tabindex="0"><span class="isb-info-icon">i</span><span class="isb-info-tip">How many more incremental insight runs are needed before the next automatic consolidation pass. The denominator is configurable in the left sidebar.</span></span>
       <span class="isb-sep">·</span>
       <span>Batch</span>
       <span class="isb-bar"><span class="isb-bar-fill" id="isb-batch-bar" style="width:0%"></span></span>
       <span class="isb-val" id="isb-batch">—/—</span>
+      <span class="isb-info" tabindex="0"><span class="isb-info-icon">i</span><span class="isb-info-tip">Number of new batches received since the last incremental insight. Once this reaches the minimum (or the time bar fills), the next insight update triggers.</span></span>
       <span class="isb-sep">·</span>
       <span>Time</span>
       <span class="isb-bar"><span class="isb-bar-fill" id="isb-time-bar" style="width:0%"></span></span>
       <span class="isb-val" id="isb-time">—/— min</span>
+      <span class="isb-info" tabindex="0"><span class="isb-info-icon">i</span><span class="isb-info-tip">Minutes elapsed since the last incremental insight. An update triggers when either the batch count or the time threshold is met — whichever comes first.</span></span>
       <span class="isb-sep">·</span>
       <span id="isb-next" class="isb-val">—</span>
     </div>
@@ -928,6 +980,18 @@
 // ── State ──
 let knownBatchIds = new Set();
 let configLoaded  = false;
+
+// ── Info-tooltip tap toggle (mobile) ──
+document.addEventListener("click", e => {
+  const info = e.target.closest(".isb-info");
+  if (info) {
+    document.querySelectorAll(".isb-info.open").forEach(el => { if (el !== info) el.classList.remove("open"); });
+    info.classList.toggle("open");
+    e.stopPropagation();
+  } else {
+    document.querySelectorAll(".isb-info.open").forEach(el => el.classList.remove("open"));
+  }
+});
 
 // ── Config ──
 async function loadConfig() {

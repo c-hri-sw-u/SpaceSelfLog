@@ -154,8 +154,8 @@ final class AppViewModel: ObservableObject {
                     "vadThreshold": self.audioManager.vadThreshold,
                     "noiseLevel": self.audioManager.currentNoiseLevel.rawValue,
                     "noiseDB": self.audioManager.smoothedNoiseDB,
-                    "noiseQuietDB": -50.0,
-                    "noiseLoudDB": -30.0,
+                    "noiseQuietDB": self.audioManager.quietThresholdDB,
+                    "noiseLoudDB": self.audioManager.loudThresholdDB,
                     "captureInterval": self.framePipeline.currentInterval,
                     "captureMinInterval": self.captureMinInterval,
                     "captureMaxInterval": self.captureMaxInterval,
@@ -201,11 +201,13 @@ final class AppViewModel: ObservableObject {
             }
             return true
         }
-        s.onUpdateAudioConfig = { [weak self] vadSensitivity, transcriptionEnabled in
+        s.onUpdateAudioConfig = { [weak self] vadSensitivity, transcriptionEnabled, noiseQuietDB, noiseLoudDB in
             guard let self = self else { return false }
             DispatchQueue.main.async {
                 self.vadSensitivity = vadSensitivity
                 self.transcriptionEnabled = transcriptionEnabled
+                self.audioManager.quietThresholdDB = Float(noiseQuietDB)
+                self.audioManager.loudThresholdDB  = Float(noiseLoudDB)
             }
             return true
         }

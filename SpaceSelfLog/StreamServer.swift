@@ -21,7 +21,7 @@ final class StreamServer {
     var onStatus: (() -> [String: Any])?
     var onTestAPIKey: (() -> (success: Bool, error: String?))?
     var onUpdateCaptureConfig: ((_ minInterval: Int, _ maxInterval: Int, _ rampRatio: Double) -> Bool)?
-    var onUpdateAudioConfig: ((_ vadSensitivity: String, _ transcriptionEnabled: Bool) -> Bool)?
+    var onUpdateAudioConfig: ((_ vadSensitivity: String, _ transcriptionEnabled: Bool, _ noiseQuietDB: Int, _ noiseLoudDB: Int) -> Bool)?
     var onUpdateIMUConfig: ((_ sustainedMotionThreshold: Int, _ varianceLow: Double, _ varianceHigh: Double) -> Bool)?
     var onUpdateBatchConfig: ((_ firstBatchWindow: Int, _ maxWindow: Int, _ ssimThreshold: Double, _ ssimDedupThreshold: Double, _ kDensityPerMin: Double, _ kMin: Int, _ kMax: Int, _ scoreThreshold: Double) -> Bool)?
     var onUpdateOutboxConfig: ((_ endpoint: String) -> Bool)?
@@ -154,7 +154,9 @@ final class StreamServer {
                 self.handleJSONPost(connection, leftover: leftoverBody, request: request) { [weak self] json in
                     let vadSensitivity       = json["vadSensitivity"]       as? String ?? "medium"
                     let transcriptionEnabled = json["transcriptionEnabled"] as? Bool   ?? false
-                    let success = self?.onUpdateAudioConfig?(vadSensitivity, transcriptionEnabled) ?? false
+                    let noiseQuietDB         = json["noiseQuietDB"]         as? Int    ?? -50
+                    let noiseLoudDB          = json["noiseLoudDB"]          as? Int    ?? -30
+                    let success = self?.onUpdateAudioConfig?(vadSensitivity, transcriptionEnabled, noiseQuietDB, noiseLoudDB) ?? false
                     return (success, success ? nil : "Not implemented")
                 }
             case "/update-imu-config":

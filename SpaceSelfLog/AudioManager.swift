@@ -87,8 +87,8 @@ final class AudioManager {
     // window size: 3 s × (sampleRate / bufferSize);  populated after engine starts
     private var noiseWindowMaxSize: Int = 128
 
-    private let quietThresholdDB: Float = -50.0
-    private let loudThresholdDB:  Float = -30.0
+    private(set) var quietThresholdDB: Float = -50.0
+    private(set) var loudThresholdDB:  Float = -30.0
 
     // MARK: - Private — transcription
 

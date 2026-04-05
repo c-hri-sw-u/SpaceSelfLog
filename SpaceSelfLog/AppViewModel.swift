@@ -110,6 +110,18 @@ final class AppViewModel: ObservableObject {
             audioManager.transcriptionEnabled = transcriptionEnabled
         }
     }
+    @Published var noiseQuietDB: Int = -50 {
+        didSet {
+            UserDefaults.standard.set(noiseQuietDB, forKey: "NoiseQuietDB")
+            audioManager.quietThresholdDB = Float(noiseQuietDB)
+        }
+    }
+    @Published var noiseLoudDB: Int = -30 {
+        didSet {
+            UserDefaults.standard.set(noiseLoudDB, forKey: "NoiseLoudDB")
+            audioManager.loudThresholdDB = Float(noiseLoudDB)
+        }
+    }
 
     // MARK: - Managers
     private let camera = CameraManager()
@@ -160,8 +172,8 @@ final class AppViewModel: ObservableObject {
                     "vadThreshold": self.audioManager.vadThreshold,
                     "noiseLevel": self.audioManager.currentNoiseLevel.rawValue,
                     "noiseDB": self.audioManager.smoothedNoiseDB,
-                    "noiseQuietDB": self.audioManager.quietThresholdDB,
-                    "noiseLoudDB": self.audioManager.loudThresholdDB,
+                    "noiseQuietDB": self.noiseQuietDB,
+                    "noiseLoudDB": self.noiseLoudDB,
                     "captureInterval": self.framePipeline.currentInterval,
                     "captureMinInterval": self.captureMinInterval,
                     "captureMaxInterval": self.captureMaxInterval,
@@ -213,8 +225,8 @@ final class AppViewModel: ObservableObject {
             DispatchQueue.main.async {
                 self.vadSensitivity = vadSensitivity
                 self.transcriptionEnabled = transcriptionEnabled
-                self.audioManager.quietThresholdDB = Float(noiseQuietDB)
-                self.audioManager.loudThresholdDB  = Float(noiseLoudDB)
+                self.noiseQuietDB = noiseQuietDB
+                self.noiseLoudDB = noiseLoudDB
             }
             return true
         }
@@ -385,6 +397,10 @@ final class AppViewModel: ObservableObject {
         audioManager.vadSensitivity = savedVAD
         transcriptionEnabled = UserDefaults.standard.bool(forKey: "TranscriptionEnabled")
         audioManager.transcriptionEnabled = transcriptionEnabled
+        let nqVal = UserDefaults.standard.integer(forKey: "NoiseQuietDB")
+        noiseQuietDB = nqVal != 0 ? nqVal : -50
+        let nlVal = UserDefaults.standard.integer(forKey: "NoiseLoudDB")
+        noiseLoudDB = nlVal != 0 ? nlVal : -30
 
         audioManager.onSpeechOnset = { [weak self] in
             self?.framePipeline.handleVADStateChange(speechDetected: true)

@@ -12,18 +12,54 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10%;
+  position: relative;
 }
-h1 {
-  font-size: 4.5vw;
+
+.title {
+  text-align: center;
+  line-height: 1;
+}
+
+.title-main {
+  display: block;
+  font-size: 8vw;
   font-weight: 700;
-  line-height: 1.35;
   color: #111;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.3em;
+}
+
+.title-sub {
+  display: inline-block;
+  font-size: 4vw;
+  font-weight: 600;
+  color: #111;
+  margin-top: 0.3em;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0.02em 0.15em;
+}
+
+.byline {
+  position: absolute;
+  bottom: 10%;
+  left: 0;
+  right: 0;
+  font-size: 1.6vw;
+  font-weight: 300;
+  color: #888;
+  letter-spacing: 0.08em;
   text-align: center;
 }
 </style>
 </head>
 <body>
-<h1>Physical-World Observation<br>for Personal AI Agent Personalization</h1>
+<div class="title">
+  <span class="title-main">Physical-World Observation</span>
+  <span class="title-sub">for Personal AI Agent <span class="highlight">Personalization</span></span>
+</div>
+<div class="byline">Chris Wu &nbsp;&nbsp; 2026</div>
 </body>
 </html>

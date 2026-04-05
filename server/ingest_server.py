@@ -1116,16 +1116,15 @@ def _run_incremental_update(date_str: str) -> None:
     _insight_log_offset[date_str] = new_offset
     log.info("Insight (incremental) → %s  (offset %d→%d)", insight_file, offset, new_offset)
 
-    # Append current state snapshot to daily narrative states file
+    # Insert current state snapshot into daily narrative states file (sorted)
     if new_state_body:
         narrative_dir = Path(mem_dir).expanduser() / "physical-daily-narrative"
         narrative_dir.mkdir(parents=True, exist_ok=True)
         states_file = narrative_dir / f"{date_str}-states.md"
         if not states_file.exists():
             states_file.write_text(f"# Daily States — {date_str}\n", encoding="utf-8")
-        with states_file.open("a", encoding="utf-8") as sf:
-            sf.write(f"\n## {time_str}\n{new_state_body}\n")
-        log.info("Narrative state appended → %s", states_file)
+        _insert_state_sorted(states_file, time_str, f"\n## {time_str}\n{new_state_body}\n")
+        log.info("Narrative state inserted → %s", states_file)
 
 
 def _run_consolidation_pass(date_str: str) -> None:
@@ -1770,9 +1769,27 @@ def get_narrative_states(date: str):
     return states_file.read_text(encoding="utf-8"), 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 
+def _insert_state_sorted(file_path: Path, time_str: str, entry: str) -> None:
+    """Insert a ## HH:MM entry into a markdown file in chronological order."""
+    text = file_path.read_text(encoding="utf-8")
+    pattern = _re.compile(r'\n(?=## \d{1,2}:\d{2})')
+    insert_pos = None
+    for m in pattern.finditer(text):
+        hdr_line = text[m.start() + 1:].split('\n')[0]  # "## HH:MM"
+        hdr_time = hdr_line[3:].strip()                   # "HH:MM"
+        if hdr_time > time_str:
+            insert_pos = m.start()
+            break
+    if insert_pos is None:
+        with file_path.open("a", encoding="utf-8") as f:
+            f.write(entry)
+    else:
+        file_path.write_text(text[:insert_pos] + entry + text[insert_pos:], encoding="utf-8")
+
+
 @app.post("/api/memory/narrative/<date>/states")
 def add_narrative_state(date: str):
-    """Manually append a state entry to the daily states file.
+    """Manually insert a state entry to the daily states file (sorted by time).
     Accepts {time_start, time_end?, text} where time_end is optional.
     If time_end is provided, writes entries at both start and end times."""
     if not _re.match(r'^\d{4}-\d{2}-\d{2}$', date):
@@ -1795,15 +1812,81 @@ def add_narrative_state(date: str):
     if not states_file.exists():
         states_file.write_text(f"# Daily States — {date}\n", encoding="utf-8")
 
-    entries = [f"\n## {time_start}\n{text}\n"]
-    if time_end and time_end != time_start:
-        entries.append(f"\n## {time_end}\n{text}\n")
+    # Insert start time entry sorted
+    entry_start = f"\n## {time_start}\n{text}\n"
+    _insert_state_sorted(states_file, time_start, entry_start)
 
-    with states_file.open("a", encoding="utf-8") as f:
-        f.write("".join(entries))
+    # Insert end time entry sorted (if different)
+    if time_end and time_end != time_start:
+        entry_end = f"\n## {time_end}\n{text}\n"
+        _insert_state_sorted(states_file, time_end, entry_end)
 
     log.info("Manual state added for %s at %s%s", date, time_start,
              f"-{time_end}" if time_end else "")
+    return jsonify({"ok": True})
+
+
+def _rewrite_state_section(states_file: Path, time_key: str,
+                               new_body: str | None, delete: bool = False) -> bool:
+    """Rewrite or delete a ## HH:MM section in a states markdown file.
+    Returns True if the section was found and modified/deleted, False otherwise."""
+    text = states_file.read_text(encoding="utf-8")
+    # Match: \n## HH:MM\n...content...\n (up to next \n## or end of file)
+    pattern = _re.compile(
+        r'\n## ' + _re.escape(time_key) + r'\n([\s\S]*?)(?=\n## |\Z)')
+    m = pattern.search(text)
+    if not m:
+        return False
+    if delete:
+        result = text[:m.start()] + text[m.end():]
+    else:
+        result = text[:m.start()] + f"\n## {time_key}\n{new_body}\n" + text[m.end():]
+    states_file.write_text(result, encoding="utf-8")
+    return True
+
+
+@app.put("/api/memory/narrative/<date>/states/<time>")
+def update_narrative_state(date: str, time: str):
+    """Update the text of a specific state entry identified by its ## HH:MM header."""
+    if not _re.match(r'^\d{4}-\d{2}-\d{2}$', date):
+        return jsonify({"error": "invalid date"}), 400
+    if not _re.match(r'^\d{1,2}:\d{2}$', time):
+        return jsonify({"error": "invalid time"}), 400
+    body = request.get_json(force=True, silent=True) or {}
+    new_text = (body.get("text") or "").strip()
+    if not new_text:
+        return jsonify({"error": "text required"}), 400
+
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        return jsonify({"error": "openclaw_memory_dir not configured"}), 404
+    states_file = Path(mem_dir).expanduser() / "physical-daily-narrative" / f"{date}-states.md"
+    if not states_file.exists():
+        return jsonify({"error": "not found"}), 404
+
+    if not _rewrite_state_section(states_file, time, new_text):
+        return jsonify({"error": "entry not found"}), 404
+    log.info("State updated for %s at %s", date, time)
+    return jsonify({"ok": True})
+
+
+@app.delete("/api/memory/narrative/<date>/states/<time>")
+def delete_narrative_state(date: str, time: str):
+    """Delete a specific state entry identified by its ## HH:MM header."""
+    if not _re.match(r'^\d{4}-\d{2}-\d{2}$', date):
+        return jsonify({"error": "invalid date"}), 400
+    if not _re.match(r'^\d{1,2}:\d{2}$', time):
+        return jsonify({"error": "invalid time"}), 400
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        return jsonify({"error": "openclaw_memory_dir not configured"}), 404
+    states_file = Path(mem_dir).expanduser() / "physical-daily-narrative" / f"{date}-states.md"
+    if not states_file.exists():
+        return jsonify({"error": "not found"}), 404
+
+    if not _rewrite_state_section(states_file, time, "", delete=True):
+        return jsonify({"error": "entry not found"}), 404
+    log.info("State deleted for %s at %s", date, time)
     return jsonify({"ok": True})
 
 

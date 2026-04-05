@@ -487,7 +487,7 @@
   .ev-row:hover { background: var(--surface); }
   .ev-row.type-batch                { border-color: #60a5fa; }
   .ev-row.type-insight              { border-color: #4ade80; }
-  .ev-row.type-insight_consolidation{ border-color: #38bdf8; }
+  .ev-row.type-insight_consolidation{ border-color: #4ade80; }
   .ev-row.type-pattern              { border-color: #fb923c; }
   .ev-row.is-error                  { border-color: var(--red); background: #1a0f0f; }
   .ev-row.is-error:hover            { background: #201010; }
@@ -499,7 +499,7 @@
   }
   .ev-badge.batch                { background: #1e3a5f; color: #60a5fa; }
   .ev-badge.insight              { background: #1e3a2f; color: #4ade80; }
-  .ev-badge.insight_consolidation{ background: #1e3540; color: #38bdf8; }
+  .ev-badge.insight_consolidation{ background: #1e3a2f; color: #4ade80; }
   .ev-badge.pattern              { background: #3a2a1e; color: #fb923c; }
   .ev-badge.ev-error-badge       { background: #3a1e1e; color: var(--red); }
   .ev-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -1537,7 +1537,7 @@ function inlineFormat(s) {
 
 // ── Generic dated-file viewer ──
 function makeDatedViewer(opts) {
-  const { apiList, apiFile, prevBtn, nextBtn, dateSpan, contentEl, emptyMsg, transform } = opts;
+  const { apiList, apiFile, prevBtn, nextBtn, dateSpan, contentEl, emptyMsg, transform, customRenderer } = opts;
   let dates = [], idx = 0;
 
   async function loadDates() {
@@ -1576,7 +1576,11 @@ function makeDatedViewer(opts) {
       let text = await r.text();
       if (transform) text = transform(text);
       el.innerHTML = "";
-      el.appendChild(renderMarkdown(text));
+      if (customRenderer) {
+        customRenderer(el, text, date);
+      } else {
+        el.appendChild(renderMarkdown(text));
+      }
     } catch(e) { el.innerHTML = '<div class="md-muted">Error loading file.</div>'; }
   }
 
@@ -1612,6 +1616,108 @@ const insightViewer = makeDatedViewer({
   emptyMsg: "No insight files found.",
 });
 
+// ── Editable states renderer ──
+function renderStatesEditable(el, text, date) {
+  // Parse sections: ## HH:MM\n...body...
+  const sectionRe = /## (\d{1,2}:\d{2})\n([\s\S]*?)(?=\n## \d{1,2}:\d{2}|\Z)/g;
+  let m;
+  const sections = [];
+  while ((m = sectionRe.exec(text)) !== null) {
+    sections.push({ time: m[1], body: m[2].trim() });
+  }
+  if (!sections.length) {
+    el.innerHTML = '<div class="md-muted">No entries.</div>';
+    return;
+  }
+
+  sections.forEach(sec => {
+    const row = document.createElement("div");
+    row.className = "state-entry";
+    row.style.cssText = "margin-bottom:10px; border:1px solid var(--border); border-radius:6px; padding:8px 10px;";
+
+    const header = document.createElement("div");
+    header.style.cssText = "display:flex; align-items:center; gap:8px; margin-bottom:4px;";
+
+    const timeBadge = document.createElement("span");
+    timeBadge.style.cssText = "font-weight:600; font-family:ui-monospace,'SF Mono',monospace; font-size:12px; color:var(--accent);";
+    timeBadge.textContent = sec.time;
+
+    const spacer = document.createElement("span");
+    spacer.style.cssText = "flex:1;";
+
+    const btnEdit = document.createElement("button");
+    btnEdit.className = "btn-ghost";
+    btnEdit.style.cssText = "padding:2px 8px; font-size:11px;";
+    btnEdit.textContent = "Edit";
+
+    const btnDel = document.createElement("button");
+    btnDel.className = "btn-ghost";
+    btnDel.style.cssText = "padding:2px 8px; font-size:11px; color:var(--red);";
+    btnDel.textContent = "Delete";
+
+    header.append(timeBadge, spacer, btnEdit, btnDel);
+
+    const bodyDiv = document.createElement("div");
+    bodyDiv.style.cssText = "font-size:12px; line-height:1.6;";
+    bodyDiv.innerHTML = inlineFormat(sec.body);
+
+    row.append(header, bodyDiv);
+    el.appendChild(row);
+
+    // Edit handler
+    btnEdit.addEventListener("click", () => {
+      const ta = document.createElement("textarea");
+      ta.value = sec.body;
+      ta.style.cssText = "width:100%; min-height:60px; font-size:12px; font-family:inherit; background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:6px; color:var(--text); resize:vertical;";
+      const saveBtn = document.createElement("button");
+      saveBtn.className = "btn-primary";
+      saveBtn.style.cssText = "padding:2px 12px; font-size:11px; margin-top:4px;";
+      saveBtn.textContent = "Save";
+      const cancelBtn = document.createElement("button");
+      cancelBtn.className = "btn-ghost";
+      cancelBtn.style.cssText = "padding:2px 8px; font-size:11px; margin-top:4px;";
+      cancelBtn.textContent = "Cancel";
+
+      bodyDiv.innerHTML = "";
+      bodyDiv.append(ta, saveBtn, cancelBtn);
+
+      saveBtn.addEventListener("click", async () => {
+        const newText = ta.value.trim();
+        if (!newText) return;
+        saveBtn.disabled = true; saveBtn.textContent = "…";
+        try {
+          const r = await fetch("/api/memory/narrative/" + date + "/states/" + sec.time, {
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({text: newText}),
+          });
+          const data = await r.json().catch(() => ({}));
+          if (!r.ok || data.error) { alert("Error: " + (data.error || r.status)); return; }
+          statesViewer.loadDates();
+        } catch(e) { alert("Failed: " + e); }
+        finally { saveBtn.disabled = false; saveBtn.textContent = "Save"; }
+      });
+
+      cancelBtn.addEventListener("click", () => {
+        bodyDiv.innerHTML = inlineFormat(sec.body);
+      });
+    });
+
+    // Delete handler
+    btnDel.addEventListener("click", async () => {
+      if (!confirm("Delete entry at " + sec.time + "?")) return;
+      btnDel.disabled = true;
+      try {
+        const r = await fetch("/api/memory/narrative/" + date + "/states/" + sec.time, { method: "DELETE" });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || data.error) { alert("Error: " + (data.error || r.status)); return; }
+        statesViewer.loadDates();
+      } catch(e) { alert("Failed: " + e); }
+      finally { btnDel.disabled = false; }
+    });
+  });
+}
+
 const statesViewer = makeDatedViewer({
   apiList: "/api/memory/narrative/dates", apiFile: "/api/memory/narrative",
   prevBtn: "btn-prev-states", nextBtn: "btn-next-states",
@@ -1619,6 +1725,7 @@ const statesViewer = makeDatedViewer({
   emptyMsg: "No states files found.",
   fileSuffix: "/states",
   transform: reverseSections,
+  customRenderer: renderStatesEditable,
 });
 
 const timelineViewer = makeDatedViewer({
@@ -1680,7 +1787,7 @@ async function loadEvents() {
     const events = await r.json();
     if (!events.length) { el.innerHTML = '<div class="md-muted">No events recorded yet.</div>'; return; }
     el.innerHTML = "";
-    const BADGE_LABELS = { batch: "batch", insight: "insight", insight_consolidation: "consol.", pattern: "pattern", timeline: "timeline" };
+    const BADGE_LABELS = { batch: "batch", insight: "incremental", insight_consolidation: "consolidation", pattern: "pattern", timeline: "timeline" };
     let lastDate = null;
     events.forEach(ev => {
       const d = new Date(ev.ts);

@@ -62,7 +62,18 @@
   }
   .tb-btn.danger:hover { background: #6a2020; }
 
-  /* ── Meta fields (section + subtitle) outside the slide ── */
+  #toolbar-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  #save-status {
+    font-size: 12px;
+    color: #555;
+    min-width: 80px;
+    text-align: right;
+  }
+  #save-status.saved { color: #4a8a4a; }
+  #save-status.saving { color: #8a7a3a; }
+
+  /* ── Meta fields ── */
   #meta-bar {
     display: flex;
     align-items: baseline;
@@ -81,7 +92,7 @@
     outline: none;
     background: transparent;
     font-family: inherit;
-    width: 80px; /* overridden by JS */
+    width: 80px;
     min-width: 10px;
   }
   #section-name::placeholder { color: #444; }
@@ -117,16 +128,109 @@
   }
   #subtitle::placeholder { color: #444; }
 
-  #toolbar-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
-
-  #save-status {
-    font-size: 12px;
-    color: #555;
-    min-width: 80px;
-    text-align: right;
+  /* ── Body row (sidebar + main) ── */
+  #body-row {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    position: relative;
   }
-  #save-status.saved { color: #4a8a4a; }
-  #save-status.saving { color: #8a7a3a; }
+
+  /* ── Sidebar ── */
+  #sidebar {
+    width: 200px;
+    min-width: 200px;
+    background: #111;
+    border-right: 1px solid #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: width 0.22s ease, min-width 0.22s ease;
+  }
+  #sidebar.collapsed {
+    width: 0;
+    min-width: 0;
+    border-right: none;
+  }
+
+  #sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px 8px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #555;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  #sidebar-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  #sidebar-list::-webkit-scrollbar { width: 4px; }
+  #sidebar-list::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+  .thumb {
+    background: #1e1e1e;
+    border: 1px solid #2a2a2a;
+    border-radius: 3px;
+    cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+    transition: border-color 0.12s;
+    flex-shrink: 0;
+  }
+  .thumb:hover { border-color: #555; }
+  .thumb.active { border-color: #2a2a2a; }
+  .thumb.active .thumb-preview { outline: 2px solid #4a90c4; outline-offset: -2px; }
+
+  /* Mini slide preview (16:9) */
+  .thumb-preview {
+    background: #fff;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+
+  .thumb-meta {
+    padding: 5px 7px 6px;
+  }
+  .thumb-section {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #aaa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .thumb-subtitle {
+    font-size: 10px;
+    font-weight: 300;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+  }
+  .thumb-num {
+    font-size: 9px;
+    color: #fff;
+    margin-top: 2px;
+  }
+
+  /* ── Toggle button ── */
+  #btn-sidebar {
+    font-size: 13px;
+    padding: 5px 10px;
+  }
 
   /* ── Main area ── */
   #main {
@@ -148,17 +252,6 @@
     box-shadow: 0 8px 40px rgba(0,0,0,0.6);
     position: relative;
     overflow: hidden;
-  }
-
-  /* Slide number (bottom right) */
-  #slide-num {
-    position: absolute;
-    bottom: 14px;
-    right: 20px;
-    font-size: 10px;
-    color: #ccc;
-    font-weight: 500;
-    pointer-events: none;
   }
 
   /* Nav arrows */
@@ -188,6 +281,7 @@
 <body>
 
 <div id="toolbar">
+  <button class="tb-btn" id="btn-sidebar" title="Toggle slide panel">&#9776;</button>
   <span id="slide-counter">1 / 1</span>
   <button class="tb-btn" id="btn-prev" disabled>&#8592; Prev</button>
   <button class="tb-btn" id="btn-next" disabled>Next &#8594;</button>
@@ -205,9 +299,16 @@
   <input id="subtitle" type="text" placeholder="Slide title or subtitle…" spellcheck="false" />
 </div>
 
-<div id="main">
-  <div id="slide">
-    <div id="slide-num">1</div>
+<div id="body-row">
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <span>Slides</span>
+    </div>
+    <div id="sidebar-list"></div>
+  </div>
+
+  <div id="main">
+    <div id="slide"></div>
   </div>
 </div>
 
@@ -219,20 +320,47 @@
 let slides = [{ section: "", subtitle: "" }];
 let current = 0;
 let saveTimer = null;
+let sidebarOpen = true;
 
 // ── DOM refs ───────────────────────────────────────────────────────────────
 const sectionEl    = document.getElementById("section-name");
 const sectionSizer = document.getElementById("section-sizer");
 const subtitleEl   = document.getElementById("subtitle");
 const counterEl    = document.getElementById("slide-counter");
-const slideNumEl   = document.getElementById("slide-num");
 const saveStatusEl = document.getElementById("save-status");
 const btnPrev      = document.getElementById("btn-prev");
 const btnNext      = document.getElementById("btn-next");
 const btnAdd       = document.getElementById("btn-add");
 const btnDelete    = document.getElementById("btn-delete");
+const btnSidebar   = document.getElementById("btn-sidebar");
 const navPrev      = document.getElementById("nav-prev");
 const navNext      = document.getElementById("nav-next");
+const sidebar      = document.getElementById("sidebar");
+const sidebarList  = document.getElementById("sidebar-list");
+
+// ── Sidebar toggle ─────────────────────────────────────────────────────────
+btnSidebar.addEventListener("click", () => {
+  sidebarOpen = !sidebarOpen;
+  sidebar.classList.toggle("collapsed", !sidebarOpen);
+});
+
+// ── Thumbnails ─────────────────────────────────────────────────────────────
+function renderSidebar() {
+  sidebarList.innerHTML = "";
+  slides.forEach((s, i) => {
+    const div = document.createElement("div");
+    div.className = "thumb" + (i === current ? " active" : "");
+    div.innerHTML = `
+      <div class="thumb-preview"></div>
+      <div class="thumb-meta">
+        ${s.section ? `<div class="thumb-section">${s.section}</div>` : ""}
+        <div class="thumb-subtitle">${s.subtitle || "<em style='color:#555'>untitled</em>"}</div>
+        <div class="thumb-num">${i + 1}</div>
+      </div>`;
+    div.addEventListener("click", () => goTo(i));
+    sidebarList.appendChild(div);
+  });
+}
 
 // ── Render ─────────────────────────────────────────────────────────────────
 function render() {
@@ -241,8 +369,7 @@ function render() {
   subtitleEl.value = s.subtitle || "";
   resizeSection();
 
-  counterEl.textContent  = `${current + 1} / ${slides.length}`;
-  slideNumEl.textContent = current + 1;
+  counterEl.textContent = `${current + 1} / ${slides.length}`;
 
   const hasPrev = current > 0;
   const hasNext = current < slides.length - 1;
@@ -251,6 +378,8 @@ function render() {
   navPrev.disabled   = !hasPrev;
   navNext.disabled   = !hasNext;
   btnDelete.disabled = slides.length <= 1;
+
+  renderSidebar();
 }
 
 function resizeSection() {
@@ -263,17 +392,22 @@ sectionEl.addEventListener("input", () => {
   slides[current].section = sectionEl.value;
   resizeSection();
   scheduleSave();
+  renderSidebar();
 });
 
 subtitleEl.addEventListener("input", () => {
   slides[current].subtitle = subtitleEl.value;
   scheduleSave();
+  renderSidebar();
 });
 
 // ── Navigation ─────────────────────────────────────────────────────────────
 function goTo(idx) {
   current = Math.max(0, Math.min(slides.length - 1, idx));
   render();
+  // scroll active thumb into view
+  const thumbs = sidebarList.querySelectorAll(".thumb");
+  if (thumbs[current]) thumbs[current].scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 
 btnPrev.addEventListener("click",  () => goTo(current - 1));

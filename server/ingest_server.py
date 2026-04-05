@@ -351,6 +351,107 @@ _consolidation_runs_today: dict[str, int] = {}  # date_str -> consolidation pass
 _incremental_count: dict[str, int]        = {}  # date_str -> incremental runs since last consolidation
 
 
+def _restore_insight_state_from_events() -> None:
+    """Rebuild in-memory insight counters from events.jsonl on startup."""
+    global _insight_batch_count, _insight_last_time, _pattern_last_run_date
+    if not EVENTS_FILE.exists():
+        return
+
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    # Scan the last ~2000 events (enough for a full day)
+    lines: list[str] = []
+    try:
+        with EVENTS_FILE.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    lines.append(line)
+    except Exception as e:
+        log.warning("Could not read events for state restore: %s", e)
+        return
+
+    # Process in chronological order
+    last_batch_ts: datetime | None = None
+    last_insight_ts: datetime | None = None
+    today_batches = 0
+    today_insight_runs = 0
+    today_consolidations = 0
+
+    for line in lines:
+        try:
+            ev = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        ts_str = ev.get("ts", "")
+        ev_type = ev.get("type", "")
+        ev_date = ev.get("date", ts_str[:10])
+
+        try:
+            ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+        except (ValueError, AttributeError):
+            continue
+
+        # Track pattern last run date (any date, not just today)
+        if ev_type == "pattern" and ev.get("status") == "ok":
+            _pattern_last_run_date = ev.get("date", ev_date)
+
+        # Only care about today's events for the counters
+        if ev_date != today:
+            continue
+
+        if ev_type == "batch" and ev.get("status") == "ok":
+            today_batches += 1
+            last_batch_ts = ts
+
+        if ev_type == "insight" and ev.get("status") == "ok":
+            today_insight_runs += 1
+            last_insight_ts = ts
+
+        if ev_type == "insight_consolidation" and ev.get("status") == "ok":
+            today_consolidations += 1
+
+    # Compute batches since last insight today
+    if last_insight_ts:
+        _insight_last_time = last_insight_ts
+        # Count batches after the last insight
+        batches_since_insight = 0
+        for line in lines:
+            try:
+                ev = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if (ev.get("type") == "batch" and ev.get("status") == "ok"
+                    and ev.get("ts", "")[:10] == today):
+                try:
+                    bts = datetime.fromisoformat(ev["ts"].replace("Z", "+00:00"))
+                except (ValueError, AttributeError):
+                    continue
+                if bts > last_insight_ts:
+                    batches_since_insight += 1
+        _insight_batch_count = batches_since_insight
+    else:
+        # No insight today yet — all batches count
+        _insight_batch_count = today_batches
+
+    _insight_runs_today[today] = today_insight_runs
+    _consolidation_runs_today[today] = today_consolidations
+
+    # Restore log offsets: point to end of each day's physical-log file
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if mem_dir:
+        for date_str in {today}:
+            log_file = Path(mem_dir).expanduser() / "physical-logs" / f"{date_str}.md"
+            if log_file.exists():
+                _insight_log_offset[date_str] = log_file.stat().st_size
+
+    log.info("Restored insight state: batches_since=%d  last_insight=%s  runs_today=%d  pattern_last=%s",
+             _insight_batch_count,
+             _insight_last_time.isoformat() if _insight_last_time else "never",
+             today_insight_runs,
+             _pattern_last_run_date or "never")
+
+
 # ---------------------------------------------------------------------------
 # Flask app
 # ---------------------------------------------------------------------------
@@ -2411,6 +2512,7 @@ if __name__ == "__main__":
     log.info("Starting on port %d  provider=%s  model=%s",
              PORT, _config["provider"], _config["model"])
     Path(_config["frames_dir"]).expanduser().mkdir(parents=True, exist_ok=True)
+    _restore_insight_state_from_events()
     threading.Thread(target=_nightly_scheduler, daemon=True).start()
     threading.Thread(target=_telegram_poller, daemon=True).start()
     threading.Thread(target=_heartbeat_monitor, daemon=True).start()

@@ -465,6 +465,11 @@ def _restore_insight_state_from_events() -> None:
 
 app = Flask(__name__, static_folder=str(Path(__file__).parent))
 
+import importlib.util as _ilu, sys as _sys
+_slides_spec = _ilu.spec_from_file_location("slides_routes", Path(__file__).parent.parent / "visualization" / "slides_routes.py")
+_slides_mod  = _ilu.module_from_spec(_slides_spec); _slides_spec.loader.exec_module(_slides_mod)
+app.register_blueprint(_slides_mod.bp, url_prefix="/slides")
+
 
 @app.get("/")
 def monitor():

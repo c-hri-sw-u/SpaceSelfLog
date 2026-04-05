@@ -1644,7 +1644,7 @@ function renderMarkdown(text) {
     if (inCode) { codeLines.push(line); return; }
 
     // HTML comments — skip
-    if (/^<!--/.test(line)) return;
+    if (/^\x3C!--/.test(line)) return;
 
     let el;
     if (/^### /.test(line))       { el = document.createElement("div"); el.className = "md-h3"; el.textContent = line.slice(4); }

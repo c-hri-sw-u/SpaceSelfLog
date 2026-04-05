@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpaceSelfLog — Slides</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: #1a1a1a;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #fff;
+  }
+
+  /* ── Top toolbar ── */
+  #toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: #111;
+    border-bottom: 1px solid #333;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  #slide-counter {
+    font-size: 13px;
+    color: #888;
+    min-width: 70px;
+  }
+
+  .tb-btn {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: #ddd;
+    padding: 5px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.15s;
+  }
+  .tb-btn:hover { background: #3a3a3a; }
+  .tb-btn:disabled { opacity: 0.3; cursor: default; }
+
+  .tb-btn.primary {
+    background: #2c5f8a;
+    border-color: #3a7abf;
+    color: #fff;
+  }
+  .tb-btn.primary:hover { background: #3570a0; }
+
+  .tb-btn.danger {
+    background: #5a1a1a;
+    border-color: #8a3333;
+    color: #ffaaaa;
+  }
+  .tb-btn.danger:hover { background: #6a2020; }
+
+  #toolbar-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  #save-status {
+    font-size: 12px;
+    color: #555;
+    min-width: 80px;
+    text-align: right;
+  }
+  #save-status.saved { color: #4a8a4a; }
+  #save-status.saving { color: #8a7a3a; }
+
+  /* ── Main area ── */
+  #main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow: hidden;
+  }
+
+  /* ── Slide ── */
+  #slide {
+    background: #fff;
+    color: #111;
+    width: 100%;
+    max-width: 1100px;
+    aspect-ratio: 16 / 9;
+    max-height: calc(100vh - 110px);
+    border-radius: 4px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    padding: 52px 60px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Section label */
+  #section-name {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #2c5f8a;
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-family: inherit;
+  }
+  #section-name::placeholder { color: #aac4dc; }
+
+  .section-divider {
+    width: 48px;
+    height: 3px;
+    background: #2c5f8a;
+    margin: 12px 0 18px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* Subtitle / title */
+  #subtitle {
+    font-size: 32px;
+    font-weight: 300;
+    color: #1a1a1a;
+    line-height: 1.25;
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    resize: none;
+    font-family: inherit;
+    overflow: hidden;
+  }
+  #subtitle::placeholder { color: #ccc; }
+
+  /* Content area placeholder */
+  #content-area {
+    flex: 1;
+    margin-top: 28px;
+    position: relative;
+  }
+
+  #content-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #e0e0e0;
+    border-radius: 4px;
+    color: #bbb;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    pointer-events: none;
+  }
+
+  /* Slide number (bottom right) */
+  #slide-num {
+    position: absolute;
+    bottom: 20px;
+    right: 28px;
+    font-size: 11px;
+    color: #ccc;
+    font-weight: 500;
+  }
+
+  /* Nav arrows */
+  .nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.07);
+    border: none;
+    color: #666;
+    font-size: 26px;
+    width: 40px;
+    height: 80px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav-arrow:hover { background: rgba(255,255,255,0.15); color: #ddd; }
+  .nav-arrow:disabled { opacity: 0.15; cursor: default; }
+  #nav-prev { left: 6px; }
+  #nav-next { right: 6px; }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <span id="slide-counter">1 / 1</span>
+  <button class="tb-btn" id="btn-prev" disabled>&#8592; Prev</button>
+  <button class="tb-btn" id="btn-next" disabled>Next &#8594;</button>
+  <button class="tb-btn primary" id="btn-add">+ Add Slide</button>
+  <button class="tb-btn danger" id="btn-delete">Delete</button>
+  <div id="toolbar-right">
+    <span id="save-status"></span>
+  </div>
+</div>
+
+<div id="main">
+  <div id="slide">
+    <input id="section-name" type="text" placeholder="SECTION NAME" spellcheck="false" />
+    <div class="section-divider"></div>
+    <textarea id="subtitle" rows="3" placeholder="Slide title or subtitle…" spellcheck="false"></textarea>
+    <div id="content-area">
+      <div id="content-placeholder">content area — charts and figures will go here</div>
+    </div>
+    <div id="slide-num">1</div>
+  </div>
+</div>
+
+<button class="nav-arrow" id="nav-prev" disabled>&#8249;</button>
+<button class="nav-arrow" id="nav-next" disabled>&#8250;</button>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let slides = [{ section: "", subtitle: "" }];
+let current = 0;
+let saveTimer = null;
+
+// ── DOM refs ───────────────────────────────────────────────────────────────
+const sectionEl   = document.getElementById("section-name");
+const subtitleEl  = document.getElementById("subtitle");
+const counterEl   = document.getElementById("slide-counter");
+const slideNumEl  = document.getElementById("slide-num");
+const saveStatusEl= document.getElementById("save-status");
+const btnPrev     = document.getElementById("btn-prev");
+const btnNext     = document.getElementById("btn-next");
+const btnAdd      = document.getElementById("btn-add");
+const btnDelete   = document.getElementById("btn-delete");
+const navPrev     = document.getElementById("nav-prev");
+const navNext     = document.getElementById("nav-next");
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function render() {
+  const s = slides[current];
+  sectionEl.value  = s.section  || "";
+  subtitleEl.value = s.subtitle || "";
+  autoResizeTextarea(subtitleEl);
+
+  counterEl.textContent = `${current + 1} / ${slides.length}`;
+  slideNumEl.textContent = current + 1;
+
+  const hasPrev = current > 0;
+  const hasNext = current < slides.length - 1;
+  btnPrev.disabled  = !hasPrev;
+  btnNext.disabled  = !hasNext;
+  navPrev.disabled  = !hasPrev;
+  navNext.disabled  = !hasNext;
+  btnDelete.disabled = slides.length <= 1;
+}
+
+function autoResizeTextarea(el) {
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + "px";
+}
+
+// ── Edit handlers ──────────────────────────────────────────────────────────
+sectionEl.addEventListener("input", () => {
+  slides[current].section = sectionEl.value;
+  scheduleSave();
+});
+
+subtitleEl.addEventListener("input", () => {
+  slides[current].subtitle = subtitleEl.value;
+  autoResizeTextarea(subtitleEl);
+  scheduleSave();
+});
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+function goTo(idx) {
+  current = Math.max(0, Math.min(slides.length - 1, idx));
+  render();
+}
+
+btnPrev.addEventListener("click",  () => goTo(current - 1));
+btnNext.addEventListener("click",  () => goTo(current + 1));
+navPrev.addEventListener("click",  () => goTo(current - 1));
+navNext.addEventListener("click",  () => goTo(current + 1));
+
+document.addEventListener("keydown", e => {
+  if (e.target === sectionEl || e.target === subtitleEl) return;
+  if (e.key === "ArrowLeft")  goTo(current - 1);
+  if (e.key === "ArrowRight") goTo(current + 1);
+});
+
+// ── Add / Delete ───────────────────────────────────────────────────────────
+btnAdd.addEventListener("click", () => {
+  const inheritedSection = slides[current].section || "";
+  const newSlide = { section: inheritedSection, subtitle: "" };
+  slides.splice(current + 1, 0, newSlide);
+  current = current + 1;
+  render();
+  subtitleEl.focus();
+  scheduleSave();
+});
+
+btnDelete.addEventListener("click", () => {
+  if (slides.length <= 1) return;
+  slides.splice(current, 1);
+  current = Math.min(current, slides.length - 1);
+  render();
+  scheduleSave();
+});
+
+// ── Persistence ────────────────────────────────────────────────────────────
+function scheduleSave() {
+  saveStatusEl.textContent = "unsaved";
+  saveStatusEl.className   = "";
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveSlides, 800);
+}
+
+async function saveSlides() {
+  saveStatusEl.textContent = "saving…";
+  saveStatusEl.className   = "saving";
+  try {
+    await fetch("/api/slides", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slides }),
+    });
+    saveStatusEl.textContent = "saved";
+    saveStatusEl.className   = "saved";
+    setTimeout(() => { if (saveStatusEl.className === "saved") saveStatusEl.textContent = ""; }, 2000);
+  } catch {
+    saveStatusEl.textContent = "save failed";
+    saveStatusEl.className   = "";
+  }
+}
+
+async function loadSlides() {
+  try {
+    const res  = await fetch("/api/slides");
+    const data = await res.json();
+    if (data.slides && data.slides.length > 0) {
+      slides  = data.slides;
+      current = 0;
+    }
+  } catch { /* use defaults */ }
+  render();
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+loadSlides();
+</script>
+</body>
+</html>

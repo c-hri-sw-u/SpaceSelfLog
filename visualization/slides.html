@@ -22,7 +22,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 16px;
+    padding: 8px 16px;
     background: #111;
     border-bottom: 1px solid #333;
     flex-shrink: 0;
@@ -62,6 +62,61 @@
   }
   .tb-btn.danger:hover { background: #6a2020; }
 
+  /* ── Meta fields (section + subtitle) outside the slide ── */
+  #meta-bar {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 8px 48px;
+    flex-shrink: 0;
+  }
+
+  #section-name {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fff;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    width: 80px; /* overridden by JS */
+    min-width: 10px;
+  }
+  #section-name::placeholder { color: #444; }
+
+  #section-sizer {
+    position: absolute;
+    visibility: hidden;
+    white-space: pre;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    pointer-events: none;
+  }
+
+  #meta-divider {
+    color: #555;
+    font-size: 20px;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  #subtitle {
+    font-size: 18px;
+    font-weight: 300;
+    color: #fff;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    flex: 1;
+  }
+  #subtitle::placeholder { color: #444; }
+
   #toolbar-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
 
   #save-status {
@@ -79,96 +134,31 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: 20px 48px;
     overflow: hidden;
   }
 
   /* ── Slide ── */
   #slide {
     background: #fff;
-    color: #111;
     width: 100%;
-    max-width: 1100px;
     aspect-ratio: 16 / 9;
-    max-height: calc(100vh - 110px);
+    max-height: calc(100vh - 100px);
     border-radius: 4px;
     box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-    display: flex;
-    flex-direction: column;
-    padding: 52px 60px 48px;
     position: relative;
     overflow: hidden;
-  }
-
-  /* Section label */
-  #section-name {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #2c5f8a;
-    border: none;
-    outline: none;
-    background: transparent;
-    width: 100%;
-    font-family: inherit;
-  }
-  #section-name::placeholder { color: #aac4dc; }
-
-  .section-divider {
-    width: 48px;
-    height: 3px;
-    background: #2c5f8a;
-    margin: 12px 0 18px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-
-  /* Subtitle / title */
-  #subtitle {
-    font-size: 32px;
-    font-weight: 300;
-    color: #1a1a1a;
-    line-height: 1.25;
-    border: none;
-    outline: none;
-    background: transparent;
-    width: 100%;
-    resize: none;
-    font-family: inherit;
-    overflow: hidden;
-  }
-  #subtitle::placeholder { color: #ccc; }
-
-  /* Content area placeholder */
-  #content-area {
-    flex: 1;
-    margin-top: 28px;
-    position: relative;
-  }
-
-  #content-placeholder {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px dashed #e0e0e0;
-    border-radius: 4px;
-    color: #bbb;
-    font-size: 13px;
-    letter-spacing: 0.04em;
-    pointer-events: none;
   }
 
   /* Slide number (bottom right) */
   #slide-num {
     position: absolute;
-    bottom: 20px;
-    right: 28px;
-    font-size: 11px;
+    bottom: 14px;
+    right: 20px;
+    font-size: 10px;
     color: #ccc;
     font-weight: 500;
+    pointer-events: none;
   }
 
   /* Nav arrows */
@@ -176,11 +166,11 @@
     position: fixed;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.06);
     border: none;
-    color: #666;
+    color: #555;
     font-size: 26px;
-    width: 40px;
+    width: 36px;
     height: 80px;
     cursor: pointer;
     border-radius: 4px;
@@ -189,8 +179,8 @@
     align-items: center;
     justify-content: center;
   }
-  .nav-arrow:hover { background: rgba(255,255,255,0.15); color: #ddd; }
-  .nav-arrow:disabled { opacity: 0.15; cursor: default; }
+  .nav-arrow:hover { background: rgba(255,255,255,0.14); color: #ddd; }
+  .nav-arrow:disabled { opacity: 0.12; cursor: default; }
   #nav-prev { left: 6px; }
   #nav-next { right: 6px; }
 </style>
@@ -208,14 +198,15 @@
   </div>
 </div>
 
+<div id="meta-bar">
+  <span id="section-sizer"></span>
+  <input id="section-name" type="text" placeholder="SECTION" spellcheck="false" />
+  <span id="meta-divider">|</span>
+  <input id="subtitle" type="text" placeholder="Slide title or subtitle…" spellcheck="false" />
+</div>
+
 <div id="main">
   <div id="slide">
-    <input id="section-name" type="text" placeholder="SECTION NAME" spellcheck="false" />
-    <div class="section-divider"></div>
-    <textarea id="subtitle" rows="3" placeholder="Slide title or subtitle…" spellcheck="false"></textarea>
-    <div id="content-area">
-      <div id="content-placeholder">content area — charts and figures will go here</div>
-    </div>
     <div id="slide-num">1</div>
   </div>
 </div>
@@ -230,51 +221,52 @@ let current = 0;
 let saveTimer = null;
 
 // ── DOM refs ───────────────────────────────────────────────────────────────
-const sectionEl   = document.getElementById("section-name");
-const subtitleEl  = document.getElementById("subtitle");
-const counterEl   = document.getElementById("slide-counter");
-const slideNumEl  = document.getElementById("slide-num");
-const saveStatusEl= document.getElementById("save-status");
-const btnPrev     = document.getElementById("btn-prev");
-const btnNext     = document.getElementById("btn-next");
-const btnAdd      = document.getElementById("btn-add");
-const btnDelete   = document.getElementById("btn-delete");
-const navPrev     = document.getElementById("nav-prev");
-const navNext     = document.getElementById("nav-next");
+const sectionEl    = document.getElementById("section-name");
+const sectionSizer = document.getElementById("section-sizer");
+const subtitleEl   = document.getElementById("subtitle");
+const counterEl    = document.getElementById("slide-counter");
+const slideNumEl   = document.getElementById("slide-num");
+const saveStatusEl = document.getElementById("save-status");
+const btnPrev      = document.getElementById("btn-prev");
+const btnNext      = document.getElementById("btn-next");
+const btnAdd       = document.getElementById("btn-add");
+const btnDelete    = document.getElementById("btn-delete");
+const navPrev      = document.getElementById("nav-prev");
+const navNext      = document.getElementById("nav-next");
 
 // ── Render ─────────────────────────────────────────────────────────────────
 function render() {
   const s = slides[current];
   sectionEl.value  = s.section  || "";
   subtitleEl.value = s.subtitle || "";
-  autoResizeTextarea(subtitleEl);
+  resizeSection();
 
-  counterEl.textContent = `${current + 1} / ${slides.length}`;
+  counterEl.textContent  = `${current + 1} / ${slides.length}`;
   slideNumEl.textContent = current + 1;
 
   const hasPrev = current > 0;
   const hasNext = current < slides.length - 1;
-  btnPrev.disabled  = !hasPrev;
-  btnNext.disabled  = !hasNext;
-  navPrev.disabled  = !hasPrev;
-  navNext.disabled  = !hasNext;
+  btnPrev.disabled   = !hasPrev;
+  btnNext.disabled   = !hasNext;
+  navPrev.disabled   = !hasPrev;
+  navNext.disabled   = !hasNext;
   btnDelete.disabled = slides.length <= 1;
 }
 
-function autoResizeTextarea(el) {
-  el.style.height = "auto";
-  el.style.height = el.scrollHeight + "px";
+function resizeSection() {
+  sectionSizer.textContent = sectionEl.value || sectionEl.placeholder;
+  sectionEl.style.width = sectionSizer.offsetWidth + "px";
 }
 
 // ── Edit handlers ──────────────────────────────────────────────────────────
 sectionEl.addEventListener("input", () => {
   slides[current].section = sectionEl.value;
+  resizeSection();
   scheduleSave();
 });
 
 subtitleEl.addEventListener("input", () => {
   slides[current].subtitle = subtitleEl.value;
-  autoResizeTextarea(subtitleEl);
   scheduleSave();
 });
 
@@ -297,10 +289,9 @@ document.addEventListener("keydown", e => {
 
 // ── Add / Delete ───────────────────────────────────────────────────────────
 btnAdd.addEventListener("click", () => {
-  const inheritedSection = slides[current].section || "";
-  const newSlide = { section: inheritedSection, subtitle: "" };
+  const newSlide = { section: slides[current].section || "", subtitle: "" };
   slides.splice(current + 1, 0, newSlide);
-  current = current + 1;
+  current += 1;
   render();
   subtitleEl.focus();
   scheduleSave();

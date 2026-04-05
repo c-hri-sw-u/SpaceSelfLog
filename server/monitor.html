@@ -1589,6 +1589,7 @@ const statesViewer = makeDatedViewer({
   dateSpan: "current-states-date", contentEl: "states-content",
   emptyMsg: "No states files found.",
   fileSuffix: "/states",
+  transform: reverseSections,
 });
 
 const timelineViewer = makeDatedViewer({

@@ -416,6 +416,83 @@
     flex: none;
   }
 
+  /* ── State entry cards ── */
+  .state-entry {
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    transition: border-color .2s, box-shadow .2s;
+    overflow: hidden;
+  }
+  .state-entry:hover { border-color: color-mix(in srgb, var(--border) 60%, var(--text)); }
+  .state-entry.state-editing {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  .state-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .state-time {
+    font-weight: 600;
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: .02em;
+  }
+  .state-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity .15s;
+  }
+  .state-entry:hover .state-actions { opacity: 1; }
+  .state-action-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 13px;
+    border-radius: 4px;
+    transition: color .15s, background .15s;
+    line-height: 1;
+  }
+  .state-action-btn:hover { color: var(--text); background: var(--border); }
+  .state-action-del:hover { color: var(--red); background: rgba(239,68,68,.1); }
+  .state-body {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  .state-textarea {
+    width: 100%;
+    min-height: 64px;
+    font-size: 12px;
+    font-family: inherit;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px;
+    color: var(--text);
+    resize: vertical;
+    line-height: 1.5;
+    box-sizing: border-box;
+  }
+  .state-textarea:focus { border-color: var(--accent); outline: none; }
+  .state-edit-bar {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    align-items: center;
+  }
+  .state-btn-save { padding: 3px 14px; font-size: 11px; }
+  .state-btn-cancel { padding: 3px 10px; font-size: 11px; }
+
   .mem-content .md-h1 {
     font-size: 13px;
     font-weight: 700;
@@ -1633,32 +1710,32 @@ function renderStatesEditable(el, text, date) {
   sections.forEach(sec => {
     const row = document.createElement("div");
     row.className = "state-entry";
-    row.style.cssText = "margin-bottom:10px; border:1px solid var(--border); border-radius:6px; padding:8px 10px;";
 
     const header = document.createElement("div");
-    header.style.cssText = "display:flex; align-items:center; gap:8px; margin-bottom:4px;";
+    header.className = "state-header";
 
     const timeBadge = document.createElement("span");
-    timeBadge.style.cssText = "font-weight:600; font-family:ui-monospace,'SF Mono',monospace; font-size:12px; color:var(--accent);";
+    timeBadge.className = "state-time";
     timeBadge.textContent = sec.time;
 
-    const spacer = document.createElement("span");
-    spacer.style.cssText = "flex:1;";
+    const actions = document.createElement("span");
+    actions.className = "state-actions";
 
     const btnEdit = document.createElement("button");
-    btnEdit.className = "btn-ghost";
-    btnEdit.style.cssText = "padding:2px 8px; font-size:11px;";
-    btnEdit.textContent = "Edit";
+    btnEdit.className = "state-action-btn";
+    btnEdit.innerHTML = "&#9998;"; // ✎ pencil
+    btnEdit.title = "Edit";
 
     const btnDel = document.createElement("button");
-    btnDel.className = "btn-ghost";
-    btnDel.style.cssText = "padding:2px 8px; font-size:11px; color:var(--red);";
-    btnDel.textContent = "Delete";
+    btnDel.className = "state-action-btn state-action-del";
+    btnDel.innerHTML = "&#10005;"; // ✕ cross
+    btnDel.title = "Delete";
 
-    header.append(timeBadge, spacer, btnEdit, btnDel);
+    actions.append(btnEdit, btnDel);
+    header.append(timeBadge, actions);
 
     const bodyDiv = document.createElement("div");
-    bodyDiv.style.cssText = "font-size:12px; line-height:1.6;";
+    bodyDiv.className = "state-body";
     bodyDiv.innerHTML = inlineFormat(sec.body);
 
     row.append(header, bodyDiv);
@@ -1666,20 +1743,24 @@ function renderStatesEditable(el, text, date) {
 
     // Edit handler
     btnEdit.addEventListener("click", () => {
+      row.classList.add("state-editing");
       const ta = document.createElement("textarea");
       ta.value = sec.body;
-      ta.style.cssText = "width:100%; min-height:60px; font-size:12px; font-family:inherit; background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:6px; color:var(--text); resize:vertical;";
+      ta.className = "state-textarea";
+      const editBar = document.createElement("div");
+      editBar.className = "state-edit-bar";
+
       const saveBtn = document.createElement("button");
-      saveBtn.className = "btn-primary";
-      saveBtn.style.cssText = "padding:2px 12px; font-size:11px; margin-top:4px;";
+      saveBtn.className = "btn-primary state-btn-save";
       saveBtn.textContent = "Save";
       const cancelBtn = document.createElement("button");
-      cancelBtn.className = "btn-ghost";
-      cancelBtn.style.cssText = "padding:2px 8px; font-size:11px; margin-top:4px;";
+      cancelBtn.className = "btn-ghost state-btn-cancel";
       cancelBtn.textContent = "Cancel";
 
+      editBar.append(saveBtn, cancelBtn);
       bodyDiv.innerHTML = "";
-      bodyDiv.append(ta, saveBtn, cancelBtn);
+      bodyDiv.append(ta, editBar);
+      ta.focus();
 
       saveBtn.addEventListener("click", async () => {
         const newText = ta.value.trim();
@@ -1699,20 +1780,32 @@ function renderStatesEditable(el, text, date) {
       });
 
       cancelBtn.addEventListener("click", () => {
+        row.classList.remove("state-editing");
         bodyDiv.innerHTML = inlineFormat(sec.body);
+      });
+
+      // Cmd+Enter to save
+      ta.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); saveBtn.click(); }
+        if (e.key === "Escape") { cancelBtn.click(); }
       });
     });
 
     // Delete handler
     btnDel.addEventListener("click", async () => {
       if (!confirm("Delete entry at " + sec.time + "?")) return;
+      row.style.opacity = "0.4";
       btnDel.disabled = true;
       try {
         const r = await fetch("/api/memory/narrative/" + date + "/states/" + sec.time, { method: "DELETE" });
         const data = await r.json().catch(() => ({}));
-        if (!r.ok || data.error) { alert("Error: " + (data.error || r.status)); return; }
-        statesViewer.loadDates();
-      } catch(e) { alert("Failed: " + e); }
+        if (!r.ok || data.error) { alert("Error: " + (data.error || r.status)); row.style.opacity = ""; return; }
+        row.style.transition = "opacity .3s, max-height .3s";
+        row.style.opacity = "0";
+        row.style.maxHeight = row.scrollHeight + "px";
+        requestAnimationFrame(() => { row.style.maxHeight = "0"; row.style.padding = "0"; row.style.margin = "0"; row.style.border = "none"; });
+        setTimeout(() => row.remove(), 350);
+      } catch(e) { alert("Failed: " + e); row.style.opacity = ""; }
       finally { btnDel.disabled = false; }
     });
   });

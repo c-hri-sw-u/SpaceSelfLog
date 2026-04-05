@@ -1770,6 +1770,35 @@ def get_narrative_states(date: str):
     return states_file.read_text(encoding="utf-8"), 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 
+@app.post("/api/memory/narrative/<date>/states")
+def add_narrative_state(date: str):
+    """Manually append a state entry to the daily states file."""
+    if not _re.match(r'^\d{4}-\d{2}-\d{2}$', date):
+        return jsonify({"error": "invalid date"}), 400
+    body = request.get_json(force=True, silent=True) or {}
+    time_str = (body.get("time") or "").strip()
+    text = (body.get("text") or "").strip()
+    if not time_str or not text:
+        return jsonify({"error": "time and text required"}), 400
+
+    mem_dir = _config.get("openclaw_memory_dir", "")
+    if not mem_dir:
+        return jsonify({"error": "openclaw_memory_dir not configured"}), 404
+
+    narrative_dir = Path(mem_dir).expanduser() / "physical-daily-narrative"
+    narrative_dir.mkdir(parents=True, exist_ok=True)
+    states_file = narrative_dir / f"{date}-states.md"
+
+    if not states_file.exists():
+        states_file.write_text(f"# Daily States — {date}\n", encoding="utf-8")
+
+    with states_file.open("a", encoding="utf-8") as f:
+        f.write(f"\n## {time_str}\n{text}\n")
+
+    log.info("Manual state added for %s at %s", date, time_str)
+    return jsonify({"ok": True})
+
+
 @app.get("/api/memory/narrative/<date>/timeline")
 def get_narrative_timeline(date: str):
     """Return raw content of daily timeline file (JSON in markdown)."""

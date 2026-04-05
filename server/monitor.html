@@ -391,6 +391,41 @@
     font-size: 12px;
     line-height: 1.65;
   }
+
+  .add-state-form {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+  }
+  .add-state-form input[type="time"] {
+    width: 80px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 4px 6px;
+    font-size: 12px;
+    font-family: ui-monospace, "SF Mono", monospace;
+    color: var(--text);
+    flex: none;
+  }
+  .add-state-form input[type="text"] {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: var(--text);
+    min-width: 0;
+  }
+  .add-state-form input:focus { border-color: var(--accent); outline: none; }
+  .add-state-form .btn-primary {
+    padding: 4px 12px;
+    font-size: 12px;
+    flex: none;
+  }
+
   .mem-content .md-h1 {
     font-size: 13px;
     font-weight: 700;
@@ -786,6 +821,11 @@
         <button id="btn-prev-states" title="Previous day">‹</button>
         <span id="current-states-date">—</span>
         <button id="btn-next-states" title="Next day">›</button>
+      </div>
+      <div class="add-state-form">
+        <input id="add-state-time" type="time" />
+        <input id="add-state-text" type="text" placeholder="e.g. Sleeping, showering, commuting…" />
+        <button id="btn-add-state" class="btn-primary">Add</button>
       </div>
       <div id="states-content" class="mem-content"><div class="md-muted">Loading…</div></div>
     </div>
@@ -1599,6 +1639,42 @@ const timelineViewer = makeDatedViewer({
   emptyMsg: "No timeline files found.",
   fileSuffix: "/timeline",
 });
+
+// ── Manual state entry ──
+(function initAddStateForm() {
+  const timeInput = document.getElementById("add-state-time");
+  const textInput = document.getElementById("add-state-text");
+  const btn       = document.getElementById("btn-add-state");
+
+  // Default to current time
+  const now = new Date();
+  timeInput.value = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
+
+  btn.addEventListener("click", async () => {
+    const dateSpan = document.getElementById("current-states-date");
+    const date = dateSpan ? dateSpan.textContent.trim() : "";
+    if (!date || date === "—" || date === "No files") { alert("Select a date first."); return; }
+    const time = timeInput.value.trim();
+    const text = textInput.value.trim();
+    if (!time || !text) { alert("Enter both time and description."); return; }
+    btn.disabled = true;
+    btn.textContent = "…";
+    try {
+      const r = await fetch("/api/memory/narrative/" + date + "/states", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({time, text}),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok || data.error) { alert("Error: " + (data.error || r.status)); return; }
+      textInput.value = "";
+      statesViewer.loadDates(); // refresh
+    } catch(e) { alert("Failed: " + e); }
+    finally { btn.disabled = false; btn.textContent = "Add"; }
+  });
+
+  textInput.addEventListener("keydown", (e) => { if (e.key === "Enter") btn.click(); });
+})();
 
 // ── Events ──
 async function loadEvents() {

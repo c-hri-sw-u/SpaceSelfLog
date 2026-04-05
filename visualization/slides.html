@@ -70,7 +70,7 @@
     min-width: 80px;
     text-align: right;
   }
-  #save-status.saved { color: #4a8a4a; }
+  #save-status.saved  { color: #4a8a4a; }
   #save-status.saving { color: #8a7a3a; }
 
   /* ── Meta fields ── */
@@ -191,7 +191,6 @@
   .thumb.active { border-color: #2a2a2a; }
   .thumb.active .thumb-preview { outline: 2px solid #4a90c4; outline-offset: -2px; }
 
-  /* Mini slide preview (16:9) */
   .thumb-preview {
     background: #fff;
     width: 100%;
@@ -244,14 +243,20 @@
 
   /* ── Slide ── */
   #slide {
-    background: #fff;
+    background: #111;
     width: 100%;
     aspect-ratio: 16 / 9;
     max-height: calc(100vh - 100px);
     border-radius: 4px;
     box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-    position: relative;
     overflow: hidden;
+  }
+
+  #slide-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
   }
 
   /* Nav arrows */
@@ -301,14 +306,14 @@
 
 <div id="body-row">
   <div id="sidebar">
-    <div id="sidebar-header">
-      <span>Slides</span>
-    </div>
+    <div id="sidebar-header"><span>Slides</span></div>
     <div id="sidebar-list"></div>
   </div>
 
   <div id="main">
-    <div id="slide"></div>
+    <div id="slide">
+      <iframe id="slide-frame" src="about:blank"></iframe>
+    </div>
   </div>
 </div>
 
@@ -317,9 +322,9 @@
 
 <script>
 // ── State ──────────────────────────────────────────────────────────────────
-let slides = [{ section: "", subtitle: "" }];
+let slides  = [{ section: "", subtitle: "", src: "/slides/slide-files/01_cover.html" }];
 let current = 0;
-let saveTimer = null;
+let saveTimer   = null;
 let sidebarOpen = true;
 
 // ── DOM refs ───────────────────────────────────────────────────────────────
@@ -337,6 +342,7 @@ const navPrev      = document.getElementById("nav-prev");
 const navNext      = document.getElementById("nav-next");
 const sidebar      = document.getElementById("sidebar");
 const sidebarList  = document.getElementById("sidebar-list");
+const slideFrame   = document.getElementById("slide-frame");
 
 // ── Sidebar toggle ─────────────────────────────────────────────────────────
 btnSidebar.addEventListener("click", () => {
@@ -368,6 +374,7 @@ function render() {
   sectionEl.value  = s.section  || "";
   subtitleEl.value = s.subtitle || "";
   resizeSection();
+  slideFrame.src = s.src || "about:blank";
 
   counterEl.textContent = `${current + 1} / ${slides.length}`;
 
@@ -405,7 +412,6 @@ subtitleEl.addEventListener("input", () => {
 function goTo(idx) {
   current = Math.max(0, Math.min(slides.length - 1, idx));
   render();
-  // scroll active thumb into view
   const thumbs = sidebarList.querySelectorAll(".thumb");
   if (thumbs[current]) thumbs[current].scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
@@ -422,13 +428,20 @@ document.addEventListener("keydown", e => {
 });
 
 // ── Add / Delete ───────────────────────────────────────────────────────────
-btnAdd.addEventListener("click", () => {
-  const newSlide = { section: slides[current].section || "", subtitle: "" };
-  slides.splice(current + 1, 0, newSlide);
-  current += 1;
-  render();
-  subtitleEl.focus();
-  scheduleSave();
+btnAdd.addEventListener("click", async () => {
+  btnAdd.disabled = true;
+  try {
+    const res  = await fetch("/slides/api/slides/new", { method: "POST" });
+    const data = await res.json();
+    const newSlide = { section: slides[current]?.section || "", subtitle: "", src: data.src };
+    slides.splice(current + 1, 0, newSlide);
+    current += 1;
+    render();
+    subtitleEl.focus();
+    scheduleSave();
+  } finally {
+    btnAdd.disabled = false;
+  }
 });
 
 btnDelete.addEventListener("click", () => {
@@ -451,7 +464,7 @@ async function saveSlides() {
   saveStatusEl.textContent = "saving…";
   saveStatusEl.className   = "saving";
   try {
-    await fetch("/api/slides", {
+    await fetch("/slides/api/slides", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ slides }),
@@ -467,7 +480,7 @@ async function saveSlides() {
 
 async function loadSlides() {
   try {
-    const res  = await fetch("/api/slides");
+    const res  = await fetch("/slides/api/slides");
     const data = await res.json();
     if (data.slides && data.slides.length > 0) {
       slides  = data.slides;

@@ -98,6 +98,9 @@ final class BatchProcessor {
     /// Dynamic K then fills the remainder up to the computed target.
     var scoreThreshold: Float = 0.50
 
+    /// Hard cap on output frames per batch (truncates even guaranteed frames).
+    var batchMaxOutput: Int = 20
+
     // MARK: - Output
 
     /// Called on `processingQueue` when a processed batch is ready.
@@ -310,14 +313,16 @@ final class BatchProcessor {
         } else {
             topK = guaranteed + Array(remaining.prefix(kDynamic - guaranteed.count))
         }
-        guard !topK.isEmpty else { return }
+        // 8. Hard cap: truncate to batchMaxOutput regardless of score.
+        let capped = topK.count > batchMaxOutput ? Array(topK.prefix(batchMaxOutput)) : topK
+        guard !capped.isEmpty else { return }
 
         lastSelectedAt = Date()
         lastBatchTime = Date()
-        lastBatchOutputCount = topK.count
+        lastBatchOutputCount = capped.count
         totalBatchesProcessed += 1
 
-        let outputFrames = topK.map { (af, score) in
+        let outputFrames = capped.map { (af, score) in
             OutputFrame(
                 originalId: af.frame.id,
                 capturedAt: af.frame.capturedAt,
@@ -342,7 +347,7 @@ final class BatchProcessor {
             inputFrameCount: frames.count
         )
 
-        print("BatchProcessor: batch ready — selected \(topK.count)/\(frames.count) " +
+        print("BatchProcessor: batch ready — selected \(capped.count)/\(frames.count) " +
               "(survived: \(annotated.count), deduped: \(deduped.count), " +
               "guaranteed: \(guaranteed.count), kDynamic: \(kDynamic), " +
               String(format: "duration: %.1fmin)", batchDurationMin))

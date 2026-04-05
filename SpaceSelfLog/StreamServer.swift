@@ -23,7 +23,7 @@ final class StreamServer {
     var onUpdateCaptureConfig: ((_ minInterval: Int, _ maxInterval: Int, _ rampRatio: Double) -> Bool)?
     var onUpdateAudioConfig: ((_ vadSensitivity: String, _ transcriptionEnabled: Bool, _ noiseQuietDB: Int, _ noiseLoudDB: Int) -> Bool)?
     var onUpdateIMUConfig: ((_ sustainedMotionThreshold: Int, _ varianceLow: Double, _ varianceHigh: Double) -> Bool)?
-    var onUpdateBatchConfig: ((_ firstBatchWindow: Int, _ maxWindow: Int, _ ssimThreshold: Double, _ ssimDedupThreshold: Double, _ kDensityPerMin: Double, _ kMin: Int, _ kMax: Int, _ scoreThreshold: Double) -> Bool)?
+    var onUpdateBatchConfig: ((_ firstBatchWindow: Int, _ maxWindow: Int, _ ssimThreshold: Double, _ ssimDedupThreshold: Double, _ kDensityPerMin: Double, _ kMin: Int, _ kMax: Int, _ scoreThreshold: Double, _ batchMaxOutput: Int) -> Bool)?
     var onUpdateOutboxConfig: ((_ endpoint: String) -> Bool)?
     
     init(port: UInt16 = 8080) {
@@ -177,7 +177,8 @@ final class StreamServer {
                     let kMin               = json["kMin"]               as? Int    ?? 2
                     let kMax               = json["kMax"]               as? Int    ?? 12
                     let scoreThreshold     = json["scoreThreshold"]     as? Double ?? 0.50
-                    let success = self?.onUpdateBatchConfig?(firstBatchWindow, maxWindow, ssimThreshold, ssimDedupThreshold, kDensityPerMin, kMin, kMax, scoreThreshold) ?? false
+                    let batchMaxOutput     = json["batchMaxOutput"]     as? Int    ?? 20
+                    let success = self?.onUpdateBatchConfig?(firstBatchWindow, maxWindow, ssimThreshold, ssimDedupThreshold, kDensityPerMin, kMin, kMax, scoreThreshold, batchMaxOutput) ?? false
                     return (success, success ? nil : "Not implemented")
                 }
             case "/update-outbox-config":

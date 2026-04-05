@@ -675,6 +675,8 @@
             </div>
             <div class="settings-label" style="margin-top:6px;">Score threshold (guaranteed)</div>
             <input type="number" class="settings-input" id="scoreThresholdInput" min="0.30" max="0.80" step="0.05" value="0.50">
+            <div class="settings-label" style="margin-top:6px;">Max output frames (hard cap)</div>
+            <input type="number" class="settings-input" id="batchMaxOutputInput" min="1" max="50" step="1" value="20">
             <div class="section-save-row">
                 <button class="settings-button" onclick="saveBatchConfig(event)">Save</button>
             </div>
@@ -1203,7 +1205,8 @@
                 kDensityPerMin:     parseFloat(document.getElementById('kDensityInput').value),
                 kMin:               parseInt(document.getElementById('kMinInput').value),
                 kMax:               parseInt(document.getElementById('kMaxInput').value),
-                scoreThreshold:     parseFloat(document.getElementById('scoreThresholdInput').value)
+                scoreThreshold:     parseFloat(document.getElementById('scoreThresholdInput').value),
+                batchMaxOutput:     parseInt(document.getElementById('batchMaxOutputInput').value)
             }, e.target);
         }
         function saveOutboxConfig(e) {
@@ -1226,6 +1229,7 @@
             const kmEl  = document.getElementById('kMinInput');
             const kxEl  = document.getElementById('kMaxInput');
             const stEl  = document.getElementById('scoreThresholdInput');
+            const bmoEl = document.getElementById('batchMaxOutputInput');
             if (s.captureMinInterval != null && active !== minEl) minEl.value = s.captureMinInterval;
             if (s.captureMaxInterval != null && active !== maxEl) maxEl.value = s.captureMaxInterval;
             const sliderEl = document.getElementById('rampRatioSlider');
@@ -1255,6 +1259,7 @@
             if (s.kMin               != null && active !== kmEl) kmEl.value = s.kMin;
             if (s.kMax               != null && active !== kxEl) kxEl.value = s.kMax;
             if (s.scoreThreshold     != null && active !== stEl) stEl.value = s.scoreThreshold;
+            if (s.batchMaxOutput     != null && active !== bmoEl) bmoEl.value = s.batchMaxOutput;
             // Outbox
             const epEl = document.getElementById('outboxEndpointInput');
             if (s.outboxEndpoint != null && active !== epEl) epEl.value = s.outboxEndpoint;

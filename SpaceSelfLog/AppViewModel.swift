@@ -83,6 +83,12 @@ final class AppViewModel: ObservableObject {
             batchProcessor.scoreThreshold = Float(scoreThreshold)
         }
     }
+    @Published var batchMaxOutput: Int = 20 {
+        didSet {
+            UserDefaults.standard.set(batchMaxOutput, forKey: "BatchMaxOutput")
+            batchProcessor.batchMaxOutput = batchMaxOutput
+        }
+    }
     @Published var outboxEndpoint: String = "" {
         didSet {
             UserDefaults.standard.set(outboxEndpoint, forKey: "OutboxEndpoint")
@@ -171,6 +177,7 @@ final class AppViewModel: ObservableObject {
                     "kMin": self.kMin,
                     "kMax": self.kMax,
                     "scoreThreshold": self.scoreThreshold,
+                    "batchMaxOutput": self.batchMaxOutput,
                     "totalFramesCaptured": self.framePipeline.totalFramesCaptured,
                     "latestFrameFilename": self.framePipeline.latestFrameFilename as Any,
                     "lastFrameTimestamp": self.framePipeline.latestFrameTimestamp as Any,
@@ -223,7 +230,7 @@ final class AppViewModel: ObservableObject {
             }
             return true
         }
-        s.onUpdateBatchConfig = { [weak self] firstBatchWindow, maxWindow, ssimThreshold, ssimDedupThreshold, kDensityPerMin, kMin, kMax, scoreThreshold in
+        s.onUpdateBatchConfig = { [weak self] firstBatchWindow, maxWindow, ssimThreshold, ssimDedupThreshold, kDensityPerMin, kMin, kMax, scoreThreshold, batchMaxOutput in
             guard let self else { return false }
             DispatchQueue.main.async {
                 self.firstBatchWindow    = firstBatchWindow
@@ -234,6 +241,7 @@ final class AppViewModel: ObservableObject {
                 self.kMin                = kMin
                 self.kMax                = kMax
                 self.scoreThreshold      = scoreThreshold
+                self.batchMaxOutput      = batchMaxOutput
             }
             return true
         }
@@ -298,6 +306,8 @@ final class AppViewModel: ObservableObject {
         kMax = kMxVal > 0 ? kMxVal : 12
         let st = UserDefaults.standard.double(forKey: "ScoreThreshold")
         scoreThreshold = st > 0 ? st : 0.50
+        let bmo = UserDefaults.standard.integer(forKey: "BatchMaxOutput")
+        batchMaxOutput = bmo > 0 ? bmo : 20
         let rr = UserDefaults.standard.double(forKey: "RampRatio")
         rampRatio = rr > 0 ? rr : 1.67
         let ep = UserDefaults.standard.string(forKey: "OutboxEndpoint") ?? ""
@@ -312,6 +322,7 @@ final class AppViewModel: ObservableObject {
         batchProcessor.kMin                    = kMin
         batchProcessor.kMax                    = kMax
         batchProcessor.scoreThreshold          = Float(scoreThreshold)
+        batchProcessor.batchMaxOutput          = batchMaxOutput
         outboxManager.uploadEndpoint           = ep.isEmpty ? nil : URL(string: ep)
         setupOutboxCallback()
 

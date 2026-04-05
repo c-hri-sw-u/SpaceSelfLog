@@ -612,6 +612,16 @@
                     <div class="mini-toggle-slider"></div>
                 </div>
             </div>
+            <div class="settings-label" style="margin-top:8px">Noise Quiet Threshold <span style="color:#FFA726">●</span></div>
+            <div class="settings-row">
+                <input type="number" class="settings-input" id="noiseQuietDBInput" min="-90" max="-20" step="1" value="-50">
+                <label>dB</label>
+            </div>
+            <div class="settings-label" style="margin-top:4px">Noise Loud Threshold <span style="color:#f44336">●</span></div>
+            <div class="settings-row">
+                <input type="number" class="settings-input" id="noiseLoudDBInput" min="-90" max="-10" step="1" value="-30">
+                <label>dB</label>
+            </div>
             <div class="section-save-row">
                 <button class="settings-button" onclick="saveAudioConfig(event)">Save</button>
             </div>
@@ -1172,7 +1182,9 @@
         function saveAudioConfig(e) {
             saveConfig('/update-audio-config', {
                 vadSensitivity:       getSegmentValue('vadSensitivity'),
-                transcriptionEnabled: document.getElementById('transcriptionToggle').classList.contains('active')
+                transcriptionEnabled: document.getElementById('transcriptionToggle').classList.contains('active'),
+                noiseQuietDB:         parseInt(document.getElementById('noiseQuietDBInput').value),
+                noiseLoudDB:          parseInt(document.getElementById('noiseLoudDBInput').value)
             }, e.target);
         }
         function saveIMUConfig(e) {
@@ -1226,6 +1238,10 @@
             if (s.transcriptionEnabled != null) {
                 document.getElementById('transcriptionToggle').classList.toggle('active', s.transcriptionEnabled);
             }
+            const nqEl = document.getElementById('noiseQuietDBInput');
+            const nlEl = document.getElementById('noiseLoudDBInput');
+            if (s.noiseQuietDB != null && active !== nqEl) nqEl.value = s.noiseQuietDB;
+            if (s.noiseLoudDB  != null && active !== nlEl) nlEl.value = s.noiseLoudDB;
             if (s.sustainedMotionThreshold != null && active !== smEl) smEl.value = s.sustainedMotionThreshold;
             if (s.varianceLowThreshold  != null && active !== vlEl) vlEl.value = s.varianceLowThreshold;
             if (s.varianceHighThreshold != null && active !== vhEl) vhEl.value = s.varianceHighThreshold;

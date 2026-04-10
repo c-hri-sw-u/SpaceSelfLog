@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 8vw;
+  color: #111;
+  overflow: hidden;
+}
+
+.slide-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.header {
+  margin-bottom: 5vw; /* Increased from 4vw to create more space above the comparison */
+}
+
+h1 {
+  font-size: 3.8vw;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1vw;
+}
+
+.intro {
+  font-size: 1.4vw;
+  font-weight: 400;
+  color: #666;
+  max-width: 65vw;
+  line-height: 1.4;
+}
+
+.intro strong {
+  color: #111;
+  font-weight: 600;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0 0.2vw;
+  color: #111;
+}
+
+.comparison-container {
+  display: flex;
+  gap: 8vw;
+  position: relative;
+  align-items: center;
+  height: 35vw;
+}
+
+.comparison-container::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 0.1vw;
+  background: #eee;
+  transform: translateX(-50%);
+}
+
+.comparison-symbol {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  transform: translate(-50%, -50%);
+  font-size: 2.4vw;
+  font-weight: 400;
+  color: #ddd;
+  background: #fff;
+  padding: 2vw 0;
+  z-index: 10;
+  letter-spacing: -0.3vw;
+  font-family: 'Georgia', serif; /* Use a more elegant serif for the angle brackets */
+}
+
+.col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.col h2 {
+  font-size: 1.8vw;
+  font-weight: 400;
+  margin-bottom: 0.8vw;
+  margin-top: -3vw; /* Pull text upwards */
+  color: #999;
+  text-align: center;
+}
+
+.col.agent h2 {
+  font-weight: 700;
+  color: #111;
+}
+
+.subtitle-desc {
+  font-size: 1.2vw;
+  color: #888;
+  text-align: center;
+  max-width: 25vw;
+  margin-bottom: 4vw; /* Increase gap between text and SVG */
+}
+
+/* SVG Funnel Styling */
+.viz-container {
+  width: 100%;
+  flex: 1;
+  position: relative;
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Geometric Lines */
+.funnel-line {
+  stroke: #ddd;
+  stroke-width: 0.3;
+  stroke-linecap: round;
+}
+
+.agent .funnel-line {
+  stroke: #111;
+  stroke-width: 0.4;
+}
+
+.funnel-dashed {
+  stroke: #e0e0e0;
+  stroke-width: 0.3;
+  stroke-dasharray: 2 1;
+}
+
+/* The drop nodes / context items */
+.node {
+  fill: #ccc;
+}
+
+.agent .node {
+  fill: #ffe94d;
+}
+
+.node-mixed {
+  fill: #888;
+}
+
+/* Target Zone */
+.target-zone {
+  fill: none;
+  stroke: #eee;
+  stroke-width: 0.2;
+}
+
+.agent .target-zone {
+  stroke: #111;
+  stroke-width: 0.3;
+}
+
+/* Base Funnel Text */
+.label-text {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 2.5px;
+  fill: #999;
+  font-weight: 500;
+  text-anchor: middle;
+}
+
+.agent .label-text {
+  fill: #111;
+}
+
+/* Annotations */
+.annotation-text {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 3px;
+  fill: #888;
+  font-weight: 400;
+}
+
+.agent .annotation-text {
+  fill: #111;
+  font-weight: 500;
+}
+
+.annotation-line {
+  stroke: #ccc;
+  stroke-width: 0.15;
+}
+
+.agent .annotation-line {
+  stroke: #888;
+}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+</head>
+<body>
+
+<div class="slide-content">
+  <div class="header">
+    <h1>Why <span class="highlight">Personalization</span> Matters</h1>
+    <div class="intro">
+      Generic Agent: Same behavior for everyone | Personalized Agent: Adapts, learns, evolves with you. <strong>Personalization == Effectiveness</strong>
+    </div>
+  </div>
+
+  <div class="comparison-container">
+    <div class="comparison-symbol">&lt;&lt;</div>
+    
+    <!-- Left Side: Generic Agent -->
+    <div class="col assistant">
+      <h2>Agents That Don't Know You</h2>
+      <div class="subtitle-desc">Context leaks during the transaction. Only a generic prompt hits the target.</div>
+      <div class="viz-container" id="viz-generic"></div>
+    </div>
+
+    <!-- Right Side: Personal Agent -->
+    <div class="col agent">
+      <h2>Agents That Know You</h2>
+      <div class="subtitle-desc">Captures and fuses your continuous context for hyper-relevant action.</div>
+      <div class="viz-container" id="viz-personal"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // D3 Logic for drawing clean funnels and animating context nodes
+
+  function drawFunnel(containerId, isPersonal) {
+    const sw = 100, sh = 90; // Reduced height to tighten the layout boundary
+    const baseSvg = d3.select(containerId)
+      .append("svg")
+      .attr("viewBox", `0 0 ${sw} ${sh}`)
+      .attr("overflow", "visible"); // guarantee no clipping if we render outside
+
+    // Shifting significantly higher inside the viewbox
+    const svg = baseSvg.append("g").attr("transform", "translate(0, -18)");
+
+    // Central geometric setup for the funnel
+    // Top width: 20 to 80 (width 60)
+    // Bottom width: 45 to 55 (width 10)
+    // Funnel depth: 20 to 70
+    
+    // Background flow field (subtle shading)
+    if (isPersonal) {
+      svg.append("polygon")
+        .attr("points", "20,20 80,20 54,75 46,75")
+        .attr("fill", "#fffdf0") // VERY subtle yellow tint
+        .attr("opacity", 0.5);
+    } else {
+      svg.append("polygon")
+        .attr("points", "20,20 80,20 54,75 46,75")
+        .attr("fill", "#fcfcfc");
+    }
+
+    // Lines for Funnel Edges
+    if (isPersonal) {
+       // Solid edges
+       svg.append("line").attr("x1", 20).attr("y1", 20).attr("x2", 46).attr("y2", 75).attr("class", "funnel-line");
+       svg.append("line").attr("x1", 80).attr("y1", 20).attr("x2", 54).attr("y2", 75).attr("class", "funnel-line");
+
+       // Funnel Layers representing Personal Context (5 Segments)
+       const layers = ["Preferences", "Docs", "History", "Workflows", "Goals"];
+       const yOffsets = [31, 42, 53, 64]; 
+       const dy = 26 / 55; // Slope dx/dy
+
+       // Draw layer dividers
+       yOffsets.forEach(y => {
+         let lx = 20 + (y - 20) * dy;
+         let rx = 80 - (y - 20) * dy;
+         svg.append("line")
+            .attr("x1", lx).attr("y1", y)
+            .attr("x2", rx).attr("y2", y)
+            .attr("stroke", "#ffe94d").attr("stroke-width", 0.5).attr("opacity", 0.6);
+       });
+
+       // Draw layer text inside the funnel
+       const yCenters = [25.5, 36.5, 47.5, 58.5, 69.5];
+       layers.forEach((text, i) => {
+         svg.append("text")
+            .attr("x", 50)
+            .attr("y", yCenters[i] + 0.6) // slight optical adjustment
+            .attr("class", "label-text")
+            .style("fill", "#666")
+            .style("font-size", "2.5px") // Consistent size for all layers
+            .attr("font-weight", "500")
+            .attr("text-anchor", "middle")
+            .text(text);
+       });
+
+       // Bracket indicating the whole funnel IS the Personal Context
+       svg.append("polyline")
+          .attr("points", "15,20 12,20 12,75 15,75")
+          .attr("fill", "none")
+          .attr("stroke", "#ccc")
+          .attr("stroke-width", 0.2);
+
+       svg.append("text")
+          .attr("x", 9).attr("y", 47.5)
+          .attr("class", "annotation-text")
+          .attr("font-weight", "600")
+          .attr("text-anchor", "middle")
+          .attr("transform", "rotate(-90, 9, 47.5)")
+          .text("Personal Context");
+
+    } else {
+       // Leaky dashed edges (Generic Agent lacks this internal context)
+       svg.append("line").attr("x1", 20).attr("y1", 20).attr("x2", 46).attr("y2", 75).attr("class", "funnel-dashed");
+       svg.append("line").attr("x1", 80).attr("y1", 20).attr("x2", 54).attr("y2", 75).attr("class", "funnel-dashed");
+    }
+
+    // Top Opening Line
+    svg.append("line").attr("x1", 22).attr("y1", 20).attr("x2", 78).attr("y2", 20).attr("stroke", "#eee").attr("stroke-width", 0.2);
+
+    // Target Base (The Final Output)
+    const targetG = svg.append("g").attr("transform", "translate(50, 85)");
+    
+    targetG.append("circle")
+      .attr("cx", 0).attr("cy", 0)
+      .attr("r", 5)
+      .attr("class", "target-zone");
+      
+    targetG.append("circle")
+      .attr("cx", 0).attr("cy", 0)
+      .attr("r", 1)
+      .attr("class", isPersonal ? "node" : "node-mixed")
+      .attr("opacity", 0.5);
+
+    // --- Annotations ---
+
+    // 1. Top Input Label: Tasks & Interactions
+    svg.append("text")
+      .attr("x", 50).attr("y", 12)
+      .attr("class", "annotation-text")
+      .style("font-size", "3px")
+      .attr("text-anchor", "middle")
+      .text("Tasks & Interactions");
+
+    // Add illustrative static particles around the title
+    const dotX = [26, 28, 30, 70, 72, 74];
+    dotX.forEach(x => {
+       svg.append("circle")
+         .attr("cx", x).attr("cy", 11.4)
+         .attr("r", 1.2)
+         .attr("class", isPersonal ? "node" : "node-mixed")
+         .attr("opacity", 0.6);
+    });
+      
+    // 2. Label the Funnel Neck (Bottleneck) on the Right Side
+    if (isPersonal) {
+      svg.append("line")
+        .attr("x1", 58).attr("y1", 65)
+        .attr("x2", 64).attr("y2", 65)
+        .attr("class", "annotation-line");
+        
+      svg.append("text")
+        .attr("x", 65).attr("y", 65.6)
+        .attr("class", "annotation-text")
+        .attr("font-weight", "600")
+        .attr("text-anchor", "start")
+        .text("Memory Fusion Engine");
+
+      const archComponents = ["Vector/RAG Index", "Knowledge Graph", "Behavioral Memory", "Context Routing"];
+      archComponents.forEach((comp, i) => {
+          svg.append("text")
+            .attr("x", 66).attr("y", 68.5 + (i * 2.5))
+            .attr("class", "annotation-text")
+            .style("font-size", "2.2px")
+            .attr("text-anchor", "start")
+            .text("↳ " + comp);
+      });
+    } else {
+      svg.append("line")
+        .attr("x1", 58).attr("y1", 68)
+        .attr("x2", 64).attr("y2", 68)
+        .attr("class", "annotation-line");
+        
+      svg.append("text")
+        .attr("x", 65).attr("y", 68.6)
+        .attr("class", "annotation-text")
+        .attr("text-anchor", "start")
+        .text("Fixed Prompt Bottleneck");
+    }
+
+    // 3. Label the Output Area Horizontally
+    targetG.append("line")
+      .attr("x1", 8).attr("y1", 0)
+      .attr("x2", 14).attr("y2", 0)
+      .attr("class", "annotation-line");
+
+    targetG.append("text")
+      .attr("x", 15).attr("y", 0.6)
+      .attr("class", "annotation-text")
+      .attr("text-anchor", "start")
+      .text("Intended Outcome");
+
+    // --- Particle Animation Logic ---
+    function spawnParticle() {
+      // Pick a random starting point at the top 
+      const startX = 25 + Math.random() * 50;
+      const startY = 18;
+      
+      const p = svg.append("circle")
+        .attr("cx", startX)
+        .attr("cy", startY)
+        .attr("r", 1.2)
+        .attr("class", isPersonal ? "node" : (Math.random() > 0.5 ? "node" : "node-mixed"));
+
+      if (!isPersonal && Math.random() < 0.6) {
+        // Leaky Agent: Particles drift off the sides and fade out (Context Loss)
+        const leakLeft = Math.random() > 0.5;
+        const endX = leakLeft ? startX - 25 : startX + 25;
+        const endY = 40 + Math.random() * 20;
+
+        p.transition()
+         .duration(1500)
+         .ease(d3.easeQuadOut)
+         .attr("cx", endX)
+         .attr("cy", endY)
+         .style("opacity", 0)
+         .remove();
+      } else {
+        // Success Path through the funnel
+        const neckX = 47 + Math.random() * 6; // neck between 47 and 53
+        const neckY = 74;
+
+        // ACCURACY LOGIC: 
+        // Personal Agent hits exactly 50 (bullseye)
+        // Generic Agent has "scatter" (variance) and often misses the center
+        const finalX = isPersonal ? 50 : (50 + (Math.random() - 0.5) * 12);
+        
+        p.transition()
+         .duration(1200 + Math.random() * 500)
+         .ease(d3.easeCubicIn)
+         .attr("cx", neckX)
+         .attr("cy", neckY)
+         .transition() 
+         .duration(400)
+         .attr("cx", finalX)
+         .attr("cy", 85)
+         .style("opacity", 0)
+         .remove();
+      }
+
+      // Schedule next particle
+      setTimeout(spawnParticle, isPersonal ? 300 : 700); 
+    }
+
+    // Kickoff initial particles
+    for(let i=0; i<3; i++) {
+        setTimeout(spawnParticle, i * 400);
+    }
+  }
+
+  // Initialize both funnels
+  drawFunnel("#viz-generic", false);
+  drawFunnel("#viz-personal", true);
+
+</script>
+</body>
+</html>

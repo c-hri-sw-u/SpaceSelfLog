@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 4vw;
+  color: #111;
+  overflow: hidden;
+}
+
+.slide-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.header {
+  margin-bottom: 2.5vw;
+}
+
+h1 {
+  font-size: 3.8vw;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1vw;
+}
+
+.intro {
+  font-size: 1.4vw;
+  font-weight: 400;
+  color: #666;
+  max-width: 65vw;
+  line-height: 1.4;
+}
+
+.paper-label.bold {
+  color: #111;
+  font-weight: 700;
+  font-size: 12px;
+  z-index: 200;
+}
+
+.intro strong {
+  color: #111;
+  font-weight: 600;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0 0.2vw;
+  color: #111;
+}
+
+.plot-container {
+  width: 100%;
+  height: 50vw; /* User can change this freely, contents will scale dynamically! */
+  position: relative;
+}
+
+/* Base Axis classes */
+.axis-line {
+  position: absolute;
+  background: #eee;
+}
+.axis-h {
+  top: 50%; left: 0; width: 100%; height: 2px;
+}
+.axis-v {
+  left: 50%; top: 0; height: 100%; width: 2px;
+}
+
+.axis-label {
+  position: absolute;
+  color: #999;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  z-index: 100;
+}
+.axis-label.highlight-axis {
+  color: #111;
+}
+
+.dot-wrapper {
+  position: absolute;
+  pointer-events: none;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background: #111;
+  border: 1.5px solid #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.paper-label {
+  position: absolute;
+  color: #666;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.blind-spot-area {
+  position: absolute;
+  border: 3px dashed #ffe94d;
+  background: rgba(255, 233, 77, 0.2);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  filter: drop-shadow(0 0 16px rgba(255, 233, 77, 0.6));
+}
+
+.blind-spot-label {
+  color: #111;
+  font-size: 24px;
+  font-weight: 800;
+}
+.blind-spot-sub {
+  color: #111;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+</style>
+</head>
+<body>
+
+<div class="slide-content" style="height: 100%; align-items: center; justify-content: center;">
+  <div class="plot-container" id="pure-plot">
+    
+    <!-- Axes -->
+    <div class="axis-line axis-h"></div>
+    <div class="axis-line axis-v"></div>
+
+    <!-- Axes Labels -->
+    <div class="axis-label highlight" style="left: 0; top: 50%; transform: translateY(8px);">Digital Traces</div>
+    <div class="axis-label highlight highlight-axis" style="right: 0; top: 50%; transform: translateY(8px);">Physical World</div>
+
+    <div class="axis-label highlight" style="left: 50%; bottom: 0; transform: translate(15px, 0);">Human Memory Aug.</div>
+    <div class="axis-label highlight highlight-axis" style="left: 50%; top: 0; transform: translate(15px, 0);">Agent Personalization</div>
+
+    <!-- Quadrant Area Highlight (The Gap) -->
+    <!-- Positioned dynamically using percentages to match the visual region of X: 0.8->1.0, Y: 0.8->1.0 -->
+    <div class="blind-spot-area" style="left: 75%; bottom: 75%; width: 20%; height: 20%;">
+      <div class="blind-spot-label">This Thesis</div>
+      <div class="blind-spot-sub">(The Open Space)</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // You can manually adjust the label position of any paper by adding a `pos` attribute!
+  // Options:  "pos": "left", "pos": "right", "pos": "top", "pos": "bottom"
+  // Example:  {"title": "My Paper", "x": 0.1, "y": 0.9, "pos": "bottom"}
+  const papers = [
+    {"title": "OpenClaw (Steinberger, 2025)", "x": 0.08, "y": 0.95, "bold": true},
+    {"title": "Letta (Packer et al., 2024)", "x": 0.1, "y": 0.9},
+    {"title": "Charlie Mnemonic (GoodAI, 2024)", "x": 0.12, "y": 0.86},
+    {"title": "PAI (Miessler, 2025)", "x": 0.1, "y": 0.88},
+    {"title": "MemGPT (Packer et al., 2023)", "x": 0.08, "y": 0.8, "bold": true},
+    {"title": "Mem0 (Chhikara et al., 2025)", "x": 0.1, "y": 0.78},
+    {"title": "Memoria (Sarin et al., 2025)", "x": 0.12, "y": 0.75},
+    {"title": "Enabling Personalized Long-term Interactions (Westhäußer et al., 2025)", "x": 0.1, "y": 0.72},
+    {"title": "Toward Personalized LLM-Powered Agents (Xu et al., 2026)", "x": 0.06, "y": 0.92, "bold": true},
+    {"title": "A Survey on LLM-based Autonomous Agents (Wang et al., 2023)", "x": 0.05, "y": 0.6},
+    {"title": "Generative Agents (Park et al., 2023)", "x": 0.05, "y": 0.55},
+    {"title": "SWE-Agent (Yang et al., 2024)", "x": 0.05, "y": 0.5},
+    {"title": "Agent Laboratory (2025)", "x": 0.05, "y": 0.52},
+    {"title": "A Survey of Personalized LLMs (Liu et al., 2025)", "x": 0.08, "y": 0.84},
+    {"title": "Measuring What Makes You Unique (Qiu et al., 2025)", "x": 0.1, "y": 0.82},
+    {"title": "Personalization: A Taxonomy (Blom, 2000)", "x": 0.05, "y": 0.7, "bold": true},
+    {"title": "Ego4D (Grauman et al., 2022)", "x": 0.9, "y": 0.3, "bold": true},
+    {"title": "Ego-Exo4D (Grauman et al., 2024)", "x": 0.88, "y": 0.32},
+    {"title": "EPIC-KITCHENS (Damen et al., 2021)", "x": 0.85, "y": 0.25},
+    {"title": "First-Person Vision (Kanade & Hebert, 2012)", "x": 0.82, "y": 0.2, "pos": "right"},
+    {"title": "EgoLife (Yang et al., 2025)", "x": 0.92, "y": 0.35, "bold": true},
+    {"title": "Vinci (Pei et al., 2025)", "x": 0.9, "y": 0.38},
+    {"title": "Embodied VideoAgent (Fan et al., 2025)", "x": 0.88, "y": 0.45, "bold": true},
+    {"title": "Memex (Bush, 1945)", "x": 0.08, "y": 0.15, "bold": true},
+    {"title": "MyLifeBits (Gemmell et al., 2006)", "x": 0.22, "y": 0.1, "bold": true},
+    {"title": "SenseCam (Hodges et al., 2006)", "x": 0.75, "y": 0.12, "bold": true},
+    {"title": "A Stage-Based Model of Personal Informatics (Li et al., 2010)", "x": 0.38, "y": 0.2},
+    {"title": "Limitless (Siroker, 2024)", "x": 0.28, "y": 0.18},
+    {"title": "Bee (Zollo & Sutin, 2024)", "x": 0.3, "y": 0.15},
+    {"title": "Plaud (2024)", "x": 0.26, "y": 0.12},
+    {"title": "PHIA (Coravos et al., 2026)", "x": 0.65, "y": 0.4, "bold": true},
+    {"title": "This Thesis", "x": 0.9, "y": 0.95}
+  ];
+
+  const plot = document.getElementById('pure-plot');
+
+  papers.forEach((p, i) => {
+    // Skip thesis text since it's hardcoded as the large glow frame
+    if (p.title === "This Thesis") return;
+
+    let div = document.createElement("div");
+    div.className = "dot-wrapper";
+    // Mapped mathematically using percentages (5% to 95% to avoid hugging walls exactly)
+    div.style.left = `calc(5% + ${p.x * 90}%)`;
+    div.style.bottom = `calc(5% + ${p.y * 90}%)`;
+
+    let dot = document.createElement("div");
+    dot.className = "dot";
+
+    let text = document.createElement("div");
+    text.className = p.bold ? "paper-label bold" : "paper-label";
+    text.textContent = p.title;
+    
+    let xOffset = "12px";
+    let yOffset = "0";
+    let transformStr = "translateY(-50%)";
+    let textAlign = "left";
+
+    // Pure Automatic logic based on edges
+    if (p.x > 0.8) {
+      xOffset = "-12px";
+      transformStr = "translate(-100%, -50%)";
+      textAlign = "right";
+    }
+
+    // Manual override based on p.pos property
+    if (p.pos === "left") {
+      xOffset = "-12px";  yOffset = "0";
+      transformStr = "translate(-100%, -50%)";
+      textAlign = "right";
+    } else if (p.pos === "right") {
+      xOffset = "12px";   yOffset = "0";
+      transformStr = "translateY(-50%)";
+      textAlign = "left";
+    } else if (p.pos === "top") {
+      xOffset = "0";      yOffset = "-12px";
+      transformStr = "translate(-50%, -100%)";
+      textAlign = "center";
+    } else if (p.pos === "bottom") {
+      xOffset = "0";      yOffset = "12px";
+      transformStr = "translateX(-50%)";
+      textAlign = "center";
+    }
+    
+    text.style.left = xOffset;
+    text.style.top = yOffset; // Root anchored Y
+    text.style.transform = transformStr;
+    text.style.textAlign = textAlign;
+
+    div.appendChild(dot);
+    div.appendChild(text);
+    plot.appendChild(div);
+  });
+</script>
+</body>
+</html>

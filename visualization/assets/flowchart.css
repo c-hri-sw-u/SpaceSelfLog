@@ -1,0 +1,135 @@
+/* ═══════════════════════════════════════════════════════════════
+   Flowchart — Shared Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Flow Chart Container ────────────────────── */
+.flow-chart {
+  position: relative;
+  overflow: visible;
+}
+
+.flow-chart svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.flow-row {
+  display: flex;
+  align-items: center;
+  gap: 1.2vw;
+  position: relative;
+  z-index: 10;
+}
+.flow-row + .flow-row { margin-top: 2.2vw; }
+
+/* ── Flow Node (mirrors pipeline .inner-content) ── */
+.fn {
+  background: #f2f2f2;
+  border: 0.08vw solid #888;
+  border-radius: 0.2vw;
+  padding: 0.35vw 0.7vw;
+  font-size: 0.85vw;
+  font-weight: 700;
+  color: #111;
+  white-space: nowrap;
+  position: relative;
+  z-index: 10;
+}
+.fn.pill {
+  border-radius: 1.5vw;
+  background: #ffe94d;
+  border-color: #888;
+}
+.fn.session {
+  background: #ffe94d;
+  border-color: #888;
+}
+.fn.file {
+  background: #fefce7;
+  border-color: #888;
+}
+.fn.decision,
+.fn.trigger {
+  border-style: dashed;
+  border-color: #888;
+  background: #cecece;
+}
+.fn span {
+  font-weight: 400;
+  color: rgba(0,0,0,0.5);
+  font-size: 0.75vw;
+}
+.fn code {
+  font-family: 'SF Mono', 'Menlo', monospace;
+  font-size: 0.72vw;
+  background: rgba(0,0,0,0.08);
+  padding: 0.05vw 0.2vw;
+  border-radius: 0.12vw;
+}
+.seq-sub code {
+  font-family: 'SF Mono', 'Menlo', monospace;
+  font-size: 0.68vw;
+  background: rgba(0,0,0,0.08);
+  padding: 0.05vw 0.2vw;
+  border-radius: 0.12vw;
+}
+
+/* ── Grouped container (mirrors subgraph in mermaid) ── */
+.group-box {
+  border: 1.5px dashed #999;
+  border-radius: 0.8vw;
+  padding: 0.4vw 0.8vw 0.5vw;
+  display: flex; flex-direction: column; align-items: center; gap: 0.3vw;
+  position: relative; z-index: 10;
+}
+.group-title {
+  font-size: 0.85vw; color: #666; font-weight: 600;
+}
+.group-inner {
+  display: flex; flex-direction: column; gap: 2vw; align-items: center;
+}
+
+/* ── Cluster (mirrors .gh-battery light) ── */
+.fn-cluster {
+  display: flex;
+  flex-direction: column;
+  gap: 1vw;
+  background: none;
+  border: 0.1vw dashed #888;
+  padding: 0.5vw 0.7vw;
+  border-radius: 0.3vw;
+  position: relative;
+  z-index: 10;
+}
+.fn-inner {
+  background: #f2f2f2;
+  border: 0.06vw solid #888;
+  border-radius: 0.15vw;
+  padding: 0.35vw 0.7vw;
+  font-size: 0.85vw;
+  font-weight: 700;
+  color: #111;
+}
+.fn-inner span {
+  font-weight: 400;
+  color: rgba(0,0,0,0.55);
+  font-size: 0.8vw;
+}
+
+/* ── Layer transition gap ── */
+.layer-gap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 1.5vw;
+}
+.layer-gap::after {
+  content: '';
+  border-top: 1.5px dashed #ccc;
+  width: 60%;
+}

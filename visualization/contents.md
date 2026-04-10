@@ -1,0 +1,42 @@
+- Cover（01）
+- Intro
+    - The Claw（02）：intro部分的cover
+    - Personal AI Agents are Here（03）：AI assistant 和 AI agent 的区别
+    - The OpenClaw Fever（04）：9图展示OpenClaw的火热
+    - What is OpenClaw?（05）：介绍什么是 OpenClaw
+    - OpenClaw's Spreading（06）：地图展示OpenClaw的全球分布
+    - OpenClaw's GitHub Stars Growth（07）：GitHub stars增长曲线
+    - Why Personalization Matters（08）：Agents that know you >> Agents that don't
+- The Blind Spot
+    - The Blind Spot（09）：The Blind Spot部分的cover
+    - Two Worlds（10）：左右分屏 SVG。左边 digital traces（calendar grid、chat bubbles、file icons），右边用虚线框 + 淡出效果表示 physical world 的缺失
+    - Research landscape（11）：XY 散点图，横轴 human augmentation ↔ agent personalization，纵轴 digital ↔ physical，每个 paper 是一个带 label 的点，你的工作是高亮的空白区域
+    - Research Questions（12）：
+        - RQ1: What physical-world information becomes visible through egocentric perception that remains invisible through digital traces alone?
+        - RQ2: In what task contexts does this physical-world information meaningfully improve personalization, and when does it introduce noise or redundancy?
+        - RQ3: What design requirements emerge for integrating continuous egocentric sensing into existing agent memory architectures?
+- Design Rationale
+    - Design Rationale（13）：Design Rationale部分的cover
+    - Why Egocentric Vision?（15）
+        - Mobility: Continuous capture across locations throughout the day
+        - Information Density: Environment + Activity + Objects in one channel
+        - Implicit Attention: What appears reflects engagement. What's absent suggests disinterest.
+        - Technical Maturity: VLMs can convert imagery → structured text
+    - Why OpenClaw Integration?（16）
+        - Deployed baseline
+        - Open source: Easy to integrate
+        - Markdown workspace
+            - Inspectable format
+            - Easy to edit, easy to integrate
+    - How OpenClaw works（17）：Memory-centric architecture. Illustrates the link between the Markdown Workspace (AGENTS, SOUL, USER, IDENTITY, MEMORY) and the SQLite-vec retrieval loop. Explains the "Closed-Loop Personalization" and the memory flush mechanism.
+- System Design
+    - System Design（13）：System Design部分的cover
+    - 多层 Pipeline（14）：
+    - Vision: Taming the LLM（18）：AI-generated imagery showing the project's vision of controlling LLMs with personal context.
+    - Layer 1 & 1.5（19）：
+    - Layer 1.5 - Pre-processing（20）：
+    - Layer 2 - Inference（21）：
+    - Layer 3 - Memory（22）：
+    - Layer 3.5 - Retrieval（23）：
+
+

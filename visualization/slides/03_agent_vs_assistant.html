@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center everything vertically */
+  padding: 0 8vw; /* Remove explicit vertical padding, let flex center it */
+  color: #111;
+  overflow: hidden;
+}
+
+/* Master Wrapper to keep contents grouped */
+.slide-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Header */
+.header {
+  margin-bottom: 4vw;
+}
+
+h1 {
+  font-size: 3.8vw;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1vw;
+}
+
+.intro {
+  font-size: 1.4vw;
+  font-weight: 400;
+  color: #666;
+  max-width: 65vw;
+  line-height: 1.4;
+}
+
+.intro strong {
+  color: #111;
+  font-weight: 600;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0 0.2vw;
+  color: #111;
+}
+
+/* Comparison Container */
+.comparison-container {
+  display: flex;
+  gap: 8vw;
+  position: relative;
+}
+
+/* Elegant Center Divider Line */
+.comparison-container::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 0.1vw;
+  background: #eee;
+  transform: translateX(-50%);
+}
+
+.col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-right: 3vw;
+}
+
+.col.agent {
+  padding-right: 0;
+  padding-left: 3vw;
+}
+
+/* Column Titles */
+.col h2 {
+  font-size: 1.8vw;
+  font-weight: 400;
+  margin-bottom: 2.5vw;
+  color: #999;
+}
+
+/* Draw focus to the Agent column */
+.col.agent h2 {
+  font-weight: 700;
+  color: #111;
+}
+
+/* Traits / Information Chunks */
+.trait {
+  margin-bottom: 2.5vw;
+  display: flex;
+  align-items: flex-start;
+}
+
+.trait-icon {
+  font-size: 1.6vw;
+  margin-right: 1.2vw;
+  line-height: 1;
+  margin-top: 0.1vw;
+  filter: grayscale(100%);
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+/* Highlight agent icons to show evolution */
+.agent .trait-icon {
+  filter: grayscale(0%);
+  opacity: 1;
+}
+
+.trait-text h3 {
+  font-size: 1.3vw;
+  font-weight: 600;
+  margin-bottom: 0.4vw;
+  color: #111;
+}
+
+.assistant .trait-text h3 {
+  color: #666; /* Push back the old paradigm visually */
+}
+
+.trait-text p {
+  font-size: 1.1vw;
+  color: #888;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.agent .trait-text p {
+  color: #444; /* Stronger contrast for the new paradigm */
+}
+
+</style>
+</head>
+<body>
+
+<div class="slide-content">
+  <div class="header">
+    <h1>Personal AI Agents are <span class="highlight">Here</span></h1>
+    <div class="intro">
+      A shift from reactive chatbots to intelligent systems with <strong>continuous memory</strong> that <strong>deeply understand</strong> you and <strong>proactively act</strong> on your behalf.
+    </div>
+  </div>
+
+  <div class="comparison-container">
+    <!-- Left Side: Chatbot -->
+    <div class="col assistant">
+      <h2>AI Assistant (Chatbot)</h2>
+      
+      <div class="trait">
+        <div class="trait-icon">💬</div>
+        <div class="trait-text">
+          <h3>Reactive</h3>
+          <p>Waits for your prompt to act. Transactional, turn-based back-and-forth interactions.</p>
+        </div>
+      </div>
+      
+      <div class="trait">
+        <div class="trait-icon">🔄</div>
+        <div class="trait-text">
+          <h3>Isolated Sessions</h3>
+          <p>Each interaction starts fresh. Needs context re-explained repeatedly.</p>
+        </div>
+      </div>
+
+      <div class="trait">
+        <div class="trait-icon">🧠</div>
+        <div class="trait-text">
+          <h3>General Knowledge</h3>
+          <p>Provides answers based on broad training data. Uniform output across all users.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side: Agent -->
+    <div class="col agent">
+      <h2>Personal AI Agent</h2>
+      
+      <div class="trait">
+        <div class="trait-icon">🚀</div>
+        <div class="trait-text">
+          <h3>Proactive</h3>
+          <p>Anticipates needs, initiates actions, and handles background tasks autonomously.</p>
+        </div>
+      </div>
+      
+      <div class="trait">
+        <div class="trait-icon">🔗</div>
+        <div class="trait-text">
+          <h3>Continuous Context</h3>
+          <p>Builds a lasting understanding of your life, habits, workflows, and preferences.</p>
+        </div>
+      </div>
+
+      <div class="trait">
+        <div class="trait-icon">🎯</div>
+        <div class="trait-text">
+          <h3>Deeply Personalized</h3>
+          <p>Tailored uniquely to you, seamlessly adapting to your specific context and requirements.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

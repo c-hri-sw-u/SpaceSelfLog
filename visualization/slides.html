@@ -201,13 +201,13 @@
 
   .thumb-iframe {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 50%;
+    left: 50%;
     width: 1600px;
     height: 900px;
     border: none;
-    transform-origin: top left;
     pointer-events: none;
+    /* Transformation is applied in JS via translate(-50%, -50%) scale(...) */
   }
 
   .thumb-meta {
@@ -258,8 +258,9 @@
   #slide {
     background: #111;
     width: 100%;
+    /* Constrain the width mathematically based on available height to enforce strict 16:9 projection */
+    max-width: calc((100vh - 140px) * 16 / 9);
     aspect-ratio: 16 / 9;
-    max-height: calc(100vh - 100px);
     border-radius: 4px;
     box-shadow: 0 8px 40px rgba(0,0,0,0.6);
     overflow: hidden;
@@ -307,6 +308,7 @@
   <button class="tb-btn danger" id="btn-delete">Delete</button>
   <div id="toolbar-right">
     <span id="save-status"></span>
+    <button class="tb-btn" id="btn-refresh" title="Refresh current slide">&#8635;</button>
   </div>
 </div>
 
@@ -365,37 +367,63 @@ btnSidebar.addEventListener("click", () => {
 
 // ── Thumbnails ─────────────────────────────────────────────────────────────
 function renderSidebar() {
-  sidebarList.innerHTML = "";
-  // sidebar-list is 200px - 16px padding = 184px thumb width
-  const thumbW = 184;
-  const scale  = thumbW / 1600;
+  if (sidebarList.children.length !== slides.length) {
+    const st = sidebarList.scrollTop;
+    sidebarList.innerHTML = "";
+    // sidebar-list is 200px.
+    // clientWidth handles scrollbar logic. We subtract 16px (padding) + 2px (thumb borders).
+    let availableW = sidebarList.clientWidth;
+    if (availableW < 50) availableW = 196; // fallback if rendered while sidebar is closed
+    const thumbW = availableW - 18;
+    const scale  = thumbW / 1600;
 
-  slides.forEach((s, i) => {
-    const div = document.createElement("div");
-    div.className = "thumb" + (i === current ? " active" : "");
+    slides.forEach((s, i) => {
+      const div = document.createElement("div");
+      div.className = "thumb";
 
-    const preview = document.createElement("div");
-    preview.className = "thumb-preview";
-    if (s.src && s.src !== "about:blank") {
-      const f = document.createElement("iframe");
-      f.className = "thumb-iframe";
-      f.src = s.src;
-      f.style.transform = `scale(${scale})`;
-      preview.appendChild(f);
+      const preview = document.createElement("div");
+      preview.className = "thumb-preview";
+      if (s.src && s.src !== "about:blank") {
+        const f = document.createElement("iframe");
+        f.className = "thumb-iframe";
+        f.src = s.src;
+        f.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        preview.appendChild(f);
+      }
+
+      const meta = document.createElement("div");
+      meta.className = "thumb-meta";
+      meta.innerHTML = `
+        <div class="thumb-section" style="display:none"></div>
+        <div class="thumb-subtitle"></div>
+        <div class="thumb-num"></div>`;
+
+      div.appendChild(preview);
+      div.appendChild(meta);
+      div.addEventListener("click", () => goTo(i));
+      sidebarList.appendChild(div);
+    });
+    sidebarList.scrollTop = st;
+  }
+
+  // Fast update without reflow
+  const thumbs = sidebarList.children;
+  for (let i = 0; i < slides.length; i++) {
+    const s = slides[i];
+    const t = thumbs[i];
+    t.className = "thumb" + (i === current ? " active" : "");
+    
+    const sectEl = t.querySelector(".thumb-section");
+    if (s.section) {
+      sectEl.style.display = "";
+      sectEl.textContent = s.section;
+    } else {
+      sectEl.style.display = "none";
     }
-
-    const meta = document.createElement("div");
-    meta.className = "thumb-meta";
-    meta.innerHTML = `
-      ${s.section ? `<div class="thumb-section">${s.section}</div>` : ""}
-      <div class="thumb-subtitle">${s.subtitle || "<em style='color:#555'>untitled</em>"}</div>
-      <div class="thumb-num">${i + 1}</div>`;
-
-    div.appendChild(preview);
-    div.appendChild(meta);
-    div.addEventListener("click", () => goTo(i));
-    sidebarList.appendChild(div);
-  });
+    
+    t.querySelector(".thumb-subtitle").innerHTML = s.subtitle || "<em style='color:#555'>untitled</em>";
+    t.querySelector(".thumb-num").textContent = i + 1;
+  }
 }
 
 // ── Render ─────────────────────────────────────────────────────────────────
@@ -520,8 +548,27 @@ async function loadSlides() {
   render();
 }
 
+// ── Refresh ────────────────────────────────────────────────────────────────
+document.getElementById("btn-refresh").addEventListener("click", () => {
+  const src = slideFrame.src;
+  slideFrame.src = "about:blank";
+  requestAnimationFrame(() => { slideFrame.src = src; });
+});
+
+// ── Restore on Cmd+R / Ctrl+R ─────────────────────────────────────────────
+window.addEventListener("beforeunload", () => {
+  sessionStorage.setItem("slides_current", current);
+});
+
 // ── Init ───────────────────────────────────────────────────────────────────
-loadSlides();
+loadSlides().then(() => {
+  const restored = sessionStorage.getItem("slides_current");
+  if (restored !== null) {
+    const idx = parseInt(restored, 10);
+    if (!isNaN(idx) && idx < slides.length) goTo(idx);
+    sessionStorage.removeItem("slides_current");
+  }
+});
 </script>
 </body>
 </html>

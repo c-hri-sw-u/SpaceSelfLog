@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #111;
+  overflow: hidden;
+  padding: 0 6vw;
+}
+
+.slide-content {
+  width: 100%;
+  height: 46vw; /* Reduced to leave more padding top and bottom (vertical safe zone) */
+  display: flex;
+  flex-direction: column;
+}
+
+.statement {
+  font-size: 2.8vw;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 2.5vw;
+  text-align: center;
+  color: #111;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0 0.4vw;
+  color: #111;
+  font-weight: 700;
+}
+
+.grid-container {
+  flex: 1;
+  display: grid;
+  gap: 1.5vw;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-item {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  background: #f5f5f5;
+  /* Hover effect removed per request */
+}
+
+.grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.grid-item .caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1vw;
+  text-align: center;
+  color: #fff;
+  font-size: 0.65vw;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  text-shadow: 0 0.1vw 0.4vw rgba(0,0,0,0.8); /* Shadow for contrast instead of gradient */
+}
+
+.grid-item .location {
+  display: block;
+  font-size: 0.55vw;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 0.2vw;
+  text-shadow: 0 0.1vw 0.2vw rgba(0,0,0,0.8);
+}
+
+.metadata {
+  position: absolute;
+  bottom: 2vw;
+  right: 4vw;
+  text-align: right;
+  font-size: 0.8vw;
+  color: #aaa;
+  line-height: 1.4;
+  font-weight: 400;
+  z-index: 10;
+}
+
+.metadata b {
+  color: #888;
+  font-weight: 500;
+}
+</style>
+</head>
+<body>
+
+<div class="slide-content">
+  <div class="grid-container" id="image-grid">
+    <!-- Grid items injected via JS -->
+  </div>
+</div>
+
+<div class="metadata">
+  <div><b>Archive:</b> Social Media Snapshot (2026-03)</div>
+  <div>Global community-driven documentation of OpenClaw deployments</div>
+</div>
+
+<script>
+  const imageData = [
+    { name: "openclaw-fever-8.jpg", location: "", caption: "\"OpenClaw fever hits China.\"" },
+    { name: "openclaw-fever-12.avif", location: "New York, USA", caption: "Many in line wore headbands with lobster claws, a reference to the AI agent's logo." },
+    { name: "openclaw-fever-2.jpeg", location: "Beijing, China", caption: "\"Baidu App, Install OpenClaw for free!\"" },
+    { name: "openclaw-fever-3.webp", location: "Shenzhen, China", caption: "In Shenzhen, over 20 engineers set up a free booth to help the public install the OpenClaw AI agent, drawing thousands of volunteers of all ages and backgrounds—including students, farmers, and grandparents—to learn how to run AI on their own computers." },
+    { name: "openclaw-fever-10.jpg", location: "New York, USA", caption: "ClawCon NYC: 1,300 People in Lower Manhattan" },
+    { name: "openclaw-fever-13.png", location: "Miami, USA", caption: "ClawCon Miami." },
+    { name: "openclaw-fever-5.webp", location: "Shanghai, China", caption: "\"Equip yourself with your first lobster at the StepClaw Experience Station—get a free one-billion-token lobster charm upon installation.\"" },
+    { name: "openclaw-fever-6.webp", location: "Shenzhen, China", caption: "\"In 2026, humanity will be divided not by gender, but into creators and bystanders. Mastering OpenClaw is the essential ticket to the Web 4.0 era.\"" },
+    { name: "openclaw-fever-11.jpeg", location: "Tokyo, Japan", caption: "ClawCon Tokyo." }
+  ];
+  
+  const container = document.getElementById('image-grid');
+  const count = imageData.length;
+
+  if (count > 0) {
+    let cols = Math.ceil(Math.sqrt(count * (16 / 9)));
+    let rows = Math.ceil(count / cols);
+    if ((cols - 1) * rows >= count) cols--;
+
+    container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+    imageData.forEach(itemData => {
+      const item = document.createElement('div');
+      item.className = 'grid-item';
+      
+      const img = document.createElement('img');
+      img.src = `../assets/openclaw_fever/${itemData.name}`;
+      img.alt = itemData.caption;
+      
+      const caption = document.createElement('div');
+      caption.className = 'caption';
+      
+      const locSpan = document.createElement('span');
+      locSpan.className = 'location';
+      locSpan.textContent = itemData.location;
+      
+      caption.appendChild(locSpan);
+      caption.appendChild(document.createTextNode(itemData.caption));
+      
+      item.appendChild(img);
+      item.appendChild(caption);
+      container.appendChild(item);
+    });
+  }
+</script>
+
+</body>
+</html>

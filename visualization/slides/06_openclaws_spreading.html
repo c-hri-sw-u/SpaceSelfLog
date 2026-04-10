@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #111;
+  overflow: hidden;
+  position: relative;
+  padding: 0 8vw;
+}
+
+.slide-content {
+  width: 100%;
+  height: 50vw;
+  position: relative;
+  transform: translateY(-2vw);
+}
+
+.statement {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-size: 2.8vw;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  max-width: 65vw;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0 0.3vw;
+  color: #111;
+  font-weight: 600;
+}
+
+.viz {
+  position: absolute;
+  top: 6vw;
+  left: 0;
+  right: 0;
+  height: 32vw;
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.pulse {
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+.metadata {
+  position: absolute;
+  bottom: 2vw;
+  right: 4vw;
+  text-align: right;
+  font-size: 0.8vw;
+  color: #aaa;
+  line-height: 1.4;
+  font-weight: 400;
+  z-index: 10;
+}
+
+.metadata b {
+  color: #888;
+  font-weight: 500;
+}
+
+</style>
+<!-- Use external dependencies to precisely map true Geography -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/topojson-client@3"></script>
+</head>
+<body>
+
+<div class="slide-content">
+  <div class="viz" id="viz-container">
+    <!-- SVG rendered via D3 precise TopoJSON projection -->
+  </div>
+
+  <div class="statement">
+    <span class="highlight">🦞 OpenClaw</span> isn't just an iteration; it’s an unprecedented global cognitive layer spreading at hyper-velocity.
+  </div>
+</div>
+
+<div class="metadata">
+  <div><b>Source:</b> declawed.io (Snapshot: 2026-04-06)</div>
+  <div>Estimated global deployment distribution based on public exposure data</div>
+</div>
+
+<script>
+  // Setup dimensions mapped to the exact geometric constraints of the visual block
+  const w = 1000;
+  const h = 400;
+  const svg = d3.select("#viz-container")
+    .append("svg")
+    .attr("viewBox", `0 0 ${w} ${h}`);
+
+  // Grid styling constants
+  const dotSpacing = 8;
+  const cols = Math.floor(w / dotSpacing);
+  const rows = Math.floor(h / dotSpacing);
+
+  const containerGroup = svg.append("g");
+
+  // Fetch topological mapping data & local distribution stats asynchronously
+  Promise.all([
+    d3.json("../assets/world-atlas@2.0.2-countries-110m.json"),
+    d3.json("../assets/geo_distribution_data.json")
+  ]).then(([world, distributionInfo]) => {
+    
+    // Convert to FeatureCollection to access individual countries
+    const countriesFeatures = topojson.feature(world, world.objects.countries).features;
+    
+    // Apply projection and scale it up to emphasize important continents
+    const projection = d3.geoEquirectangular().fitSize([w, h], {type: "FeatureCollection", features: countriesFeatures});
+    
+    // Zoom factor to make the continents larger and trim extreme poles
+    const zoomFactor = 1.35;
+    projection.scale(projection.scale() * zoomFactor);
+    
+    // Shift slightly down to keep North America / Europe / Asia nicely framed
+    const trans = projection.translate();
+    projection.translate([trans[0], trans[1] + 30]);
+
+    // [Crucial Performance Optimization]:
+    // We render the true earth to an invisible pixel-perfect canvas.
+    // Instead of drawing everything black, we encode the Country's Heat Intensity directly into the Red channel!
+    const ghostCanvas = document.createElement("canvas");
+    ghostCanvas.width = w;
+    ghostCanvas.height = h;
+    const ctx = ghostCanvas.getContext("2d", { willReadFrequently: true });
+    
+    const canvasPath = d3.geoPath().projection(projection).context(ctx);
+
+    const rawData = distributionInfo.data;
+    const maxVal = Math.max(...Object.values(rawData));
+
+    // Mapping dictionary from Topojson names to our metric keys
+    const nameToKey = {
+        "China": "china", "United States of America": "us", "Germany": "germany",
+        "Japan": "japan", "Finland": "finland", "France": "france",
+        "United Kingdom": "uk", "Netherlands": "netherlands", "Canada": "canada",
+        "India": "india", "Australia": "australia", "Vietnam": "vietnam",
+        "South Korea": "korea", "Russia": "russia", "Malaysia": "malaysia",
+        "Brazil": "brazil", "Indonesia": "indonesia", "Ireland": "ireland",
+        "Taiwan": "taiwan"
+    };
+
+    // Draw every country as a unique shade based on logarithmic calculation of its data value
+    countriesFeatures.forEach(feature => {
+       const featureName = feature.properties.name;
+       let intensityByte = 2; // Baseline generic land (value 2 out of 255)
+       
+       let keyFound = nameToKey[featureName];
+       if (!keyFound) {
+           if (featureName.includes("Taiwan")) keyFound = "taiwan";
+           if (featureName.includes("Korea")) keyFound = "korea";
+       }
+
+       if (keyFound && rawData[keyFound]) {
+           let val = rawData[keyFound];
+           // Use logarithmic scale to balance massive gaps (e.g. 80.3 vs 0.4)
+           // min val is 0.4. max is 80.3
+           let minLog = Math.log10(0.3); // -0.52
+           let maxLog = Math.log10(Math.max(90, maxVal)); // approx 1.95
+           let logVal = Math.log10(val);
+           
+           let normalized = (logVal - minLog) / (maxLog - minLog);
+           normalized = Math.max(0.05, Math.min(1.0, normalized)); // Safely clamp
+           
+           intensityByte = Math.floor(normalized * 255);
+           // Guarantee at least 15 to differentiate from baseline land's 2
+           if (intensityByte < 15) intensityByte = 15; 
+       }
+
+       ctx.fillStyle = `rgb(${intensityByte}, 0, 0)`;
+       ctx.beginPath();
+       canvasPath(feature);
+       ctx.fill();
+    });
+
+    // Manually burn Singapore and Hong Kong into the mask
+    const tinyNodes = {
+      "singapore": [103.8, 1.3],
+      "hongkong": [114.1, 22.3]
+    };
+    for (let [cityKey, coords] of Object.entries(tinyNodes)) {
+      if (rawData[cityKey]) {
+         let val = rawData[cityKey];
+         let minLog = Math.log10(0.3);
+         let maxLog = Math.log10(Math.max(90, maxVal));
+         let normalized = Math.max(0.05, Math.min(1.0, (Math.log10(val) - minLog) / (maxLog - minLog)));
+         let intensityByte = Math.max(15, Math.floor(normalized * 255));
+         
+         let p = projection(coords);
+         ctx.fillStyle = `rgb(${intensityByte}, 0, 0)`;
+         ctx.beginPath();
+         // Tiny cities still get a decent visual footprint so they aren't lost
+         ctx.arc(p[0], p[1], 8 * zoomFactor, 0, 2*Math.PI);
+         ctx.fill();
+      }
+    }
+
+    const landPixels = ctx.getImageData(0, 0, w, h).data;
+    let matrixData = [];
+
+    // Instant array traversal using masked lookup matrix
+    for (let r = 0; r <= rows; r++) {
+      for (let c = 0; c <= cols; c++) {
+        let cx = c * dotSpacing;
+        let cy = r * dotSpacing;
+        
+        let px = Math.round(cx);
+        let py = Math.round(cy);
+        
+        let isLand = false;
+        let redByte = 0;
+
+        if (px >= 0 && px < w && py >= 0 && py < h) {
+          let index = (py * w + px) * 4;
+          let alpha = landPixels[index + 3];
+          if (alpha > 128) {
+             isLand = true;
+             redByte = landPixels[index]; // Value from 0 to 255 encoded via log scale
+          }
+        }
+
+        if (isLand) {
+          let fill = '#d2d2d2'; 
+          let radius = 1.0;
+          let opacity = 0.3; // Default generic land
+          
+          if (redByte > 220) {
+            // Tier 1 (> 50k): China, US
+            fill = '#ffe94d'; 
+            radius = 2.8;
+            opacity = 1.0;
+          } else if (redByte > 150) {
+            // Tier 2 (10k ~ 50k): Singapore, Germany
+            fill = '#111111'; 
+            radius = 2.2;
+            opacity = 0.95;
+          } else if (redByte > 95) {
+            // Tier 3 (3k ~ 10k): Japan, Hong Kong, Finland, France
+            fill = '#3b3b3b'; 
+            radius = 2.0;
+            opacity = 0.9;
+          } else if (redByte > 45) {
+            // Tier 4 (1k ~ 3k): UK, Canada, India, Australia, Russia, etc.
+            fill = '#6e6e6e'; 
+            radius = 1.8;
+            opacity = 0.75;
+          } else if (redByte > 10) {
+            // Tier 5 (< 1k): Brazil, Malaysia, Taiwan, Ireland
+            fill = '#999999'; 
+            radius = 1.5;
+            opacity = 0.75;
+          } else {
+            // Generic land with NO data (redByte is 2)
+            fill = '#b0b5ba'; // Slightly deeper structural silver
+            radius = 1.2;
+            opacity = 0.5;
+          }
+
+          // Adds a tiny natural architectural noise to scale
+          let noiseShift = Math.random() * 0.25;
+          radius += noiseShift;
+          
+          matrixData.push({ cx, cy, radius, fill, opacity });
+        }
+      }
+    }
+
+    // Render cleanly to DOM
+    containerGroup.selectAll("circle.map-dot")
+      .data(matrixData)
+      .join("circle")
+      .attr("class", "map-dot")
+      .attr("cx", d => d.cx)
+      .attr("cy", d => d.cy)
+      .attr("r", d => d.radius)
+      .attr("fill", d => d.fill)
+      .attr("opacity", d => d.opacity);
+
+    // Background Shadow Curve 
+    const lineGen = d3.line()
+      .x(d => d.x)
+      .y(d => d.y)
+      .curve(d3.curveMonotoneX);
+
+    let curveData = [];
+    for(let i = 0; i <= cols; i++) {
+      let xPos = i * dotSpacing;
+      let normalizedX = i / cols;
+      let curveObj = Math.pow(normalizedX, 5);
+      let yPos = h - (curveObj * (h * 0.9));
+      curveData.push({x: xPos, y: yPos});
+    }
+
+    containerGroup.append("path")
+      .datum(curveData)
+      .attr("d", lineGen)
+      .attr("fill", "none")
+      .attr("stroke", "#111")
+      .attr("stroke-width", 1.5)
+      .attr("stroke-dasharray", "4 4")
+      .attr("opacity", 0.6);
+
+    containerGroup.append("path")
+      .datum(curveData)
+      .attr("d", lineGen)
+      .attr("fill", "none")
+      .attr("stroke", "#ffe94d")
+      .attr("stroke-width", 4)
+      .attr("stroke-linecap", "round")
+      .attr("transform", "translate(0, -3)");
+
+    const peakPos = curveData[curveData.length - 1];
+    const peakG = containerGroup.append("g")
+      .attr("transform", `translate(${peakPos.x}, ${peakPos.y - 3})`);
+
+    peakG.append("circle")
+      .attr("r", 5)
+      .attr("fill", "#ffe94d");
+
+    peakG.append("circle")
+      .attr("r", 6)
+      .attr("fill", "none")
+      .attr("stroke", "#ffe94d")
+      .attr("stroke-width", 2)
+      .attr("class", "pulse");
+
+    peakG.append("circle")
+      .attr("r", 2)
+      .attr("fill", "#111");
+  });
+</script>
+</body>
+</html>

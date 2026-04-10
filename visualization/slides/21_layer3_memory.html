@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../assets/flowchart.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      width: 100vw;
+      height: 100vh;
+      background: #fff;
+      color: #111;
+      overflow: hidden;
+    }
+
+    .flow-chart {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .flow-chart svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 1.2vw;
+      position: relative;
+      z-index: 10;
+    }
+
+    .flow-row+.flow-row {
+      margin-top: 1.5vw;
+    }
+
+    .main-flow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    .zone-label {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3vw;
+    }
+
+    .zone-title {
+      font-size: 1.4vw;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .zone-subtitle {
+      font-size: 1vw;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .zone-desc {
+      font-size: 1vw;
+      color: #666;
+      line-height: 1.45;
+      max-width: 12vw;
+    }
+
+    .rationale-box {
+      position: absolute;
+      top: 2vw;
+      right: 2vw;
+      max-width: 22vw;
+      padding: 1vw 1.2vw;
+      border: 1.5px dashed #aaa;
+      border-radius: 1vw;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(4px);
+      z-index: 10;
+    }
+
+    .rationale-box .rt {
+      font-size: 1.1vw;
+      font-weight: 700;
+      color: #555;
+      margin-bottom: 0.5vw;
+    }
+
+    .rationale-box .rb {
+      font-size: 0.9vw;
+      color: #444;
+      line-height: 1.55;
+    }
+
+    .rationale-box .rb strong {
+      color: #111;
+      font-weight: 600;
+    }
+
+    .rationale-box .rb em {
+      font-style: normal;
+      color: #999;
+    }
+
+    .rationale-box .rb ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .rationale-box .rb li {
+      margin-bottom: 0.35vw;
+    }
+
+    .rationale-box .rb li::before {
+      content: '-';
+      margin-right: 0.3vw;
+      color: #999;
+    }
+
+    /* Sequence containers (mirrors SB/SI subgraphs in mermaid) */
+    .seq-box {
+      border: 1.5px dashed #bbb;
+      border-radius: 0.6vw;
+      padding: 0.4vw 0.6vw 0.4vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2vw;
+      position: relative;
+      z-index: 10;
+    }
+
+    .seq-inner {
+      display: flex;
+      align-items: center;
+      gap: 0.3vw;
+    }
+
+    .seq-arrow {
+      color: #aaa;
+      font-size: 0.85vw;
+      margin: 0 0.1vw;
+    }
+
+    .seq-sub {
+      font-size: 0.7vw;
+      color: #888;
+      line-height: 1.4;
+    }
+
+    .fn.sm {
+      font-size: 0.8vw;
+      padding: 0.2vw 0.5vw;
+      line-height: 1.3;
+      white-space: nowrap;
+    }
+
+    .fn.sm.sec {
+      opacity: 0.5;
+    }
+
+    .fn.wide {
+      max-width: 26vw;
+      white-space: normal;
+      text-align: center;
+    }
+
+    .fn.wide span {
+      white-space: normal;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="rationale-box">
+    <div class="rt">Design Rationale</div>
+    <div class="rb">
+      <ul>
+        <li><strong>Incremental updates.</strong> Batch threshold triggers lightweight cycles; consolidation compresses
+          highlights periodically.</li>
+        <li><strong>Dual-section insight.</strong> LLM output splits into Current State (overwritten) and Highlights
+          (appended → consolidated).</li>
+        <li><strong>Nightly evolution.</strong> Combines highlights, timeline, <em>and</em> existing pattern to evolve
+          the user profile.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="zone-label" id="l3-label" style="left: 2vw;">
+    <div class="zone-title">L3 Memory</div>
+    <div class="zone-subtitle">OpenClaw Memory Pipeline</div>
+    <div class="zone-desc">Incremental insight, consolidation, daily narrative, nightly pattern.</div>
+  </div>
+
+  <div class="flow-chart" id="flow-chart">
+    <svg id="flow-svg"></svg>
+
+    <div class="main-flow" id="main-flow">
+
+      <!-- Row 1: Logs input -->
+      <div class="flow-row" id="row-start"
+        style="justify-content: center; gap: 1.8vw; margin-right: 26.4vw;">
+        <div class="fn file" id="f-logs">physical-logs/YYYY-MM-DD.md<br><span>← L1–2 Capture → Inference</span></div>
+        <div class="seq-box" id="f-batch">
+          <div class="seq-inner">
+            <div class="fn sm sec">batch_1</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm sec">batch_2</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm sec">…</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm" id="f-bn">batch_n</div>
+          </div>
+          <div class="seq-sub">Reaches <code>min_batches</code> or <code>min_minutes</code></div>
+        </div>
+      </div>
+
+
+      <!-- Row 2: Incremental sequence (SI subgraph) -->
+      <div class="flow-row" style="justify-content: center; margin-right: 6.2vw;">
+        <div class="seq-box" id="f-seq">
+          <div class="seq-inner">
+            <div class="fn sm sec">incremental_1</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm sec">incremental_2</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm sec">…</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm" id="f-inc">incremental_new</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm sec">…</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm" id="f-inn">incremental_n</div>
+          </div>
+          <div class="seq-sub">Read: new logs · existing insight · comments → Call VLM · insight_prompt ·
+            max_tokens=1024</div>
+        </div>
+      </div>
+
+      <!-- Row 3: Insight file (SF subgraph) -->
+      <div class="flow-row" style="justify-content: center; margin-left: 24vw;">
+        <div class="fn" id="f-md">LLM Output<br><span>## Current State / ## New Highlights
+          </span></div>
+        <div class="group-box" id="f-insight">
+          <div class="group-title">physical-insights/YYYY-MM-DD.md</div>
+          <div class="group-inner">
+            <div class="fn" id="f-cs">Current State<br><span>User's most recent activity</span></div>
+            <div class="fn" id="f-hl">Today's Highlights<br><span>User's </span></div>
+          </div>
+        </div>
+        <div class="fn" id="f-con">Consolidation Pass<br><span>every N incremental updates<br>LLM → consolidated bullet
+            list → overwrites Highlights</span></div>
+      </div>
+
+      <!-- Row 4: States + Timeline + Manual entry -->
+      <div class="flow-row" style="justify-content: center; gap: 5vw; margin-left: 16vw;">
+        <div class="group-box" id="f-insight">
+          <div class="group-title">physical-daily-narrative/</div>
+          <div class="group-inner">
+            <div class="fn" id="f-states">YYYY-MM-DD-states.md<br><span>Accumulated states</span></div>
+            <div class="fn" id="f-tl">YYYY-MM-DD-timeline.json<br><span>The nightly timeline summary</span></div>
+          </div>
+        </div>
+        <div class="fn" id="f-manual">Manual Entry<br><span>add / edit / delete</span></div>
+      </div>
+
+      <!-- Row 5: Nightly -->
+      <div class="flow-row" style="justify-content: center;">
+        <div class="fn wide" id="f-night">Nightly Profile Update<br><span style="white-space:normal">Read: highlights +
+            timeline + pattern · Call VLM · pattern_prompt · max_tokens=2048</span></div>
+      </div>
+
+      <!-- Row 9: Pattern output (PATNEW + PAT) -->
+      <div class="flow-row" style="justify-content: center; gap: 4vw;">
+        <div class="fn" id="f-patnew">Updated Profile<br><span>LLM output</span></div>
+        <div class="fn" id="f-pat">physical-pattern.md<br><span>(overwritten)</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../assets/flowchart.js"></script>
+  <script>
+    const fc = new FlowChart('flow-chart', 'flow-svg');
+
+    function positionLabels() {
+      const startRow = document.getElementById('row-start');
+      document.getElementById('l3-label').style.top = startRow.getBoundingClientRect().top + 'px';
+    }
+
+    function drawFlow() {
+      fc.clear();
+
+      // ── Main chain ──
+      fc.diagConnect('f-bn', 'f-inc', { label: 'Triggers' });
+      fc.vConnect('f-inc', 'f-md');
+
+      // ── MD branches to CS (overwrites) and HL (appends to) ──
+      fc.hConnect('f-md', 'f-cs', { label: 'Overwrites' });
+      fc.hConnect('f-md', 'f-hl', { label: 'Appends to' });
+
+      // ── CS → States ──
+      fc.vConnect('f-cs', 'f-states', { label: 'Appends snapshot' });
+
+      // ── States → Timeline → Nightly ──
+      fc.vConnect('f-states', 'f-tl', { label: 'Parsed into' });
+      fc.vConnect('f-tl', 'f-night');
+
+      // ── Nightly → Updated Profile → Pattern ──
+      fc.vConnect('f-night', 'f-patnew', { label: 'LLM: highlights +\ntimeline + pattern' });
+      fc.hConnect('f-patnew', 'f-pat', { label: 'Overwrites' });
+
+      // ── Insight feedback: reads existing insight for next cycle ──
+      fc.vConnect('f-inc', 'f-insight', { label: 'Reads', opacity: '0.35', dashed: true });
+
+      // ── INC reads batch data ──
+      fc.vConnectReverse('f-inc', 'f-batch', { label: 'Reads', opacity: '0.35', dashed: true});
+
+      // ── Pattern feedback: reads existing pattern for next nightly ──
+      fc.sideLoop('f-pat', 'f-night', { label: 'Reads existing\npattern', leftOffset: 55, opacity: '0.35' });
+
+      // ── Consolidation: inn → con (triggers every N) ──
+      fc.diagConnect('f-inn', 'f-con', { label: 'Triggers', dashed: true, opacity: '0.55' });
+
+      // ── Consolidation: con → hl (overwrites highlights) ──
+      fc.hConnectReverse('f-con', 'f-hl', { label: 'Overwrites'});
+
+      // ── Manual entry → states ──
+      fc.hConnectReverse('f-manual', 'f-states', { label: 'Add / Edit / Delete', dashed: true, opacity: '0.55' });
+
+      // ── Nightly reads timeline ──
+      fc.arcUp('f-night', 'f-tl', { label: 'Reads', opacity: '0.35' });
+    }
+
+    window.addEventListener('load', () => { setTimeout(() => { drawFlow(); positionLabels(); }, 50); });
+    window.addEventListener('resize', () => { drawFlow(); positionLabels(); });
+  </script>
+</body>
+
+</html>

@@ -51,6 +51,15 @@ def slide_file(filename):
     return send_file(path)
 
 
+@bp.get("/assets/<path:filename>")
+def asset_file(filename):
+    assets_dir = VIZ_DIR / "assets"
+    path = assets_dir / filename
+    if not path.exists():
+        return "not found", 404
+    return send_file(path)
+
+
 @bp.get("/api/slides")
 def slides_get():
     if SLIDES_FILE.exists():

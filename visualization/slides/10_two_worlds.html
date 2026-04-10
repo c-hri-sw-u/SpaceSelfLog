@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 8vw;
+  color: #111;
+  overflow: hidden;
+}
+
+.slide-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.header {
+  margin-bottom: 3vw;
+}
+
+h1 {
+  font-size: 3.8vw;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1vw;
+}
+
+.intro {
+  font-size: 1.4vw;
+  font-weight: 400;
+  color: #666;
+  max-width: 65vw;
+  line-height: 1.4;
+}
+
+.intro strong {
+  color: #111;
+  font-weight: 600;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0 0.2vw;
+  color: #111;
+}
+
+.comparison-container {
+  display: flex;
+  gap: 8vw;
+  position: relative;
+  align-items: center;
+}
+
+.comparison-container::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 0.1vw;
+  background: #eee;
+  transform: translateX(-50%);
+}
+
+.col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-right: 3vw;
+}
+
+.col.right-col {
+  padding-right: 0;
+  padding-left: 3vw;
+}
+
+.col h2 {
+  font-size: 1.8vw;
+  font-weight: 700;
+  margin-bottom: 1.5vw;
+  color: #111;
+  text-align: center;
+}
+
+.col.right-col h2 {
+  font-weight: 400;
+  color: #999;
+}
+
+.svg-wrapper {
+  width: 100%;
+  height: 28vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.svg-wrapper svg {
+  width: 100%;
+  height: 100%;
+  max-height: 500px;
+}
+
+.gap-wrapper {
+  position: relative;
+  border: 0.2vw dashed #ccc;
+  border-radius: 1.5vw;
+  padding: 3vw 2vw;
+  margin-top: -3vw;
+  margin-bottom: -3vw;
+  margin-left: -1.5vw;
+  margin-right: -1.5vw;
+}
+
+.gap-label {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffe94d;
+  color: #111;
+  font-weight: 700;
+  font-size: 1.2vw;
+  padding: 0.2vw 0.6vw;
+  white-space: nowrap;
+  z-index: 10;
+}
+</style>
+</head>
+<body>
+
+<div class="slide-content">
+  <div class="header">
+    <h1>The Two <span class="highlight">Worlds</span></h1>
+    <div class="intro">
+      Current AI agents have infinite access to your <strong>digital traces</strong>, but remain completely blind to your <strong>physical reality</strong>. <span class="highlight" style="font-weight: 700;">Agents personalize from half the picture.</span>
+    </div>
+  </div>
+
+  <div class="comparison-container">
+    <div class="col left-col">
+      <h2>Digital Dimension</h2>
+      <div class="svg-wrapper">
+        <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+          <!-- Digital Grid Background -->
+          <pattern id="grid1" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#f8f8f8" stroke-width="2"/>
+          </pattern>
+          <rect width="500" height="500" fill="url(#grid1)" rx="20" />
+
+          <!-- Browser window -->
+          <g transform="translate(60, 60)">
+              <rect x="0" y="0" width="220" height="150" fill="#fff" stroke="#111" stroke-width="3"/>
+              <line x1="0" y1="36" x2="220" y2="36" stroke="#111" stroke-width="3"/>
+              <rect x="13" y="13" width="10" height="10" fill="#ccc"/>
+              <rect x="31" y="13" width="10" height="10" fill="#ccc"/>
+              <rect x="49" y="13" width="10" height="10" fill="#ccc"/>
+              <!-- Content lines -->
+              <rect x="20" y="60" width="120" height="8" fill="#111"/>
+              <rect x="20" y="85" width="160" height="8" fill="#eee"/>
+              <rect x="20" y="110" width="140" height="8" fill="#eee"/>
+          </g>
+
+          <!-- Chat Bubbles -->
+          <g transform="translate(260, 200)">
+              <!-- Left Bubble -->
+              <rect x="0" y="0" width="150" height="60" fill="#f5f5f5" stroke="#111" stroke-width="3"/>
+              <path d="M -10 20 L 0 30 L 0 10 Z" fill="#f5f5f5" stroke="#111" stroke-width="3" stroke-linejoin="miter"/>
+              <rect x="20" y="20" width="70" height="6" fill="#111"/>
+              <rect x="20" y="35" width="100" height="6" fill="#ccc"/>
+
+              <!-- Right Bubble -->
+              <rect x="40" y="80" width="160" height="60" fill="#ffe94d" stroke="#111" stroke-width="3"/>
+              <path d="M 210 100 L 200 110 L 200 90 Z" fill="#ffe94d" stroke="#111" stroke-width="3" stroke-linejoin="miter"/>
+              <rect x="60" y="100" width="80" height="6" fill="#111"/>
+              <rect x="60" y="115" width="110" height="6" fill="#111" opacity="0.6"/>
+          </g>
+
+          <!-- Calendar block -->
+          <g transform="translate(70, 260)">
+              <rect x="0" y="0" width="160" height="160" fill="#fff" stroke="#111" stroke-width="3"/>
+              <line x1="0" y1="40" x2="160" y2="40" stroke="#111" stroke-width="3"/>
+              <rect x="18" y="18" width="30" height="8" fill="#111"/>
+              
+              <!-- Week 1 -->
+              <rect x="18" y="60" width="22" height="22" fill="#eee"/>
+              <rect x="48" y="60" width="22" height="22" fill="#eee"/>
+              <rect x="78" y="60" width="22" height="22" fill="#111"/>
+              <rect x="108" y="60" width="22" height="22" fill="#eee"/>
+              
+              <!-- Week 2 -->
+              <rect x="18" y="92" width="22" height="22" fill="#eee"/>
+              <rect x="48" y="92" width="52" height="22" fill="#ffe94d" stroke="#111" stroke-width="3"/>
+              <rect x="108" y="92" width="22" height="22" fill="#eee"/>
+
+              <!-- Week 3 -->
+              <rect x="18" y="124" width="22" height="22" fill="#eee"/>
+              <rect x="48" y="124" width="22" height="22" fill="#eee"/>
+          </g>
+
+          <!-- Connection paths mimicking traces -->
+          <path d="M 170 210 Q 170 235 220 235 L 260 235" fill="none" stroke="#ddd" stroke-width="4" stroke-dasharray="8,8"/>
+          <path d="M 230 340 L 300 340 L 300 300" fill="none" stroke="#ddd" stroke-width="4" stroke-dasharray="8,8"/>
+          <rect x="165" y="205" width="10" height="10" fill="#ddd"/>
+          <rect x="255" y="230" width="10" height="10" fill="#ddd"/>
+          <rect x="225" y="335" width="10" height="10" fill="#ddd"/>
+          <rect x="295" y="295" width="10" height="10" fill="#ddd"/>
+
+        </svg>
+      </div>
+    </div>
+
+    <div class="col right-col">
+      <div class="gap-wrapper">
+        <div class="gap-label">The Gap</div>
+        <h2>Physical World</h2>
+        <div class="svg-wrapper" style="position: relative;">
+        <!-- 3D Isometric Background Grid -->
+        <svg viewBox="0 0 500 500" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index: 1;">
+          <defs>
+            <pattern id="iso-bg-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#f0f0f0" stroke-width="2"/>
+            </pattern>
+            <clipPath id="rounded-bg">
+              <rect width="500" height="500" rx="20" />
+            </clipPath>
+          </defs>
+          <g clip-path="url(#rounded-bg)">
+            <!-- Pure white background fill to prevent visual bleed if needed -->
+            <rect width="500" height="500" fill="#fff" />
+            <!-- The Isometric 3D Grid -->
+            <!-- scale(1, 0.57735) creates an exact 30-degree isometric projection -->
+            <g transform="translate(250, 250) scale(1, 0.57735) rotate(45)">
+              <rect x="-1000" y="-1000" width="2000" height="2000" fill="url(#iso-bg-grid)" />
+            </g>
+          </g>
+        </svg>
+
+        <!-- User generated image overlay -->
+        <img src="../assets/physical-office-blueprint.png" alt="Physical World Missing" style="position: relative; z-index: 2; width: 150%; height: 150%; object-fit: contain; opacity: 0.5; mix-blend-mode: multiply;" />
+      </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

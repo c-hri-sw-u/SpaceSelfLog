@@ -1,14 +1,109 @@
 {
   "slides": [
     {
-      "section": "",
+      "section": "cover",
       "src": "/slides/slide-files/01_cover.html",
       "subtitle": ""
     },
     {
-      "section": "",
-      "subtitle": "",
-      "src": "/slides/slide-files/slide_001.html"
+      "section": "Intro",
+      "subtitle": "The Claw",
+      "src": "/slides/slide-files/02_the_claw.html"
+    },
+    {
+      "section": "Intro",
+      "subtitle": "Personal AI Agents are Here",
+      "src": "/slides/slide-files/03_agent_vs_assistant.html"
+    },
+    {
+      "section": "Intro",
+      "subtitle": "The OpenClaw Fever",
+      "src": "/slides/slide-files/04_openclaw_fever.html"
+    },
+    {
+      "section": "Intro",
+      "subtitle": "What is OpenClaw",
+      "src": "/slides/slide-files/05_what_is_openclaw.html"
+    },
+    {
+      "section": "Intro",
+      "subtitle": "OpenClaw's Spreading",
+      "src": "/slides/slide-files/06_openclaws_spreading.html"
+    },
+    {
+      "section": "Intro",
+      "subtitle": "OpenClaw's GitHub Stars Growth",
+      "src": "/slides/slide-files/07_openclaw_github_stars.html"
+    },
+    {
+      "section": "Intro",
+      "subtitle": "Why Personalization Matters",
+      "src": "/slides/slide-files/08_why_personalization_matters.html"
+    },
+    {
+      "section": "The Blind Spot",
+      "subtitle": "The Blind Spot",
+      "src": "/slides/slide-files/09_the_blind_spot.html"
+    },
+    {
+      "section": "The Blind Spot",
+      "subtitle": "Two Worlds",
+      "src": "/slides/slide-files/10_two_worlds.html"
+    },
+    {
+      "section": "The Blind Spot",
+      "subtitle": "Research Landscape",
+      "src": "/slides/slide-files/11_research_landscape.html"
+    },
+    {
+      "section": "The Blind Spot",
+      "subtitle": "Research Questions",
+      "src": "/slides/slide-files/12_research_questions.html"
+    },
+    {
+      "section": "Design Rationale",
+      "subtitle": "Design Rationale",
+      "src": "/slides/slide-files/13_design_rationale_cover.html"
+    },
+    {
+      "section": "Design Rationale",
+      "subtitle": "Why Egocentric Vision?",
+      "src": "/slides/slide-files/14_why_egocentric_vision.html"
+    },
+    {
+      "section": "Design Rationale",
+      "subtitle": "Why OpenClaw?",
+      "src": "/slides/slide-files/15_why_openclaw.html"
+    },
+    {
+      "section": "Design Rationale",
+      "subtitle": "How OpenClaw works",
+      "src": "/slides/slide-files/16_how_openclaw_works.html"
+    },
+    {
+      "section": "System Design",
+      "subtitle": "System Design",
+      "src": "/slides/slide-files/17_system_design_cover.html"
+    },
+    {
+      "section": "System Design",
+      "subtitle": "The Pipeline",
+      "src": "/slides/slide-files/18_system_pipeline.html"
+    },
+    {
+      "section": "System Design",
+      "subtitle": "Layer 1 Capture & Layer 1.5 Preprocess",
+      "src": "/slides/slide-files/19_layer1_layer1.5.html"
+    },
+    {
+      "section": "System Design",
+      "subtitle": "Layer 2 Inference",
+      "src": "/slides/slide-files/20_layer2_inference.html"
+    },
+    {
+      "section": "System Design",
+      "subtitle": "Layer 3 Memory",
+      "src": "/slides/slide-files/21_layer3_memory.html"
     }
   ]
 }

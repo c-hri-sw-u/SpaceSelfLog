@@ -1039,24 +1039,104 @@ def _split_insight_sections(text: str) -> dict[str, str]:
     return sections
 
 
-def _call_insight_vlm(system_prompt: str, user_msg: str, max_tokens: int = 1024) -> str:
-    """Call the configured LLM and return the text response."""
-    t_cfg = _text_cfg(_config)
-    if t_cfg.get("provider") == "anthropic":
-        r = _text_client.messages.create(
-            model=t_cfg["model"], max_tokens=max_tokens,
+_FATAL_TEXT_ERROR_PATTERNS = (
+    "invalid api key", "incorrect api key", "authentication",
+    "model not found", "does not exist", "invalid model",
+    "no such model", "unknown model",
+)
+
+
+def _is_fatal_text_error(e: Exception) -> bool:
+    msg = str(e).lower()
+    code = getattr(e, "status_code", None) or getattr(e, "code", None)
+    if code in (401, 403):
+        return True
+    return any(p in msg for p in _FATAL_TEXT_ERROR_PATTERNS)
+
+
+def _call_vlm_as_text(system_prompt: str, user_msg: str, max_tokens: int) -> str:
+    """Call the vision-model client for text-only inference (fallback path)."""
+    if _config.get("provider") == "anthropic":
+        r = _client.messages.create(
+            model=_config["model"], max_tokens=max_tokens,
             system=system_prompt,
             messages=[{"role": "user", "content": user_msg}],
         )
         return (r.content[0].text or "").strip()
-    r = _text_client.chat.completions.create(
-        model=t_cfg["model"], max_tokens=max_tokens,
+    r = _client.chat.completions.create(
+        model=_config["model"], max_tokens=max_tokens,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user",   "content": user_msg},
         ],
     )
     return (r.choices[0].message.content or "").strip()
+
+
+def _call_insight_vlm(system_prompt: str, user_msg: str, max_tokens: int = 1024) -> str:
+    """Call the configured text LLM with retries.
+
+    Error handling:
+    - Fatal errors (invalid model / API key): email alert immediately, raise.
+    - Transient errors: retry up to 3 times, then fall back to vision model.
+    - Vision model also fails all retries: email alert, raise.
+    """
+    t_cfg = _text_cfg(_config)
+    last_exc: Exception | None = None
+
+    # --- text model (up to 3 attempts) ---
+    for attempt in range(3):
+        try:
+            if t_cfg.get("provider") == "anthropic":
+                r = _text_client.messages.create(
+                    model=t_cfg["model"], max_tokens=max_tokens,
+                    system=system_prompt,
+                    messages=[{"role": "user", "content": user_msg}],
+                )
+                return (r.content[0].text or "").strip()
+            r = _text_client.chat.completions.create(
+                model=t_cfg["model"], max_tokens=max_tokens,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user",   "content": user_msg},
+                ],
+            )
+            return (r.choices[0].message.content or "").strip()
+        except Exception as e:
+            last_exc = e
+            if _is_fatal_text_error(e):
+                log.error("Text model fatal error (model/API invalid): %s", e)
+                _send_alert_email(
+                    "SpaceSelfLog: text model fatal error",
+                    f"Text model failed with a fatal error (invalid model or API key).\n\n"
+                    f"Model: {t_cfg.get('model')}\nError: {e}",
+                )
+                raise
+            log.warning("Text model failed (attempt %d/3): %s", attempt + 1, e)
+            if attempt < 2:
+                time.sleep(5 * (attempt + 1))
+
+    # --- vision model fallback (up to 3 attempts) ---
+    log.warning("Text model exhausted retries, falling back to vision model. Last error: %s", last_exc)
+    for attempt in range(3):
+        try:
+            result = _call_vlm_as_text(system_prompt, user_msg, max_tokens)
+            log.info("Vision model fallback succeeded (attempt %d/3)", attempt + 1)
+            return result
+        except Exception as e:
+            last_exc = e
+            log.warning("Vision model fallback failed (attempt %d/3): %s", attempt + 1, e)
+            if attempt < 2:
+                time.sleep(5 * (attempt + 1))
+
+    # --- both exhausted ---
+    log.error("Text model and vision model fallback both failed: %s", last_exc)
+    _send_alert_email(
+        "SpaceSelfLog: text model + vision fallback both failed",
+        f"Text model failed after 3 retries, then vision model fallback also failed after 3 retries.\n\n"
+        f"Text model: {t_cfg.get('model')}\nVision model: {_config.get('model')}\nLast error: {last_exc}",
+    )
+    raise last_exc
 
 
 def _maybe_update_today_insight(date_str: str) -> None:
@@ -1453,23 +1533,7 @@ def _run_nightly_pattern_update(date_str: str, extra_date_str: str | None = None
 
     # Step 5: Write result
     try:
-        t_cfg = _text_cfg(_config)
-        if t_cfg.get("provider") == "anthropic":
-            r = _text_client.messages.create(
-                model=t_cfg["model"], max_tokens=2048,
-                system=pattern_system,
-                messages=[{"role": "user", "content": user_msg}],
-            )
-            updated = r.content[0].text.strip()
-        else:
-            r = _text_client.chat.completions.create(
-                model=t_cfg["model"], max_tokens=2048,
-                messages=[
-                    {"role": "system", "content": pattern_system},
-                    {"role": "user",   "content": user_msg},
-                ],
-            )
-            updated = r.choices[0].message.content.strip()
+        updated = _call_insight_vlm(pattern_system, user_msg, max_tokens=2048)
 
         pattern_file.write_text(
             f"<!-- auto-generated by SpaceSelfLog — last updated {date_str} -->\n\n"

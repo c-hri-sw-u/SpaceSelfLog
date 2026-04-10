@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #111;
+  overflow: hidden;
+  padding: 0 4vw;
+}
+
+.slide-content {
+  width: 100%;
+  height: 45vw; /* Reduced from 52vw to give 5vw+ elegant clearance from top/bottom edges */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Minimalist Statement replacing the traditional title */
+.statement {
+  font-size: 2.4vw;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin-bottom: 3vw;
+  text-align: center;
+  color: #111;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0 0.3vw;
+  color: #111;
+  font-weight: 600;
+}
+
+.chart-container {
+  flex: 1;
+  position: relative;
+  width: 100%;
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Base styles for the chart */
+.grid-line {
+  stroke: #f0f0f0;
+  stroke-width: 0.1vw;
+}
+.axis-line {
+  stroke: #333;
+  stroke-width: 0.15vw;
+}
+.axis-text {
+  font-size: 1.1vw;
+  fill: #888;
+  font-family: monospace;
+  font-weight: 500;
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+.y-axis-label {
+  font-size: 1vw;
+  fill: #111;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-anchor: middle;
+  text-transform: uppercase;
+}
+.x-axis-text {
+  text-anchor: middle;
+  dominant-baseline: hanging;
+}
+.data-path {
+  fill: none;
+  stroke: #ffe94d; /* Brand Accent */
+  stroke-width: 0.4vw;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.area-path {
+  fill: #ffe94d;
+  opacity: 0.15; /* Subtle Area glow */
+}
+.data-node {
+  fill: #fff;
+  stroke: #ffe94d;
+  stroke-width: 0.3vw;
+}
+.callout-box {
+  fill: #fff;
+  stroke: #ddd;
+  stroke-width: 0.1vw;
+  /* Hard architecture corners instead of rx to match the exhibition aesthetic */
+}
+.callout-text {
+  font-size: 0.9vw;
+  fill: #111;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+.callout-line {
+  stroke: #888;
+  stroke-width: 0.15vw;
+}
+.metadata {
+  position: absolute;
+  bottom: 2vw;
+  right: 4vw;
+  text-align: right;
+  font-size: 0.8vw;
+  color: #aaa;
+  line-height: 1.4;
+  font-weight: 400;
+  z-index: 10;
+}
+
+.metadata b {
+  color: #888;
+  font-weight: 500;
+}
+
+</style>
+</head>
+<body>
+
+<div class="slide-content">
+  <div class="statement">
+    <span class="highlight">🦞 OpenClaw</span>: Fastest-Growing Open Source Project in GitHub History
+  </div>
+  
+  <div class="chart-container" id="chart-container">
+    <!-- SVG rendered algorithmically to match pure scaling -->
+  </div>
+</div>
+
+<div class="metadata">
+  <div><b>Source:</b> GitHub (Snapshot: 2026-03-02)</div>
+  <div>Historical growth data indexed from public repository markers</div>
+</div>
+
+<script>
+  const container = document.getElementById('chart-container');
+  // Dimensions for precise scaling
+  const svgw = 1200; 
+  const svgh = 500;
+  
+  // Padding for structural axes
+  const padL = 120;
+  const padR = 40;
+  const padT = 30;
+  const padB = 60;
+  
+  const w = svgw - padL - padR;
+  const h = svgh - padT - padB;
+
+  // Data structure aligned with exact visual markers from reference
+  const data = [
+    { x: 0,   val: 0,   date: "Nov\\n2025", callout: "Clawdbot\\nlaunches", callPos: {x: -25, y: -45} },
+    { x: 20,  val: 15,  date: "Dec\\n2025" },
+    { x: 40,  val: 100, date: "Jan 15\\n2026", callout: "100K stars\\nin <1 month", callPos: {x: -55, y: -65} },
+    { x: 60,  val: 180, date: "Jan 30\\n2026", callout: "CVE-2026-25253\\npatched", callPos: {x: 0, y: 65} },
+    { x: 75,  val: 210, date: "Feb 15\\n2026", callout: "Steinberger\\njoins OpenAI", callPos: {x: 0, y: -65} },
+    { x: 90,  val: 232, date: "Feb 27\\n2026" },
+    { x: 100, val: 240, date: "Mar 2\\n2026",  callout: "Passes React\\n#1 on GitHub", callPos: {x: -35, y: -55} }
+  ];
+  
+  const maxY = 250; // Y axis limit 250K
+
+  function getX(percentX) { return padL + (percentX / 100) * w; }
+  function getY(val) { return padT + h - (val / maxY) * h; }
+
+  let svgHTML = `<svg viewBox="0 0 ${svgw} ${svgh}">`;
+
+  // Rotate and render Y-Axis Title
+  svgHTML += `<g transform="translate(${padL - 80}, ${padT + h/2})">
+                <text class="y-axis-label" transform="rotate(-90)">GitHub Stars</text>
+              </g>`;
+
+  // Y-Axis Grids and Labels (0K to 250K)
+  for(let i=0; i<=maxY; i+=50) {
+    let y = getY(i);
+    // Draw all horizontal gridlines except 0
+    if (i > 0) svgHTML += `<path d="M ${padL} ${y} L ${padL+w} ${y}" class="grid-line" />`;
+    svgHTML += `<text x="${padL - 15}" y="${y}" class="axis-text">${i}K</text>`;
+  }
+
+  // Vertical Y axis
+  svgHTML += `<path d="M ${padL} ${padT} L ${padL} ${padT+h}" class="axis-line" />`;
+  // Horizontal X axis 
+  svgHTML += `<path d="M ${padL} ${padT+h} L ${padL+w} ${padT+h}" class="axis-line" />`;
+
+  // X-Axis Text
+  data.forEach(d => {
+    let x = getX(d.x);
+    let y = padT + h + 15;
+    let lines = d.date.split("\\n");
+    // Draw tick
+    svgHTML += `<path d="M ${x} ${padT+h} L ${x} ${padT+h+5}" class="axis-line" stroke-width="0.1vw" />`;
+    // Draw Text
+    svgHTML += `<text x="${x}" y="${y}" class="axis-text x-axis-text">
+                  <tspan x="${x}" dy="0" fill="#111" font-weight="600">${lines[0]}</tspan>
+                  <tspan x="${x}" dy="22">${lines[1]}</tspan>
+                </text>`;
+  });
+
+  // Area Path Rendering (Fills the space under the curve)
+  let areaD = `M ${getX(data[0].x)} ${padT+h}`;
+  data.forEach(d => areaD += ` L ${getX(d.x)} ${getY(d.val)}`);
+  areaD += ` L ${getX(data[data.length-1].x)} ${padT+h} Z`;
+  svgHTML += `<path d="${areaD}" class="area-path" />`;
+
+  // Main Data Curve 
+  let lineD = `M ${getX(data[0].x)} ${getY(data[0].val)}`;
+  for(let i=1; i<data.length; i++) {
+     lineD += ` L ${getX(data[i].x)} ${getY(data[i].val)}`;
+  }
+  svgHTML += `<path d="${lineD}" class="data-path" />`;
+
+  // Rendering Callouts and Nodes
+  data.forEach(d => {
+    let nx = getX(d.x);
+    let ny = getY(d.val);
+
+    // Callout Blocks FIRST so the Node and Line overlays them cleanly if overlapping
+    if(d.callout) {
+      let cx = nx + d.callPos.x;
+      let cy = ny + d.callPos.y;
+      
+      let lines = d.callout.split("\\n");
+      let textLinesHTML = '';
+      
+      // Calculate Bounding Box
+      // Base widths: 110px. If longer text, expand.
+      let boxW = 120;
+      if (lines.some(l => l.length > 15)) boxW = 160;
+      let boxH = lines.length * 22 + 15;
+      
+      let boxTopY = cy - boxH/2;
+      let boxBottomY = cy + boxH/2;
+
+      // Draw connection line
+      // Line from Node to Top/Bottom of callout box matching reference line
+      let connectY = (d.callPos.y < 0) ? boxBottomY : boxTopY;
+      svgHTML += `<path d="M ${nx} ${ny} L ${cx} ${connectY}" class="callout-line" />`;
+      // Small grey anchor dot at the curve
+      svgHTML += `<circle cx="${nx}" cy="${ny}" r="2" fill="#888" />`;
+      
+      // Box and Text
+      svgHTML += `<rect x="${cx - boxW/2}" y="${boxTopY}" width="${boxW}" height="${boxH}" class="callout-box" />`;
+      
+      lines.forEach((line, i) => {
+         let dy = (i - (lines.length-1)/2) * 20;
+         textLinesHTML += `<tspan x="${cx}" y="${cy}" dy="${dy}">${line}</tspan>`;
+      });
+      svgHTML += `<text class="callout-text">${textLinesHTML}</text>`;
+    }
+    
+    // Draw Key Node Circles
+    svgHTML += `<circle cx="${nx}" cy="${ny}" r="7" class="data-node" />`;
+  });
+
+  svgHTML += `</svg>`;
+  container.innerHTML = svgHTML;
+</script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 10vw;
+  color: #111;
+  background: #fff;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 3.8vw;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1vw;
+}
+
+.intro-subtitle {
+  font-size: 1.4vw;
+  font-weight: 400;
+  color: #666;
+  max-width: 65vw;
+  line-height: 1.4;
+  margin-bottom: 4vw;
+}
+
+.intro-subtitle strong {
+  color: #111;
+  font-weight: 600;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0 0.2em;
+  color: #111;
+}
+
+.content-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  height: 50vh;
+}
+
+
+
+.visual-column {
+  width: 35%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.claw-img {
+  width: 150%;
+  transform: rotate(-15deg);
+  filter: drop-shadow(0 2vw 3vw rgba(0,0,0,0.05));
+  margin-left: -5vw;
+}
+
+.diagram-column {
+  width: 62%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.arch-flow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 2vw;
+}
+
+.arch-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.arch-icon {
+  font-size: 2.2vw;
+  margin-bottom: 0.8vw;
+}
+
+/* Grayscale passive icons except the central agent */
+.passive-icon {
+  filter: grayscale(100%);
+  opacity: 0.4;
+}
+
+.active-icon {
+  filter: grayscale(0%);
+  opacity: 1;
+}
+
+.arch-title {
+  font-size: 1.4vw;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 1.5vw;
+  text-align: center;
+}
+
+.arch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vw;
+  color: #666;
+  font-size: 1.1vw;
+  text-align: center;
+}
+
+.arch-list-center {
+  color: #333;
+  font-weight: 500;
+}
+
+.arch-footer {
+  font-size: 0.9vw;
+  color: #999;
+  margin-top: 1.5vw;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.arch-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4vw; /* Align roughly with the text body */
+}
+</style>
+</head>
+<body>
+
+<h1>What is <span class="highlight">🦞 OpenClaw</span>?</h1>
+<p class="intro-subtitle">An <strong>open-source autonomous AI agent framework</strong> designed to function as a personal AI assistant that executes complex workflows.</p>
+
+<div class="content-container">
+  <div class="visual-column">
+    <img src="../assets/claw_transparent.png" alt="OpenClaw" class="claw-img">
+  </div>
+  
+  <div class="diagram-column">
+    <div class="arch-flow">
+      <!-- Left Side -->
+      <div class="arch-col" style="width: 25%;">
+        <div class="arch-icon passive-icon">👤</div>
+        <div class="arch-title">User Intention</div>
+        <div class="arch-list">
+          <span>WhatsApp</span>
+          <span>Telegram</span>
+          <span>Discord</span>
+          <span>...</span>
+        </div>
+        <div class="arch-footer">Interfaces</div>
+      </div>
+
+      <!-- Arrow 1 -->
+      <div class="arch-arrow">
+        <svg viewBox="0 0 24 16" width="3vw" height="2vw">
+          <path d="M 0 4 L 20 4 L 14 0 M 20 4 L 14 8" stroke="#ccc" stroke-width="1" fill="none" />
+          <path d="M 24 12 L 4 12 L 10 8 M 4 12 L 10 16" stroke="#ccc" stroke-width="1" fill="none" />
+        </svg>
+      </div>
+
+      <!-- Center Side -->
+      <div class="arch-col" style="width: 35%;">
+        <div class="arch-icon active-icon">🦞</div>
+        <div class="arch-title"><span class="highlight">OpenClaw</span></div>
+        <div class="arch-list arch-list-center">
+          <span>Memory System</span>
+          <span>Task Management</span>
+          <span>Computer Context</span>
+          <span>...</span>
+        </div>
+        <div class="arch-footer">Runs Locally</div>
+      </div>
+
+      <!-- Arrow 2 -->
+      <div class="arch-arrow">
+        <svg viewBox="0 0 24 16" width="3vw" height="2vw">
+          <path d="M 0 4 L 20 4 L 14 0 M 20 4 L 14 8" stroke="#ccc" stroke-width="1" fill="none" />
+          <path d="M 24 12 L 4 12 L 10 8 M 4 12 L 10 16" stroke="#ccc" stroke-width="1" fill="none" />
+        </svg>
+      </div>
+
+      <!-- Right Side -->
+      <div class="arch-col" style="width: 25%;">
+        <div class="arch-icon passive-icon">🧠</div>
+        <div class="arch-title">Language Model</div>
+        <div class="arch-list">
+          <span>Claude</span>
+          <span>OpenAI GPT</span>
+          <span>Gemini</span>
+          <span>...</span>
+        </div>
+        <div class="arch-footer">Cloud &amp; Edge</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

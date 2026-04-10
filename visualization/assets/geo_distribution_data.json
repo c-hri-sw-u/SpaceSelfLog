@@ -1,0 +1,28 @@
+
+{
+    "note": "The unit is k, by 2026-04-06, from https://declawed.io/. It's not the real number of users, but the number of exposures, reveals deployment patterns and potential regulatory implications",
+    "data": {
+        "china": 80.3,
+        "us": 57.7,
+        "singapore": 26.0,
+        "germany": 13.2,
+        "hongkong": 9.1,
+        "japan": 4.6,
+        "finland": 3.4,
+        "france": 3.2,
+        "uk": 2.5,
+        "netherlands": 2.1,
+        "canada": 2.0,
+        "india": 1.9,
+        "australia": 1.6,
+        "vietnam": 1.3,
+        "korea": 1.2,
+        "russia": 1.2,
+        "malaysia": 0.9,
+        "brazil": 0.8,
+        "indonesia": 0.6,
+        "ireland": 0.5,
+        "taiwan": 0.4
+    }
+}
+

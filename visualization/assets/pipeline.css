@@ -1,0 +1,292 @@
+/* ═══════════════════════════════════════════════════════════════
+   Grasshopper Pipeline — Shared Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── SVG Wire Overlay ────────────────────────── */
+#gh-wires {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* ── Canvas ──────────────────────────────────── */
+.gh-canvas {
+  display: flex;
+  align-items: stretch;
+  gap: 2.5vw;
+  width: 95vw;
+  height: 90vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Battery Wrapper ─────────────────────────── */
+.batt-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ── Battery ─────────────────────────────────── */
+.gh-battery {
+  flex: 1;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: 1fr auto;
+  border-radius: 0.45vw;
+  border: 0.1vw solid var(--bc);
+  background: var(--bbg);
+  overflow: visible;
+  position: relative;
+}
+
+/* ── Header ──────────────────────────────────── */
+.batt-header {
+  position: absolute;
+  top: 0.4vw;
+  left: 0.4vw;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25vw 0.4vw;
+  z-index: 10;
+}
+.batt-tag {
+  background: var(--bc);
+  color: #fff;
+  font-size: 1.2vw;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  padding: 0.35vw 0.85vw;
+  border-radius: 0.25vw;
+  opacity: 1;
+}
+.batt-title {
+  font-size: 1.2vw;
+  font-weight: 700;
+  color: #fff;
+  opacity: 1;
+}
+
+/* ── Grid Positions ──────────────────────────── */
+.ports-in    { grid-column: 1; grid-row: 1 / -1; z-index: 2; }
+.logic-col   { grid-column: 2; grid-row: 1; }
+.ports-out   { grid-column: 3; grid-row: 1 / -1; z-index: 2; }
+
+/* ── Ports Column ────────────────────────────── */
+.ports-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 0.7vw 0;
+}
+.ports-in  { padding-left: 0.35vw; }
+.ports-out { padding-right: 0.35vw; }
+
+.port-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2vw 0;
+}
+
+.port-label {
+  position: absolute;
+  bottom: calc(100% + 0.06vw);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.72vw;
+  color: rgba(0,0,0,0.65);
+  white-space: nowrap;
+  font-weight: 600;
+  background: rgba(255,255,255,0.9);
+  padding: 0.06vw 0.25vw;
+  border-radius: 0.2vw;
+  z-index: 5;
+  pointer-events: none;
+}
+.port-label.dark {
+  background: #333;
+  color: #fff;
+}
+.port-dot {
+  width: 0.55vw;
+  height: 0.55vw;
+  border-radius: 50%;
+  background: #fff;
+  border: 0.1vw solid var(--bc);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+/* Center dots exactly on battery border */
+.ports-in .port-dot  { margin-left: -0.625vw; }
+.ports-out .port-dot { margin-right: -0.625vw; }
+
+/* Alternate label position: flip below for odd-index layers */
+.labels-below .port-label {
+  bottom: auto;
+  top: calc(100% + 0.06vw);
+}
+
+/* External-input marker (no wire source) */
+.port-dot.ext {
+  border-style: dashed;
+  opacity: 0.55;
+}
+/* Terminus marker (no wire target) */
+.port-dot.term {
+  background: var(--bc);
+  opacity: 0.4;
+}
+
+/* ── Logic Column ────────────────────────────── */
+.logic-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2vw;
+  padding: 0.2vw 2vw;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* ── Inner Block ─────────────────────────────── */
+.inner-block {
+  display: flex;
+  align-items: stretch;
+}
+.micro-port {
+  width: 0.45vw;
+  height: 0.45vw;
+  border-radius: 50%;
+  background: var(--bc);
+  opacity: 0.45;
+  flex-shrink: 0;
+  align-self: center;
+}
+.inner-content {
+  flex: 1;
+  background: var(--bibg);
+  border: 0.07vw solid var(--bc);
+  border-radius: 0.2vw;
+  padding: 0.35vw 0.55vw;
+  margin: 0 0.12vw;
+}
+.i-title {
+  font-size: 1.1vw;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 0.1vw;
+}
+.i-desc {
+  font-size: 0.88vw;
+  color: rgba(0,0,0,0.6);
+  line-height: 1.35;
+}
+.i-desc code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.72vw;
+  background: rgba(255,255,255,0.4);
+  padding: 0 0.12vw;
+  border-radius: 0.2vw;
+}
+.mono {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 1.0vw;
+}
+
+/* ── Sub-file boxes inside blocks ─────────── */
+.block-subs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15vw;
+  margin-top: 0.3vw;
+}
+.sub-box {
+  background: rgba(255,255,255,0.55);
+  border: 0.05vw solid rgba(0,0,0,0.1);
+  border-radius: 0.12vw;
+  padding: 0.15vw 0.35vw;
+  font-size: 0.82vw;
+  color: rgba(0,0,0,0.6);
+  line-height: 1.4;
+}
+.sub-children {
+  display: flex;
+  flex-direction: column;
+  gap: 0.06vw;
+  margin-top: 0.08vw;
+  margin-left: 0.15vw;
+  padding-left: 0.5vw;
+  border-left: 0.08vw solid rgba(0,0,0,0.18);
+}
+.sub-child {
+  font-size: 0.82vw;
+  color: rgba(0,0,0,0.6);
+  line-height: 1.4;
+}
+.sub-child::before {
+  content: '• ';
+  color: rgba(0,0,0,0.3);
+}
+.sub-child code {
+  background: rgba(0,0,0,0.08);
+  padding: 0.08vw 0.3vw;
+  border-radius: 0.15vw;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  font-size: 0.78vw;
+}
+
+/* ── Inner Arrow (vertical flow between blocks) */
+.inner-arrow {
+  display: flex;
+  justify-content: center;
+  color: rgba(0,0,0,0.22);
+  margin: -0.15vw 0;
+  font-size: 0.88vw;
+  line-height: 1;
+}
+
+/* ── Footer ──────────────────────────────────── */
+.batt-footer {
+  position: absolute;
+  bottom: 0.4vw;
+  left: 0.4vw;
+  right: 0.4vw;
+  padding: 0.35vw 0.85vw;
+  background: rgba(255,255,255,0.85);
+  border-radius: 0.25vw;
+  font-size: 0.82vw;
+  color: rgba(0,0,0,0.5);
+  line-height: 1.45;
+  flex-shrink: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+.batt-footer strong {
+  font-weight: 700;
+  color: #111;
+}
+.batt-footer code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.72vw;
+  color: rgba(0,0,0,0.4);
+  word-break: break-all;
+}
+.highlight {
+  color: #111;
+  background: #ffe94d;
+  padding: 0 0.12vw;
+}
+
+/* ── Color Themes ────────────────────────────── */
+.t1  { --bc: #6B8C3F; --bbg: #F3F7E8; --bibg: #CDDB9A; }
+.t15 { --bc: #3E8E8A; --bbg: #E6F4F3; --bibg: #9ED1CE; }
+.t2  { --bc: #C4872F; --bbg: #FFF3E3; --bibg: #F0CB86; }
+.t3  { --bc: #A64D5C; --bbg: #F9ECF0; --bibg: #DCA0AB; }
+.t35 { --bc: #6E5F50; --bbg: #F5F1EB; --bibg: #CFC4B3; }

@@ -438,40 +438,23 @@
 
   /* ── Tool call / result rows ── */
   .ev-tool {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    overflow: hidden;
-    font-size: 12px;
-  }
-  .ev-tool.ev-tool-call {
-    border-left: 3px solid var(--yellow);
-  }
-  .ev-tool.ev-tool-result {
-    border-left: 3px solid var(--green);
-  }
-  .ev-tool-header {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    cursor: pointer;
-    user-select: none;
-    min-height: 36px;
-  }
-  .ev-tool-header:hover { background: rgba(255,255,255,.03); }
-  .ev-tool-name { font-weight: 600; color: var(--text); }
-  .ev-tool-arg  { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-  .ev-tool-ts   { font-size: 10px; color: var(--muted); margin-left: auto; flex-shrink: 0; }
-  .ev-tool-body {
-    display: none;
-    padding: 6px 10px 8px;
-    border-top: 1px solid var(--border);
+    border-left: 2px solid var(--border);
+    margin-left: 8px;
+    padding: 4px 8px;
     font-size: 12px;
     color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .ev-tool.ev-tool-call { border-left-color: var(--yellow); }
+  .ev-tool.ev-tool-result { border-left-color: var(--green); }
+  .ev-tool-preview { }
+  .ev-tool-body {
+    display: none;
     white-space: pre-wrap;
     word-break: break-word;
-    overflow-y: auto;
+    margin-top: 4px;
+    font-style: normal;
   }
   .ev-tool-body.open { display: block; }
 
@@ -1161,36 +1144,29 @@ function renderEvent(ev) {
     const inlineArg = args.file_path || args.path || args.command || args.query || JSON.stringify(args).slice(0, 80);
     const el = document.createElement('div');
     el.className = 'ev-tool ev-tool-call';
-    const header = document.createElement('div');
-    header.className = 'ev-tool-header';
-    header.innerHTML = `<span style="color:var(--yellow)">⚙</span>
-      <span class="ev-tool-name">${esc(data.name || '')}</span>
-      <span class="ev-tool-arg">${esc(String(inlineArg))}</span>
-      <span class="ev-tool-ts">${fmtTs(ts)}</span>`;
+    const preview = document.createElement('div');
+    preview.className = 'ev-tool-preview';
+    preview.textContent = `⚙ ${data.name || ''} ${esc(String(inlineArg))} · ${fmtTs(ts)}`;
     const body = document.createElement('div');
     body.className = 'ev-tool-body open';
     body.textContent = JSON.stringify(args, null, 2);
-    header.addEventListener('click', () => body.classList.toggle('open'));
-    el.appendChild(header);
+    el.addEventListener('click', () => body.classList.toggle('open'));
+    el.appendChild(preview);
     el.appendChild(body);
     return el;
   }
 
   if (kind === 'tool_result') {
-    const preview = (data.text || '').slice(0, 60).replace(/\n/g, ' ');
     const el = document.createElement('div');
     el.className = 'ev-tool ev-tool-result';
-    const header = document.createElement('div');
-    header.className = 'ev-tool-header';
-    header.innerHTML = `<span style="color:var(--green)">✓</span>
-      <span class="ev-tool-name">${esc(data.tool_name || 'result')}</span>
-      <span class="ev-tool-arg">${esc(preview)}…</span>
-      <span class="ev-tool-ts">${fmtTs(ts)}</span>`;
+    const preview = document.createElement('div');
+    preview.className = 'ev-tool-preview';
+    preview.textContent = `✓ ${data.tool_name || 'result'} · ${fmtTs(ts)}`;
     const body = document.createElement('div');
     body.className = 'ev-tool-body open';
     body.textContent = data.text || '';
-    header.addEventListener('click', () => body.classList.toggle('open'));
-    el.appendChild(header);
+    el.addEventListener('click', () => body.classList.toggle('open'));
+    el.appendChild(preview);
     el.appendChild(body);
     return el;
   }

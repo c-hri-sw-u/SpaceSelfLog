@@ -50,7 +50,8 @@ ITERATION_LOG_FILE    = Path(os.environ.get("ITERATION_LOG_FILE", "~/.spaceselfl
 JOURNAL_FILE          = Path(os.environ.get("JOURNAL_FILE", "~/.spaceselflog/journal.jsonl")).expanduser()
 TRANSCRIPTS_DIR       = Path(os.environ.get("TRANSCRIPTS_DIR", "~/.spaceselflog/transcripts")).expanduser()
 OPENCLAW_SESSIONS_DIR = Path(os.environ.get("OPENCLAW_SESSIONS_DIR", "~/.openclaw/agents/main/sessions")).expanduser()
-OPENCLAW_SESSION_KEY  = os.environ.get("OPENCLAW_SESSION_KEY", "agent:main:telegram:group:-5158989830")
+# Support multiple session keys (comma-separated)
+OPENCLAW_SESSION_KEYS = os.environ.get("OPENCLAW_SESSION_KEYS", "agent:main:telegram:group:-5158989830,agent:main:main").split(",")
 HOOK_CONFIG_FILE      = Path(os.environ.get("HOOK_CONFIG_FILE", "~/.spaceselflog/hook-config.json")).expanduser()
 PORT         = int(os.environ.get("PORT", 8000))
 
@@ -2436,7 +2437,7 @@ def _local_date(ts: str) -> str:
         return ts[:10]
 
 
-def _read_openclaw_session_events(session_file: Path, today_local: str) -> list[dict]:
+def _read_openclaw_session_events(session_file: Path, today_local: str, session_key: str = "") -> list[dict]:
     """Read all events from one OpenClaw session JSONL file, filtered to today (local date)."""
     events = []
     try:
@@ -2459,13 +2460,14 @@ def _read_openclaw_session_events(session_file: Path, today_local: str) -> list[
                         "ts": ts or obj.get("ts", ""),
                         "kind": "session_start",
                         "data": {k: v for k, v in obj.items() if k not in ("type",)},
+                        "session_key": session_key,
                     })
                     continue
 
                 if kind in ("model_change", "thinking_level_change", "custom"):
                     if _local_date(ts) != today_local:
                         continue
-                    events.append({"ts": ts, "kind": kind, "data": obj})
+                    events.append({"ts": ts, "kind": kind, "data": obj, "session_key": session_key})
                     continue
 
                 if kind != "message":
@@ -2483,7 +2485,7 @@ def _read_openclaw_session_events(session_file: Path, today_local: str) -> list[
                     text_parts = [c.get("text", "") for c in content
                                   if isinstance(c, dict) and c.get("type") == "text"]
                     text = " ".join(text_parts).strip()
-                    events.append({"ts": ts, "kind": "user_message", "data": {"text": text}})
+                    events.append({"ts": ts, "kind": "user_message", "data": {"text": text}, "session_key": session_key})
 
                 elif role == "assistant":
                     # Split into sub-events: text blocks, tool calls, thinking blocks
@@ -2494,16 +2496,16 @@ def _read_openclaw_session_events(session_file: Path, today_local: str) -> list[
                         if ctype == "text":
                             if c.get("text", "").strip():
                                 events.append({"ts": ts, "kind": "assistant_text",
-                                               "data": {"text": c["text"]}})
+                                               "data": {"text": c["text"]}, "session_key": session_key})
                         elif ctype == "toolCall":
                             events.append({"ts": ts, "kind": "tool_call", "data": {
                                 "id":        c.get("id"),
                                 "name":      c.get("name"),
                                 "arguments": c.get("arguments", {}),
-                            }})
+                            }, "session_key": session_key})
                         elif ctype == "thinking":
                             events.append({"ts": ts, "kind": "thinking",
-                                           "data": {"text": c.get("thinking", c.get("text", ""))}})
+                                           "data": {"text": c.get("thinking", c.get("text", ""))}, "session_key": session_key})
 
                 elif role == "toolResult":
                     text_parts = [c.get("text", "") for c in content
@@ -2512,7 +2514,7 @@ def _read_openclaw_session_events(session_file: Path, today_local: str) -> list[
                         "tool_call_id": msg.get("toolCallId"),
                         "tool_name":    msg.get("toolName"),
                         "text":         "\n".join(text_parts),
-                    }})
+                    }, "session_key": session_key})
 
     except Exception as e:
         log.warning("Failed to read session file %s: %s", session_file, e)
@@ -2544,35 +2546,46 @@ def get_openclaw_transcript_today():
     """
     Return today's full event stream from OpenClaw session files + hook injection log.
     Handles /reset by including both the current session file and any .reset.{today}* files.
+    Now supports multiple session keys for tracking both group chat and proactive hooks.
     """
     today_local = datetime.now().strftime("%Y-%m-%d")
     yesterday_local = (datetime.fromtimestamp(datetime.now().timestamp() - 86400)
                        .strftime("%Y-%m-%d"))
 
-    session_files: list[Path] = []
+    session_files_map: dict[str, Path] = {}  # session_key -> Path
 
     sessions_index = OPENCLAW_SESSIONS_DIR / "sessions.json"
     if sessions_index.exists():
         try:
             with sessions_index.open("r", encoding="utf-8") as f:
                 index = json.load(f)
-            current_file = index.get(OPENCLAW_SESSION_KEY, {}).get("sessionFile", "")
-            if current_file:
-                p = Path(current_file)
-                if p.exists():
-                    session_files.append(p)
+            # Read all configured session keys
+            for session_key in OPENCLAW_SESSION_KEYS:
+                session_key = session_key.strip()
+                session_info = index.get(session_key, {})
+                current_file = session_info.get("sessionFile", "")
+                if current_file:
+                    p = Path(current_file)
+                    if p.exists():
+                        session_files_map[session_key] = p
         except Exception as e:
             log.warning("Failed to read sessions.json: %s", e)
 
+    # Also include .reset files
+    reset_files: list[Path] = []
     if OPENCLAW_SESSIONS_DIR.exists():
         for f in OPENCLAW_SESSIONS_DIR.iterdir():
             if ".reset." in f.name and (today_local in f.name or yesterday_local in f.name):
-                if f not in session_files:
-                    session_files.append(f)
+                if f not in session_files_map.values():
+                    reset_files.append(f)
 
     all_events: list[dict] = []
-    for sf in session_files:
-        all_events.extend(_read_openclaw_session_events(sf, today_local))
+    # Read events from each session, passing the session_key
+    for session_key, sf in session_files_map.items():
+        all_events.extend(_read_openclaw_session_events(sf, today_local, session_key))
+    # Read reset files without session_key
+    for rf in reset_files:
+        all_events.extend(_read_openclaw_session_events(rf, today_local, ""))
     all_events.extend(_read_hook_events(today_local))
     all_events.sort(key=lambda e: e.get("ts", ""))
     return jsonify(all_events)

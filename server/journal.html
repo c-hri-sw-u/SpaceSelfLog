@@ -348,6 +348,35 @@
     flex: 1;
   }
 
+  .transcript-session-tabs {
+    display: flex;
+    gap: 4px;
+    margin-right: auto;
+  }
+
+  .transcript-session-tab {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 4px;
+    background: transparent;
+    border: 1px solid transparent;
+    user-select: none;
+    transition: color .15s, background .15s, border-color .15s;
+  }
+
+  .transcript-session-tab:hover {
+    background: var(--surface);
+  }
+
+  .transcript-session-tab.active {
+    color: var(--text);
+    background: var(--surface);
+    border-color: var(--border);
+  }
+
   .msg-bubble {
     display: flex;
     flex-direction: column;
@@ -721,6 +750,11 @@
     <!-- Transcript tab -->
     <div id="right-transcript" class="transcript-panel">
       <div class="transcript-toolbar">
+        <div class="transcript-session-tabs">
+          <div class="transcript-session-tab active" data-session="all" onclick="setTranscriptSession('all')">All</div>
+          <div class="transcript-session-tab" data-session="group" onclick="setTranscriptSession('group')">👥 Group</div>
+          <div class="transcript-session-tab" data-session="proactive" onclick="setTranscriptSession('proactive')">💬 DM</div>
+        </div>
         <span id="transcript-status">Loading…</span>
         <button class="btn-refresh" onclick="loadTranscript()">↻ Refresh</button>
       </div>
@@ -736,6 +770,8 @@
 let currentType = 'midday';
 let assessmentCount = 0;
 let currentRightTab = 'history';
+let currentTranscriptSession = 'all';
+let cachedTranscriptMessages = [];
 
 // ── Init ──
 document.getElementById('entry-date').value = todayStr();
@@ -966,27 +1002,58 @@ function setRightTab(tab) {
   if (tab === 'transcript') loadTranscript();
 }
 
+// ── Session tab switching ──
+function setTranscriptSession(session) {
+  currentTranscriptSession = session;
+  document.querySelectorAll('.transcript-session-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.session === session);
+  });
+  renderTranscriptMessages();
+}
+
+function renderTranscriptMessages() {
+  const container = document.getElementById('transcript-messages');
+  container.innerHTML = '';
+
+  let msgsToShow = cachedTranscriptMessages;
+
+  if (currentTranscriptSession === 'group') {
+    msgsToShow = cachedTranscriptMessages.filter(m => (m.session_key || '').includes('telegram:group'));
+  } else if (currentTranscriptSession === 'proactive') {
+    msgsToShow = cachedTranscriptMessages.filter(m => (m.session_key || '').includes('agent:main:main'));
+  }
+
+  if (msgsToShow.length === 0) {
+    const p = document.createElement('p');
+    p.id = 'transcript-empty';
+    p.style.cssText = 'color:var(--muted);font-size:13px;text-align:center;margin-top:40px;';
+    p.textContent = 'No messages yet.';
+    container.appendChild(p);
+  } else {
+    msgsToShow.forEach(m => container.appendChild(renderEvent(m)));
+    container.scrollTop = container.scrollHeight;
+  }
+}
+
 // ── Transcript ──
 async function loadTranscript() {
   const status = document.getElementById('transcript-status');
   try {
     const res  = await fetch('/api/openclaw-transcript/today');
     const msgs = await res.json();
-    const container = document.getElementById('transcript-messages');
-    container.innerHTML = '';
-    if (!Array.isArray(msgs) || msgs.length === 0) {
-      const p = document.createElement('p');
-      p.id = 'transcript-empty';
-      p.textContent = 'No messages today yet.';
-      container.appendChild(p);
-      status.textContent = 'No messages today';
-      return;
-    }
-    msgs.forEach(m => container.appendChild(renderEvent(m)));
-    container.scrollTop = container.scrollHeight;
-    const userCount = msgs.filter(m => m.kind === 'user_message').length;
-    const assistantCount = msgs.filter(m => m.kind === 'assistant_text').length;
-    status.textContent = `${userCount} user · ${assistantCount} assistant · updated ${new Date().toLocaleTimeString(undefined, {hour:'2-digit',minute:'2-digit'})}`;
+    cachedTranscriptMessages = msgs;
+
+    // Calculate stats
+    const groupMsgs = msgs.filter(m => (m.session_key || '').includes('telegram:group'));
+    const proactiveMsgs = msgs.filter(m => (m.session_key || '').includes('agent:main:main'));
+    const groupUserCount = groupMsgs.filter(m => m.kind === 'user_message').length;
+    const proactiveCount = proactiveMsgs.filter(m => m.kind === 'assistant_text').length;
+
+    // Update status
+    status.textContent = `👥 ${groupUserCount} msgs · 💬 ${proactiveCount} DMs · updated ${new Date().toLocaleTimeString(undefined, {hour:'2-digit',minute:'2-digit'})}`;
+
+    // Render based on current session filter
+    renderTranscriptMessages();
   } catch(e) {
     if (status) status.textContent = 'Failed to load transcript';
     console.error('Transcript load error:', e);

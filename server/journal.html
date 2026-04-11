@@ -435,17 +435,15 @@
   .ev-tool-arg  { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
   .ev-tool-ts   { font-size: 10px; color: var(--muted); margin-left: auto; flex-shrink: 0; }
   .ev-tool-body {
-    display: none;
+    display: block;
     padding: 6px 10px 8px;
     border-top: 1px solid var(--border);
     font-size: 12px;
     color: var(--muted);
     white-space: pre-wrap;
     word-break: break-word;
-    max-height: 200px;
     overflow-y: auto;
   }
-  .ev-tool-body.open { display: block; }
 
   /* ── Thinking block ── */
   .ev-thinking {
@@ -458,8 +456,7 @@
     cursor: pointer;
     user-select: none;
   }
-  .ev-thinking-text { display: none; white-space: pre-wrap; }
-  .ev-thinking-text.open { display: block; }
+  .ev-thinking-text { display: block; white-space: pre-wrap; }
 
   #transcript-empty { color: var(--muted); font-size: 13px; text-align: center; margin-top: 40px; }
 

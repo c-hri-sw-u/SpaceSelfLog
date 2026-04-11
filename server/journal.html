@@ -428,6 +428,29 @@
     border-radius: 10px;
   }
 
+  /* ── Cron session box ── */
+  .cron-session-box {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: color-mix(in srgb, var(--surface) 60%, transparent);
+  }
+  .cron-session-header {
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .cron-session-header span {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
   /* ── Meta row (model_change, thinking_level_change, hook_inject) ── */
   .ev-meta {
     font-size: 11px;
@@ -1005,7 +1028,7 @@ function renderTranscriptMessages() {
   if (currentTranscriptSession === 'group') {
     msgsToShow = cachedTranscriptMessages.filter(m => (m.session_key || '').includes('telegram:group'));
   } else if (currentTranscriptSession === 'proactive') {
-    msgsToShow = cachedTranscriptMessages.filter(m => (m.session_key || '').includes('agent:main:main'));
+    msgsToShow = cachedTranscriptMessages.filter(m => (m.session_key || '').includes('agent:main:main') || (m.session_key || '').includes(':cron:'));
   }
 
   if (msgsToShow.length === 0) {
@@ -1015,7 +1038,30 @@ function renderTranscriptMessages() {
     p.textContent = 'No messages yet.';
     container.appendChild(p);
   } else {
-    msgsToShow.forEach(m => container.appendChild(renderEvent(m)));
+    // Group consecutive cron events by session_key into boxes
+    let i = 0;
+    while (i < msgsToShow.length) {
+      const m = msgsToShow[i];
+      const sk = m.session_key || '';
+      if (sk.includes(':cron:') && sk.includes(':run:')) {
+        // Collect all events for this cron run
+        const box = document.createElement('div');
+        box.className = 'cron-session-box';
+        const hdr = document.createElement('div');
+        hdr.className = 'cron-session-header';
+        const runTs = m.ts ? fmtTs(m.ts) : '';
+        hdr.innerHTML = `<span></span>⏱ cron · ${runTs}<span></span>`;
+        box.appendChild(hdr);
+        while (i < msgsToShow.length && (msgsToShow[i].session_key || '') === sk) {
+          box.appendChild(renderEvent(msgsToShow[i]));
+          i++;
+        }
+        container.appendChild(box);
+      } else {
+        container.appendChild(renderEvent(m));
+        i++;
+      }
+    }
     container.scrollTop = container.scrollHeight;
   }
 }
@@ -1030,7 +1076,7 @@ async function loadTranscript() {
 
     // Calculate stats
     const groupMsgs = msgs.filter(m => (m.session_key || '').includes('telegram:group'));
-    const proactiveMsgs = msgs.filter(m => (m.session_key || '').includes('agent:main:main'));
+    const proactiveMsgs = msgs.filter(m => (m.session_key || '').includes('agent:main:main') || (m.session_key || '').includes(':cron:'));
     const groupUserCount = groupMsgs.filter(m => m.kind === 'user_message').length;
     const proactiveCount = proactiveMsgs.filter(m => m.kind === 'assistant_text').length;
 

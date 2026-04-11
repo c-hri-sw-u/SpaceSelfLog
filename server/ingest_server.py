@@ -52,6 +52,8 @@ TRANSCRIPTS_DIR       = Path(os.environ.get("TRANSCRIPTS_DIR", "~/.spaceselflog/
 OPENCLAW_SESSIONS_DIR = Path(os.environ.get("OPENCLAW_SESSIONS_DIR", "~/.openclaw/agents/main/sessions")).expanduser()
 # Support multiple session keys (comma-separated)
 OPENCLAW_SESSION_KEYS = os.environ.get("OPENCLAW_SESSION_KEYS", "agent:main:telegram:group:-5158989830,agent:main:main").split(",")
+# Cron job labels to include in transcript (comma-separated, matched against sessions.json "label" field)
+OPENCLAW_CRON_LABELS  = [l.strip() for l in os.environ.get("OPENCLAW_CRON_LABELS", "Cron: Physical Insight Check").split(",") if l.strip()]
 HOOK_CONFIG_FILE      = Path(os.environ.get("HOOK_CONFIG_FILE", "~/.spaceselflog/hook-config.json")).expanduser()
 PORT         = int(os.environ.get("PORT", 8000))
 
@@ -2568,6 +2570,33 @@ def get_openclaw_transcript_today():
                     p = Path(current_file)
                     if p.exists():
                         session_files_map[session_key] = p
+            # Include cron run sessions whose label matches OPENCLAW_CRON_LABELS
+            if OPENCLAW_CRON_LABELS:
+                # Build set of cron job keys whose label matches
+                matching_cron_keys = set()
+                for session_key, session_info in index.items():
+                    if ":cron:" not in session_key or ":run:" in session_key:
+                        continue
+                    label = session_info.get("label", "")
+                    if label in OPENCLAW_CRON_LABELS:
+                        matching_cron_keys.add(session_key)
+                # Now find all run sessions for those matching cron jobs
+                for session_key, session_info in index.items():
+                    if session_key in session_files_map:
+                        continue
+                    if ":run:" not in session_key:
+                        continue
+                    cron_key = session_key.split(":run:")[0]
+                    if cron_key not in matching_cron_keys:
+                        continue
+                    current_file = session_info.get("sessionFile", "")
+                    if not current_file:
+                        run_id = session_key.split(":run:")[-1]
+                        current_file = str(OPENCLAW_SESSIONS_DIR / f"{run_id}.jsonl")
+                    if current_file:
+                        p = Path(current_file)
+                        if p.exists():
+                            session_files_map[session_key] = p
         except Exception as e:
             log.warning("Failed to read sessions.json: %s", e)
 

@@ -145,6 +145,31 @@ h1 {
   color: #444; /* Stronger contrast for the new paradigm */
 }
 
+.tldr {
+  margin-top: auto;
+  padding-top: 2vw;
+  border-top: 0.1vw solid #eee;
+  font-size: 1.1vw;
+  line-height: 1.5;
+}
+
+.assistant .tldr {
+  color: #999;
+}
+
+.agent .tldr {
+  color: #333;
+  border-top-color: #111;
+}
+
+.tldr strong {
+  color: #111;
+  font-weight: 700;
+  margin-right: 0.5vw;
+  text-transform: uppercase;
+  font-size: 0.9vw;
+}
+
 </style>
 </head>
 <body>
@@ -185,6 +210,10 @@ h1 {
           <p>Provides answers based on broad training data. Uniform output across all users.</p>
         </div>
       </div>
+
+      <div class="tldr">
+        <strong>TLDR</strong> AI assistants are focused on transient, immediate tasks.
+      </div>
     </div>
 
     <!-- Right Side: Agent -->
@@ -213,6 +242,10 @@ h1 {
           <h3>Deeply Personalized</h3>
           <p>Tailored uniquely to you, seamlessly adapting to your specific context and requirements.</p>
         </div>
+      </div>
+
+      <div class="tldr">
+        <strong>TLDR</strong> Personal AI Agents track long-term work and projects, managing various life aspects simultaneously while never forgetting who you are—enabling a fundamentally different relationship and interaction paradigm.
       </div>
     </div>
   </div>

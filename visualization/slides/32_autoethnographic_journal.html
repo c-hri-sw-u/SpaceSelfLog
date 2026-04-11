@@ -2,21 +2,50 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  width: 100vw;
-  height: 100vh;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #111;
-}
-</style>
+<link rel="stylesheet" href="../assets/monitor-slide.css">
 </head>
 <body>
+
+<!-- Left: Journal Parameters -->
+<div class="panel panel-left">
+  <div class="panel-title">Journal Parameters</div>
+
+  <div class="group-title">Component Layout</div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">Sidebar Context</span><span class="item-desc">System summary snippets for reference</span></div>
+  <div class="item"><div class="dot green"></div><span class="item-label">Reflection Field</span><span class="item-desc">Primary markdown-based writing area</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Timeline Reference</span><span class="item-desc">Temporal anchor for daily events</span></div>
+
+  <div class="group-title">Visual Indicators</div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">Active Block</span><span class="item-desc">Yellow highlight for focused reflection</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Sync Status</span><span class="item-desc">Local storage and cloud sync state</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Metric Overlays</span><span class="item-desc">Token counts and readability scores</span></div>
+
+  <div class="group-title">Inputs</div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">Lived Memory</span><span class="item-desc">Human-centric experiential data</span></div>
+  <div class="item"><div class="dot purple"></div><span class="item-label">System Output</span><span class="item-desc">AI-generated physical log drafts</span></div>
+</div>
+
+<!-- Center: Screenshot -->
+<img src="../assets/journal-interface.png" alt="Journal Interface">
+
+<!-- Right: Reflection Summary -->
+<div class="panel">
+  <div class="panel-title">Reflection Summary</div>
+
+  <div class="group-title">Analysis Flow</div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">Ground-truth comparison</span><span class="item-desc">Lived memory vs. system records</span></div>
+  <div class="item"><div class="dot green"></div><span class="item-label">Gap Identification</span><span class="item-desc">Locating missing or distorted events</span></div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">System Scoring</span><span class="item-desc">Daily precision and recall assessment</span></div>
+
+  <div class="group-title">Meta-data</div>
+  <div class="item"><div class="dot"></div><span class="item-label">Entry ID</span><span class="item-desc">Unique persistent identifier</span></div>
+  <div class="item"><div class="dot purple"></div><span class="item-label">Human Review</span><span class="item-desc">Active labeling of system failures</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Session Duration</span><span class="item-desc">Time spent in active reflection</span></div>
+
+  <div class="group-title">Output Targets</div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">Corrected Logs</span><span class="item-desc">Finalized daily physical truth</span></div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">Failure Patterns</span><span class="item-desc">Structured insights on AI blindness</span></div>
+</div>
 
 </body>
 </html>

@@ -93,17 +93,77 @@
     {
       "section": "System Design",
       "subtitle": "Layer 1 Capture & Layer 1.5 Preprocess",
-      "src": "/slides/slide-files/19_layer1_layer1.5.html"
+      "src": "/slides/slide-files/19_layer1_layer1_5.html"
+    },
+    {
+      "section": "System Design",
+      "subtitle": "Capture Monitor",
+      "src": "/slides/slide-files/20_capture_monitor.html"
     },
     {
       "section": "System Design",
       "subtitle": "Layer 2 Inference",
-      "src": "/slides/slide-files/20_layer2_inference.html"
+      "src": "/slides/slide-files/21_layer2_inference.html"
     },
     {
       "section": "System Design",
       "subtitle": "Layer 3 Memory",
-      "src": "/slides/slide-files/21_layer3_memory.html"
+      "src": "/slides/slide-files/22_layer3_memory.html"
+    },
+    {
+      "section": "System Design",
+      "subtitle": "Server Monitor",
+      "src": "/slides/slide-files/23_server_monitor.html"
+    },
+    {
+      "section": "System Design",
+      "subtitle": "Layer 3.5 Retrieval",
+      "src": "/slides/slide-files/24_layer3_5_retrieval.html"
+    },
+    {
+      "section": "System Design",
+      "subtitle": "Full Pipeline Overview",
+      "src": "/slides/slide-files/25_full_pipeline.html"
+    },
+    {
+      "section": "Study Design",
+      "subtitle": "Study Design",
+      "src": "/slides/slide-files/26_study_design_cover.html"
+    },
+    {
+      "section": "Study Design",
+      "subtitle": "Study Design",
+      "src": "/slides/slide-files/27_study_design_overview.html"
+    },
+    {
+      "section": "Study Design",
+      "subtitle": "Data Collection",
+      "src": "/slides/slide-files/28_study_design_metrics.html"
+    },
+    {
+      "section": "Study Design",
+      "subtitle": "Experimental Protocol",
+      "src": "/slides/slide-files/29_study_design_protocol.html"
+    },
+    {
+      "section": "Study Design",
+      "subtitle": "Study Device",
+      "src": "/slides/slide-files/30_study_device.html"
+    },
+    {
+      "section": "Study Design",
+      "subtitle": "Design Iteration Log",
+      "src": "/slides/slide-files/31_design_iteration_log.html"
+    },
+    {
+      "section": "Study Design",
+      "subtitle": "Autoethnographic Journal",
+      "src": "/slides/slide-files/32_autoethnographic_journal.html"
+    },
+    {
+      "section": "Results",
+      "subtitle": "Results",
+      "src": "/slides/slide-files/33_results.html"
     }
   ]
 }

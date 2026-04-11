@@ -34,9 +34,14 @@
     - 多层 Pipeline（14）：
     - Vision: Taming the LLM（18）：AI-generated imagery showing the project's vision of controlling LLMs with personal context.
     - Layer 1 & 1.5（19）：
-    - Layer 1.5 - Pre-processing（20）：
+    - Capture Monitor（20）：
     - Layer 2 - Inference（21）：
     - Layer 3 - Memory（22）：
-    - Layer 3.5 - Retrieval（23）：
+    - Server Monitor（23）：
+    - Layer 3.5 - Retrieval（24）：
+    - Full Pipeline Overview（25）：
+- Study Design
+    - Study Design（26）：Study Design部分的cover
+    - 
 
 

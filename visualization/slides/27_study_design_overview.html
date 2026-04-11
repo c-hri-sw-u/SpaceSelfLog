@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 8vw;
+  color: #111;
+  overflow: hidden;
+}
+
+.header {
+  margin-bottom: 4vw;
+}
+
+h1 {
+  font-size: 3.8vw;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1vw;
+}
+
+.intro {
+  font-size: 1.4vw;
+  font-weight: 400;
+  color: #666;
+  max-width: 65vw;
+  line-height: 1.4;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0 0.2vw;
+  color: #111;
+}
+
+.comparison-container {
+  display: flex;
+  gap: 8vw;
+  position: relative;
+  align-items: flex-start;
+}
+.comparison-container::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 0.1vw;
+  background: #eee;
+  transform: translateX(-50%);
+}
+
+.col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.col-left {
+  padding-right: 2vw;
+}
+
+.col-right {
+  padding-left: 2vw;
+}
+
+h2 {
+  font-size: 1.8vw;
+  margin-bottom: 0.5vw;
+}
+
+.col.inactive h2 {
+  color: #999;
+  font-weight: 400;
+}
+
+.col.active h2 {
+  color: #111;
+  font-weight: 700;
+}
+
+.phase-meta {
+  font-size: 1vw;
+  font-weight: 700;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2vw;
+}
+
+.trait {
+  display: flex;
+  gap: 1vw;
+  margin-bottom: 2vw;
+  align-items: flex-start;
+}
+
+.trait-icon {
+  font-size: 1.6vw;
+  line-height: 1.2;
+}
+
+.col.inactive .trait-icon {
+  filter: grayscale(100%);
+  opacity: 0.5;
+}
+
+.trait-text h3 {
+  font-size: 1.2vw;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 0.4vw;
+}
+
+.col.inactive .trait-text h3 {
+  color: #666;
+  font-weight: 400;
+}
+
+.trait-text p {
+  font-size: 1.0vw;
+  line-height: 1.5;
+  color: #666;
+}
+
+.col.inactive .trait-text p {
+  color: #999;
+}
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Study <span class="highlight">Design</span></h1>
+  <div class="intro">
+    A two-phase framework supporting exploratory iteration on <span class="highlight">design variables</span> and rigorous observation of <span class="highlight">agent behavior</span>.
+  </div>
+</div>
+
+<div class="comparison-container">
+  
+  <div class="col col-left inactive">
+    <h2>Phase 0: Calibration</h2>
+    <div class="phase-meta">Approx. 1 week &middot; Active Iteration</div>
+
+    <div class="trait">
+      <div class="trait-icon">⚙️</div>
+      <div class="trait-text">
+        <h3>System Stabilization</h3>
+        <p>Active tuning of over a dozen design variables spanning capture timings, pre-process thresholds, and prompt structures.</p>
+      </div>
+    </div>
+
+    <div class="trait">
+      <div class="trait-icon">📝</div>
+      <div class="trait-text">
+        <h3>Design Iteration Log</h3>
+        <p>Documenting modifications, rationales, and before/after states to construct the primary dataset for emerging design implications.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col col-right active">
+    <h2>Phase 1: Observation</h2>
+    <div class="phase-meta">2 Weeks &middot; Frozen Parameters</div>
+
+    <div class="trait">
+      <div class="trait-icon">👁️</div>
+      <div class="trait-text">
+        <h3>Passive Observation</h3>
+        <p>Using the agent organically for daily tasks to trace whether physical-world contexts surface without deliberate steering.</p>
+      </div>
+    </div>
+    
+    <div class="trait">
+      <div class="trait-icon">🎯</div>
+      <div class="trait-text">
+        <h3>Structured Probes</h3>
+        <p>Deploying 1&ndash;2 daily requests crafted around captured logs to evaluate agent utilization of physical traces when explicitly relevant.</p>
+      </div>
+    </div>
+
+    <div class="trait">
+      <div class="trait-icon">⏰</div>
+      <div class="trait-text">
+        <h3>Proactive Cron</h3>
+        <p>Tracking the agent's autonomous judgment to autonomously trigger contact or deliberately decline acting on new physical-world activity updates.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

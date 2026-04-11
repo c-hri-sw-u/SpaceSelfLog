@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../assets/flowchart.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  width: 100vw; height: 100vh;
+  background: #fff; color: #111; overflow: hidden;
+}
+
+/* ── Full-viewport flow chart ── */
+.flow-chart {
+  position: absolute; top: 0; left: 0;
+  width: 100vw; height: 100vh;
+}
+.flow-chart svg {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; z-index: 20;
+}
+
+.flow-row {
+  display: flex; align-items: center; gap: 1.2vw;
+  position: relative; z-index: 10;
+}
+.flow-row + .flow-row { margin-top: 1.5vw; }
+
+/* ── Main flow (left column) ── */
+.main-flow {
+  position: absolute;
+  left: 24vw; 
+  top: 8vh;
+  display: flex; flex-direction: column; align-items: center;
+}
+
+/* ── Proactive cron (right column) ── */
+.cron-area {
+  position: absolute;
+  right: 32vw; 
+  top: 56vh;
+  display: flex; flex-direction: column;
+  gap: 1.5vw;
+  align-items: center;
+}
+
+.other-area {
+  position: absolute;
+  right: 32vw; 
+  top: 8vh;
+  display: flex; flex-direction: column;
+  gap: 1.5vw;
+  align-items: center;
+}
+
+.seq-box {
+  margin-bottom: 0 !important;
+}
+
+/* ── Zone labels ── */
+.zone-label {
+  position: absolute;
+  display: flex; flex-direction: column; gap: 0.3vw;
+}
+.zone-title   { font-size: 1.4vw; font-weight: 700; color: #111; }
+.zone-subtitle { font-size: 1vw; font-weight: 600; color: #111; }
+.zone-desc    { font-size: 1vw; color: #666; line-height: 1.45; max-width: 12vw; }
+
+/* ── Design rationale box ── */
+.rationale-box {
+  position: absolute; top: 2vw; right: 2vw;
+  max-width: 22vw; padding: 1.2vw 1.4vw;
+  border: 1.5px dashed #aaa; border-radius: 1vw;
+  background: rgba(255,255,255,0.85); backdrop-filter: blur(4px);
+  z-index: 10;
+}
+.rationale-box .rationale-title { font-size: 1.2vw; font-weight: 700; color: #555; margin-bottom: 0.5vw; }
+.rationale-box .rationale-body  { font-size: 1vw; color: #444; line-height: 1.55; }
+.rationale-box .rationale-body strong { color: #111; font-weight: 600; }
+.rationale-box .rationale-body em     { font-style: normal; color: #999; }
+.rationale-box .rationale-body ul { list-style: none; padding: 0; margin: 0; }
+.rationale-box .rationale-body li { margin-bottom: 0.35vw; }
+.rationale-box .rationale-body li::before { content: '-'; margin-right: 0.3vw; color: #999; }
+
+.fn.wide { max-width: 26vw; white-space: normal; text-align: center; }
+.fn.wide span { white-space: normal; }
+</style>
+</head>
+<body>
+
+<div class="rationale-box">
+  <div class="rationale-title">Design Rationale</div>
+  <div class="rationale-body">
+    <ul>
+      <li><strong>Utilize OpenClaw's built-in memory system.</strong> AGENTS.md rules let the agent pull memory at session start; the proactive hook pushes fresh context mid-session without user re-prompting.</li>
+      <li><strong>Cron keeps context fresh.</strong> Long sessions drift — periodic injection ensures the agent always sees the latest physical state.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Zone labels -->
+<div class="zone-label" id="l35-label" style="left: 2vw;">
+  <div class="zone-title">L3.5 Retrieval</div>
+  <div class="zone-subtitle">When the agent uses memory<br> & How the agent accesses memory</div>
+  <div class="zone-desc">Declarative rules tell the agent when and what to read from memory files.</div>
+</div>
+
+<div class="zone-label" id="agent-label" style="left: 2vw;">
+  <div class="zone-title">OpenClaw Agent</div>
+  <div class="zone-subtitle">Where the memory is used</div>
+</div>
+  
+
+<div class="zone-label" id="pc-label" style="right: 16vw;">
+  <div class="zone-title">Proactive Cron</div>
+  <div class="zone-subtitle">Via OpenClaw Hook</div>
+  <div class="zone-desc">Background hook pushes fresh insight into the active session on a schedule.</div>
+</div>
+
+<div class="flow-chart" id="flow-chart">
+  <svg id="flow-svg"></svg>
+
+  <!-- Main flow: Context Inject column -->
+  <div class="main-flow" id="main-flow">
+
+    <!-- Row 1: Memory files -->
+    <div class="flow-row" id="row-start">
+      <div class="seq-box">
+        <div class="seq-inner" style="flex-direction: column; gap: 0.9vw;">
+          <div class="fn" id="f-pattern">📄 physical-pattern.md<br><span>Long-term behavioral patterns</span></div>
+          <div class="fn" id="f-insight-td">📄 physical-insights/{today}.md<br><span>Current State + Highlights</span></div>
+          <div class="fn" id="f-insight-yd">📄 physical-insights/{yesterday}.md<br><span>Current State + Highlights</span></div>
+        </div>
+        <div class="seq-sub">Physical Memory Files (from L3)</div>
+      </div>
+    </div>
+
+    <!-- Row 2: AGENTS.md -->
+    <div class="flow-row" id="row-agents">
+      <div class="fn file" id="f-agents">🦞 AGENTS.md<br><span>The agent's primary guide</span></div>
+    </div>
+
+    <!-- Row 3: Rules group -->
+    <div class="flow-row">
+      <div class="group-box" id="f-rules">
+        <div class="group-title">Rules</div>
+        <div class="group-inner">
+          <div class="fn" id="f-session-start">Session Start<br><span>Read pattern + today's &amp; yesterday's insight</span></div>
+          <div class="fn" id="f-heartbeat">Heartbeat / User Prompt<br><span>Find anything useful in memory</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="layer-gap"></div>
+
+    <!-- Row 4: Agent -->
+
+    <div class="flow-row" id="row-ss" style="margin-left: 0vw;">
+      <div class="fn session" id="f-ss">🏁 Session Start</div>   
+    </div>
+
+    <div class="flow-row" id="row-assemble" style="margin-left: 0vw;">
+      <div class="fn" id="f-assemble">Context Assemble</div>  
+    </div>
+
+    <div class="flow-row" id="row-active" style="margin-left: 0vw;">
+      <div class="fn session" id="f-active">🔁 Active Session</div>   
+    </div>
+
+    <div class="flow-row" id="row-reason" style="margin-left: 0vw; gap: 12vw;">
+      <div style="display: flex; flex-direction: row; gap: 1.8vw;">
+        <div class="fn" id="f-reason">LLM Reasoning</div>
+        <div class="fn decision" id="f-decision">Need Memory?</div>
+      </div>
+      <div class="fn" id="f-respond">Respond</div>
+    </div>
+
+    <div class="flow-row" id="row-memory-search" style="margin-left: 12vw;">
+      <div class="fn" id="f-memory-search">Run <code>memory_search</code></div>   
+    </div>
+
+  </div>
+
+  <!-- Proactive Cron column (annotation-area style) -->
+  <div class="cron-area" id="cron-area">
+    <div class="fn" id="f-hookcfg">⚙️ hook-config.json<br><span><code>intervalMinutes</code> = 30</span></div>
+    <div class="fn session" id="f-hook">🪝 OpenClaw Hook<br><span>Periodic · every <code>intervalMinutes</code></span></div>
+    <div class="fn" id="f-today">Current State & Highlights<br><span></span></div>
+  </div>
+
+  <!-- Other physical memory files -->
+  <div class="other-area" id="other-area">
+    <div class="flow-row" id="row-other">
+      <div class="seq-box">
+        <div class="seq-inner" style="flex-direction: column; gap: 0.9vw;">
+          <div class="fn" id="f-logs-folder">📁 physical-logs/<br><span>Short-term snapshots</span></div>
+          <div class="fn" id="f-insights-folder">📁 physical-insights/<br><span>Daily timeline</span></div>
+          <div class="fn" id="f-narratives-folder">📁 physical-daily-narratives/<br><span>Daily timeline</span></div>
+        </div>
+        <div class="seq-sub">Physical Memory Files (from L3)</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../assets/flowchart.js"></script>
+<script>
+const fc = new FlowChart('flow-chart', 'flow-svg');
+
+function positionLabels() {
+  const startRow = document.getElementById('row-start');
+  document.getElementById('l35-label').style.top = startRow.getBoundingClientRect().top + 'px';
+
+  const cronArea = document.getElementById('cron-area');
+  document.getElementById('pc-label').style.top = cronArea.getBoundingClientRect().top + 'px';
+
+  const agentRow = document.getElementById('row-ss');
+  document.getElementById('agent-label').style.top = agentRow.getBoundingClientRect().top + 'px';
+}
+
+function drawFlow() {
+  fc.clear();
+
+  // ── Memory files → AGENTS.md ──
+  fc.vConnect('row-start', 'f-agents', { dashed: true, opacity: '0.4' });
+  
+  // ── AGENTS.md → rules ──
+  fc.vConnect('f-agents', 'f-rules');
+
+  // ── Rules → Agent ──
+  fc.vConnect('f-rules', 'f-agent', { label: 'Feed-in' });
+
+  // ── hook-config → hook → inject ──
+  fc.vConnect('f-hookcfg', 'f-hook');
+  fc.vConnect('f-hook', 'f-hooklog');
+
+  // ── Memory → hook (reads insight) ──
+  fc.hConnect('f-insight-td', 'f-hook', { label: 'Feed-in' });
+  fc.vConnect('f-hook', 'f-today');
+  fc.vConnect('f-today', 'f-active', { label: 'Inject'});
+
+  // ── Inject → Agent ──
+  fc.diagConnect('f-hooklog', 'f-agent');
+  fc.vConnect('f-agent', 'f-ss');
+  fc.vConnect('f-ss', 'f-assemble');
+  fc.sideLoop('f-ss', 'f-agents', { label: 'Reads', leftOffset: 160,});
+  fc.sideLoop('f-assemble', 'row-start', { label: 'Reads', leftOffset: 160,});
+
+  fc.vConnect('f-assemble', 'f-active');
+
+  fc.vConnect('f-active', 'f-reason');
+
+  fc.hConnect('f-reason', 'f-decision');
+
+  fc.hConnect('f-decision', 'f-memory-search', { label: 'Yes' });
+  fc.hConnect('f-decision', 'f-respond', { label: 'No' });
+
+  fc.hConnect('f-memory-search', 'f-respond');
+
+  fc.sideLoopRight('f-respond', 'f-active');
+  fc.vConnectReverse('f-memory-search', 'row-other', { label: 'Reads', dashed: true, opacity: '0.4'});
+
+  fc.hConnectReverse('f-insights-folder', 'f-insight-td', { label: '', dashed: true, opacity: '0.3'});
+  fc.hConnectReverse('f-insights-folder', 'f-insight-yd', { label: '', dashed: true, opacity: '0.3'});
+  
+}
+
+window.addEventListener('load', () => { setTimeout(() => { drawFlow(); positionLabels(); }, 50); });
+window.addEventListener('resize', () => { drawFlow(); positionLabels(); });
+</script>
+</body>
+</html>

@@ -164,6 +164,26 @@
       "section": "Results",
       "subtitle": "Results",
       "src": "/slides/slide-files/33_results.html"
+    },
+    {
+      "section": "Results",
+      "subtitle": "Full Timeline Wall",
+      "src": "/slides/slide-files/34_results_photowall.html"
+    },
+    {
+      "section": "Results",
+      "subtitle": "Activity Daily Rhythm Matrix",
+      "src": "/slides/slide-files/35_results_activity_rhythm.html"
+    },
+    {
+      "section": "Results",
+      "subtitle": "Object Co-occurrence Network",
+      "src": "/slides/slide-files/36_results_object_network.html"
+    },
+    {
+      "section": "Results",
+      "subtitle": "Context to Activity Flow",
+      "src": "/slides/slide-files/37_results_sankey.html"
     }
   ]
 }

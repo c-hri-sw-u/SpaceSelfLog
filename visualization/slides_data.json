@@ -168,7 +168,8 @@
     {
       "section": "Results",
       "subtitle": "Full Timeline Wall",
-      "src": "/slides/slide-files/34_results_photowall.html"
+      "src": "/slides/slide-files/34_results_photowall.html",
+      "wide": true
     },
     {
       "section": "Results",
@@ -184,6 +185,16 @@
       "section": "Results",
       "subtitle": "Context to Activity Flow",
       "src": "/slides/slide-files/37_results_sankey.html"
+    },
+    {
+      "section": "Results",
+      "subtitle": "Apartment Activity Heatmap",
+      "src": "/slides/slide-files/38_results_floorplan.html"
+    },
+    {
+      "section": "Results",
+      "subtitle": "Integrated Spatial Activity Map",
+      "src": "/slides/slide-files/39_results_fusion_map.html"
     }
   ]
 }

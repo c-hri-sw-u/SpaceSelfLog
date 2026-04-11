@@ -252,6 +252,12 @@
     justify-content: center;
     padding: 20px 48px;
     overflow: hidden;
+    transition: padding 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  #main.wide-active {
+    overflow: visible;
+    padding: 16px 12px;
   }
 
   /* ── Slide ── */
@@ -264,6 +270,16 @@
     border-radius: 4px;
     box-shadow: 0 8px 40px rgba(0,0,0,0.6);
     overflow: hidden;
+    transition: max-width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
+                aspect-ratio 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.55s ease;
+  }
+
+  /* Wide mode: spans ~2 slides worth of width (32:9) */
+  #slide.wide {
+    max-width: calc((100vh - 140px) * 32 / 9);
+    aspect-ratio: 32 / 9;
+    box-shadow: 0 12px 80px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.04);
   }
 
   #slide-frame {
@@ -426,6 +442,9 @@ function renderSidebar() {
   }
 }
 
+// ── Slide element ref ──────────────────────────────────────────────────────
+const slideEl = document.getElementById("slide");
+
 // ── Render ─────────────────────────────────────────────────────────────────
 function render() {
   const s = slides[current];
@@ -443,6 +462,11 @@ function render() {
   navPrev.disabled   = !hasPrev;
   navNext.disabled   = !hasNext;
   btnDelete.disabled = slides.length <= 1;
+
+  // Wide mode: if the current slide has wide:true, expand to double-width
+  const isWide = !!s.wide;
+  slideEl.classList.toggle("wide", isWide);
+  document.getElementById("main").classList.toggle("wide-active", isWide);
 
   renderSidebar();
 }

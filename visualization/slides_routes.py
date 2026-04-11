@@ -7,7 +7,7 @@ import re
 import subprocess
 import json
 import itertools
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 from datetime import datetime
 from flask import Blueprint, send_file, request, jsonify
@@ -15,6 +15,7 @@ from flask import Blueprint, send_file, request, jsonify
 VIZ_DIR     = Path(__file__).parent
 SLIDES_DIR  = VIZ_DIR / "slides"
 SLIDES_FILE = VIZ_DIR / "slides_data.json"
+CONFIG_FILE = VIZ_DIR / "activity_config.json"
 
 SLIDE_TEMPLATE = """\
 <!DOCTYPE html>
@@ -424,12 +425,24 @@ _SANKEY_LOC_MAP = {
     'home office':    'Home Office',
     'office':         'Home Office',
     'workstation':    'Home Office',
+    'desk':           'Home Office',
+    'workspace':      'Workspace',
+    'workshop':       'Workspace',
+    'bench':          'Workspace',
+    'studio':         'Workspace',
     'bedroom-office': 'Home Office',
     'bedroom':        'Bedroom',
     'kitchen':        'Kitchen',
     'dining':         'Dining Area',
     'living':         'Living Room',
     'bathroom':       'Bathroom',
+    'gym':            'Workout',
+    'workout':        'Workout',
+    'entrance':       'Entrance',
+    'entryway':       'Entrance',
+    'foyer':          'Entrance',
+    'hallway':        'Hallway',
+    'corridor':       'Hallway',
     'outside':        'Outside',
     'transit':        'In Transit',
     'car':            'In Transit',
@@ -462,15 +475,26 @@ _SANKEY_ACT_MAP = {
     'relaxing':     'Rest & Leisure',
     'walking':      'Movement & Transit',
     'moving':       'Movement & Transit',
+    'exercise':     'Fitness & Well-being',
+    'workout':      'Fitness & Well-being',
+    'gym':          'Fitness & Well-being',
+    'fitness':      'Fitness & Well-being',
+    'yoga':         'Fitness & Well-being',
+    'stretching':   'Fitness & Well-being',
+    'athletic':     'Fitness & Well-being',
 }
 
 
 def _sankey_loc(raw: str):
     low = raw.lower()
+    # Check for truly vague/unrecognized terms first
+    if low.strip() in ['home', 'room', 'interior', 'indoor', 'house', 'n/a', 'none', 'unknown']:
+        return 'Unrecognized'
+    
     for kw, label in _SANKEY_LOC_MAP.items():
         if kw in low:
             return label
-    return 'Other'
+    return 'Unrecognized' # Fallback to Unrecognized instead of 'Other'
 
 
 def _sankey_act(raw: str):
@@ -530,3 +554,76 @@ def api_sankey():
     )
 
     return jsonify({"nodes": nodes, "links": links})
+
+
+@bp.get("/api/spatial-activity")
+def api_spatial_activity():
+    logs_dir = Path.home() / ".openclaw" / "workspace" / "memory" / "physical-logs"
+    if not logs_dir.exists():
+        return jsonify({"room_data": {}, "activity_colors": {}})
+
+    # Room -> Activity -> Count
+    aggregation = defaultdict(lambda: Counter())
+    # Room -> Hour -> Count
+    hourly_aggregation = defaultdict(lambda: [0] * 24)
+
+    # Pattern to split file into sections by ## HH:MM heading
+    _SECTION_RE = re.compile(r'^##\s+(\d{1,2}):(\d{2})', re.MULTILINE)
+    _ENTRY_RE   = re.compile(
+        r'\*\*activity:\*\*\s*([^|]+).*?\*\*location:\*\*\s*([^|\n]+)'
+    )
+
+    for fpath in sorted(logs_dir.glob("*.md")):
+        try:
+            content = fpath.read_text(encoding="utf-8")
+        except Exception:
+            continue
+
+        # Split into (hour, text_chunk) pairs by walking heading matches
+        sections = list(_SECTION_RE.finditer(content))
+        for i, sec in enumerate(sections):
+            hour = int(sec.group(1))
+            start = sec.end()
+            end   = sections[i + 1].start() if i + 1 < len(sections) else len(content)
+            chunk = content[start:end]
+
+            for m in _ENTRY_RE.finditer(chunk):
+                act_raw = m.group(1).strip()
+                loc_raw = m.group(2).strip()
+                loc = _sankey_loc(loc_raw)
+                act = _sankey_act(act_raw)
+                if act:
+                    aggregation[loc][act] += 1
+                    hourly_aggregation[loc][hour] += 1
+
+    # Load activity colors from unified config
+    try:
+        if CONFIG_FILE.exists():
+            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                colors = json.load(f)
+        else:
+            # Fallback
+            colors = {
+                "Focused Work":       "#6366f1",
+                "Learning & Review":  "#3b82f6",
+                "Life Maintenance":   "#ec4899",
+                "Rest & Leisure":     "#f59e0b",
+                "Sleep / Untracked":  "#10b981",
+                "Movement & Transit": "#4b5563",
+                "Fitness & Well-being": "#be123c",
+                "Other":              "#94a3b8"
+            }
+    except Exception:
+        colors = {}
+
+    result = {}
+    for loc, acts in aggregation.items():
+        sorted_acts = sorted(acts.items(), key=lambda x: x[1], reverse=True)
+        result[loc] = {
+            "breakdown": [{"activity": a, "count": c, "color": colors.get(a, colors["Other"])} for a, c in sorted_acts],
+            "total": sum(acts.values()),
+            "dominant_activity": sorted_acts[0][0] if sorted_acts else "Other",
+            "hourly_rhythm": hourly_aggregation[loc]
+        }
+
+    return jsonify({"room_data": result, "activity_colors": colors})

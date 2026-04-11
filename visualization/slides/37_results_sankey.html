@@ -11,13 +11,7 @@
       --border:     #eeeeee;
       --accent:     #ffe94d;
 
-      /* Activity palette — matches rhythm slide colours */
-      --c-focus:   #474747;
-      --c-learn:   #3b82f6;
-      --c-maint:   #ec4899;
-      --c-move:    #fbbf24;
-      --c-rest:    #10b981;
-      --c-sleep:   #d1d5db;
+      /* Activity colors are now loaded from theme_config.js */
 
       /* Location palette */
       --c-office:  #6366f1;
@@ -126,6 +120,7 @@
       z-index: 20;
     }
   </style>
+  <script src="theme_config.js"></script>
 </head>
 <body>
 
@@ -172,17 +167,17 @@
       'Other':       v('--c-other'),
     };
 
-    const ACT_COLOR = {
-      'Focused Work':       v('--c-focus'),
-      'Learning & Review':  v('--c-learn'),
-      'Life Maintenance':   v('--c-maint'),
-      'Movement & Transit': v('--c-move'),
-      'Rest & Leisure':     v('--c-rest'),
-      'Sleep / Untracked':  v('--c-sleep'),
-    };
+    const ACT_COLOR = ACTIVITY_THEME;
 
     function nodeColor(d) {
       return LOC_COLOR[d.id] || ACT_COLOR[d.id] || '#aaaaaa';
+    }
+
+    function nodeName(d) {
+      if (ACT_COLOR[d.id]) {
+        return getActivityLabel(d.id);
+      }
+      return d.id;
     }
 
     // ── Fetch & render ────────────────────────────────────────────
@@ -201,7 +196,7 @@
     function render({ nodes: rawNodes, links: rawLinks }) {
       const W = window.innerWidth;
       const H = window.innerHeight;
-      const PAD = { t: H * 0.10, r: W * 0.22, b: H * 0.22, l: W * 0.22 };
+      const PAD = { t: H * 0.134, r: W * 0.248, b: H * 0.254, l: W * 0.248 };
 
       const svg = d3.select('#sankey')
         .attr('width', W).attr('height', H);
@@ -288,7 +283,7 @@
         .attr('font-size', `${W * 0.0085}px`)
         .attr('font-weight', '500')
         .attr('fill', d => nodeColor(d))
-        .text(d => d.id);
+        .text(d => nodeName(d));
 
       // ── Value labels (entry count) ──
       nodeGroups.append('text')

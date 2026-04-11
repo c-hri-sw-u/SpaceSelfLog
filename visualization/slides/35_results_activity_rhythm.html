@@ -10,20 +10,7 @@
       --text-main: #111111;
       --text-muted: #888888;
       --border-color: #eeeeee;
-
-      /* Vibrant light mode color palette */
-      --c-focus: #474747;
-      /* Vibrant Blue */
-      --c-learn: #3b82f6;
-      /* Purple */
-      --c-maint: #ec4899;
-      /* Yellow/Amber */
-      --c-move: #fbbf24;
-      /* Emerald Green */
-      --c-rest: #10b981;
-      /* Pink */
-      --c-sleep: #dddddd;
-      /* Very Light Slate */
+      /* Activity colors are now loaded from theme_config.js */
     }
 
     * {
@@ -239,7 +226,12 @@
     .type-sleep {
       background-color: var(--c-sleep);
     }
+
+    .type-fitness {
+      background-color: var(--c-fitness);
+    }
   </style>
+  <script src="theme_config.js"></script>
 </head>
 
 <body>
@@ -263,22 +255,25 @@
 
   <div class="legend">
     <div class="legend-item">
-      <div class="legend-color type-focused"></div> 💻 Focused Work
+      <div class="legend-color type-focused"></div> <script>document.write(getActivityLabel("Focused Work"))</script>
     </div>
     <div class="legend-item">
-      <div class="legend-color type-learning"></div> 📖 Learning & Review
+      <div class="legend-color type-learning"></div> <script>document.write(getActivityLabel("Learning & Review"))</script>
     </div>
     <div class="legend-item">
-      <div class="legend-color type-maint"></div> 🏠 Life Maintenance
+      <div class="legend-color type-maint"></div> <script>document.write(getActivityLabel("Life Maintenance"))</script>
     </div>
     <div class="legend-item">
-      <div class="legend-color type-movement"></div> 🚶 Movement & Transit
+      <div class="legend-color type-movement"></div> <script>document.write(getActivityLabel("Movement & Transit"))</script>
     </div>
     <div class="legend-item">
-      <div class="legend-color type-rest"></div> 🧩 Rest & Leisure
+      <div class="legend-color type-rest"></div> <script>document.write(getActivityLabel("Rest & Leisure"))</script>
     </div>
     <div class="legend-item">
-      <div class="legend-color type-sleep"></div> 💤 Sleep / Untracked
+      <div class="legend-color type-sleep"></div> <script>document.write(getActivityLabel("Sleep / Untracked"))</script>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color type-fitness"></div> <script>document.write(getActivityLabel("Fitness & Well-being"))</script>
     </div>
   </div>
   <p class="subtitle">15-minute intervals across six standardized cognitive states — aggregated across all days.</p>
@@ -296,27 +291,19 @@
       "Life Maintenance",
       "Movement & Transit",
       "Rest & Leisure",
-      "Sleep / Untracked"
+      "Sleep / Untracked",
+      "Fitness & Well-being"
     ];
 
     const colorMap = {
-      "Focused Work": { cls: "type-focused", var: "--c-focus" },
-      "Learning & Review": { cls: "type-learn", var: "--c-learn" },
-      "Life Maintenance": { cls: "type-maint", var: "--c-maint" },
-      "Movement & Transit": { cls: "type-move", var: "--c-move" },
-      "Rest & Leisure": { cls: "type-rest", var: "--c-rest" },
-      "Sleep / Untracked": { cls: "type-sleep", var: "--c-sleep" }
+      "Focused Work": { cls: "type-focused", hex: ACTIVITY_THEME["Focused Work"] },
+      "Learning & Review": { cls: "type-learn", hex: ACTIVITY_THEME["Learning & Review"] },
+      "Life Maintenance": { cls: "type-maint", hex: ACTIVITY_THEME["Life Maintenance"] },
+      "Movement & Transit": { cls: "type-move", hex: ACTIVITY_THEME["Movement & Transit"] },
+      "Rest & Leisure": { cls: "type-rest", hex: ACTIVITY_THEME["Rest & Leisure"] },
+      "Sleep / Untracked": { cls: "type-sleep", hex: ACTIVITY_THEME["Sleep / Untracked"] },
+      "Fitness & Well-being": { cls: "type-fitness", hex: ACTIVITY_THEME["Fitness & Well-being"] }
     };
-
-    // Helper to get hex from CSS variable
-    function getHex(varName) {
-      return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-    }
-
-    // Set hex values dynamically
-    Object.keys(colorMap).forEach(key => {
-      colorMap[key].hex = getHex(colorMap[key].var);
-    });
 
     fetch('/slides/api/activity-rhythm')
       .then(res => res.json())
@@ -472,7 +459,7 @@
           cell.addEventListener("mouseenter", () => {
             const rect = cell.getBoundingClientRect();
             tooltip.querySelector(".tt-time").innerText = `${day.date} • ${box.time}`;
-            tooltip.querySelector(".tt-activity").innerText = box.activity;
+            tooltip.querySelector(".tt-activity").innerText = getActivityLabel(box.activity);
             tooltip.querySelector(".tt-activity").style.color = colorMap[box.activity]?.hex || '#888';
             tooltip.querySelector(".tt-summary").innerText = box.summary || "No active context logged.";
             tooltip.style.opacity = "1";

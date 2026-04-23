@@ -9,7 +9,7 @@ HEIGHT = 825
 # 你的本地开发服务器地址
 # 这里的端口请替换为你实际跑 slides_routes.py 所在的端口（比如 5001 或 8000）
 # 可以直接渲染这一个页面，或者渲染 slides.html?slide=0
-URL = "http://localhost:5001/slides/slide-files/00_research_image.html"
+URL = "http://localhost:8000/slides/slide-files/00_research_image.html"
 
 async def main():
     print("Launching browser...")

@@ -1,0 +1,11 @@
+flowchart LR
+    Launch([Session Launch]) --> Load[Read Workspace Markdown]
+    Load --> Search[SQLite-vec Retrieval]
+    Search --> Build[Assemble System Prompt]
+    Build --> LLM((LLM Engine))
+
+    subgraph ContextAssembly ["Context Assembly"]
+        Load
+        Search
+        Build
+    end

@@ -252,6 +252,11 @@
     }
   </style>
   <script src="theme_config.js"></script>
+  <script>
+    if (new URLSearchParams(window.location.search).get('clean') === '1') {
+      document.write('<style>.sidebar, .room-label, #info-block, #tooltip, #hit-layer, #loading { display: none !important; } body { background: transparent !important; }</style>');
+    }
+  </script>
 </head>
 
 <body>

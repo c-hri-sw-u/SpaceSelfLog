@@ -1,6 +1,12 @@
 {
   "slides": [
     {
+      "section": "Research Image",
+      "subtitle": "Representative Research Image",
+      "src": "/slides/slide-files/00_research_image.html",
+      "aspectRatio": "3.25/2.75"
+    },
+    {
       "section": "cover",
       "src": "/slides/slide-files/01_cover.html",
       "subtitle": ""

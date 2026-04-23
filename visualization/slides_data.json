@@ -1,9 +1,9 @@
 {
   "slides": [
     {
-      "section": "cover",
+      "section": "Results",
       "src": "/slides/slide-files/01_cover.html",
-      "subtitle": ""
+      "subtitle": "Integrated Spatial Activity Map"
     },
     {
       "section": "Intro",

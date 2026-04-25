@@ -28,19 +28,21 @@ class FlowChart {
   }
 
   mkPath(d, color, opacity, dashed) {
+    const vwScale = window.innerWidth / 1600;
     const p = document.createElementNS(this.ns, 'path');
     p.setAttribute('d', d);
     p.setAttribute('fill', 'none');
     p.setAttribute('stroke', color);
-    p.setAttribute('stroke-width', '2');
+    p.setAttribute('stroke-width', 2 * vwScale);
     p.setAttribute('opacity', opacity);
-    if (dashed) p.setAttribute('stroke-dasharray', '5 3');
+    if (dashed) p.setAttribute('stroke-dasharray', `${5 * vwScale} ${3 * vwScale}`);
     this.svg.appendChild(p);
     return p;
   }
 
   mkArrow(x, y, angle, fill, opacity) {
-    const s = 9, hw = s * 0.38;
+    const vwScale = window.innerWidth / 1600;
+    const s = 9 * vwScale, hw = s * 0.38;
     const cos  = Math.cos(angle),  sin  = Math.sin(angle);
     const pcos = Math.cos(angle + Math.PI / 2), psin = Math.sin(angle + Math.PI / 2);
     const poly = document.createElementNS(this.ns, 'polygon');
@@ -68,7 +70,7 @@ class FlowChart {
       t.setAttribute('text-anchor', 'middle');
       t.setAttribute('dominant-baseline', 'central');
       t.setAttribute('font-size', '0.66vw');
-      t.setAttribute('font-family', "'Helvetica Neue', Arial, sans-serif");
+      t.setAttribute('font-family', "'Roboto', sans-serif");
       t.setAttribute('font-weight', '600');
       t.setAttribute('fill', 'rgba(0,0,0,0.65)');
       t.textContent = line;
@@ -100,7 +102,8 @@ class FlowChart {
     if (!a || !b) return;
     const x1 = a.x + a.w, y1 = a.cy;
     const x2 = b.x,       y2 = b.cy;
-    const off = Math.max(Math.abs(x2 - x1) * 0.42, 20);
+    const vwScale = window.innerWidth / 1600;
+    const off = Math.max(Math.abs(x2 - x1) * 0.42, 20 * vwScale);
     const color = opts.color || this.color;
     const op = opts.opacity || '0.55';
     this.mkPath(`M ${x1} ${y1} C ${x1+off} ${y1}, ${x2-off} ${y2}, ${x2} ${y2}`, color, op, opts.dashed);
@@ -119,7 +122,8 @@ class FlowChart {
     if (!a || !b) return;
     const x1 = a.cx, y1 = a.y + a.h;
     const x2 = b.cx, y2 = b.y;
-    const off = Math.max(Math.abs(y2 - y1) * 0.42, 15);
+    const vwScale = window.innerWidth / 1600;
+    const off = Math.max(Math.abs(y2 - y1) * 0.42, 15 * vwScale);
     const color = opts.color || this.color;
     const op = opts.opacity || '0.55';
     this.mkPath(`M ${x1} ${y1} C ${x1} ${y1+off}, ${x2} ${y2-off}, ${x2} ${y2}`, color, op, opts.dashed);
@@ -138,7 +142,8 @@ class FlowChart {
     if (!a || !b) return;
     const x1 = a.cx, y1 = a.y + a.h;
     const x2 = b.cx, y2 = b.y + b.h;
-    const midY = Math.max(y1, y2) + 20;
+    const vwScale = window.innerWidth / 1600;
+    const midY = Math.max(y1, y2) + 20 * vwScale;
     const color = opts.color || this.color;
     const op = opts.opacity || '0.35';
     this.mkPath(`M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`, color, op, true);
@@ -151,13 +156,15 @@ class FlowChart {
     if (!a || !b) return;
     const x1 = a.cx, y1 = a.y;
     const x2 = b.cx, y2 = b.y;
-    const peakY = Math.min(y1, y2) - 18;
+    const vwScale = window.innerWidth / 1600;
+    const peakY = Math.min(y1, y2) - 18 * vwScale;
     const color = opts.color || this.color;
     const op = opts.opacity || '0.35';
     this.mkPath(`M ${x1} ${y1} C ${x1} ${peakY}, ${x2} ${peakY}, ${x2} ${y2}`, color, op, true);
     this.mkArrow(x2, y2, Math.PI / 2, color, op);
     if (opts.label) {
-      this.mkLabel(x2, peakY - 4, opts.label);
+      const vwScale = window.innerWidth / 1600;
+      this.mkLabel(x2, peakY - 4 * vwScale, opts.label);
     }
   }
 
@@ -167,7 +174,8 @@ class FlowChart {
     if (!a || !b) return;
     const x1 = a.cx, y1 = a.y;
     const x2 = b.cx, y2 = b.y + b.h;
-    const leftX = Math.min(x1, x2) - 30;
+    const vwScale = window.innerWidth / 1600;
+    const leftX = Math.min(x1, x2) - 30 * vwScale;
     const color = opts.color || this.color;
     const op = opts.opacity || '0.55';
     this.mkPath(`M ${x1} ${y1} C ${leftX} ${y1}, ${leftX} ${y2}, ${x2} ${y2}`, color, op, true);
@@ -186,7 +194,8 @@ class FlowChart {
     if (!a || !b) return;
     const x1 = a.x, y1 = a.cy;
     const x2 = b.x, y2 = b.cy;
-    const leftX = Math.min(x1, x2) - (opts.leftOffset || 35);
+    const vwScale = window.innerWidth / 1600;
+    const leftX = Math.min(x1, x2) - ((opts.leftOffset || 35) * vwScale);
     const color = opts.color || this.color;
     const op = opts.opacity || '0.35';
     this.mkPath(`M ${x1} ${y1} C ${leftX} ${y1}, ${leftX} ${y2}, ${x2} ${y2}`, color, op, !opts.solid);
@@ -205,7 +214,8 @@ class FlowChart {
     if (!a || !b) return;
     const x1 = a.x + a.w, y1 = a.cy;
     const x2 = b.x + b.w, y2 = b.cy;
-    const rightX = Math.max(x1, x2) + (opts.rightOffset || 35);
+    const vwScale = window.innerWidth / 1600;
+    const rightX = Math.max(x1, x2) + ((opts.rightOffset || 35) * vwScale);
     const color = opts.color || this.color;
     const op = opts.opacity || '0.35';
     this.mkPath(`M ${x1} ${y1} C ${rightX} ${y1}, ${rightX} ${y2}, ${x2} ${y2}`, color, op, !opts.solid);
@@ -224,7 +234,8 @@ class FlowChart {
     if (!a || !b) return;
     const x1 = a.cx, y1 = a.y;
     const x2 = b.cx, y2 = b.y + b.h;
-    const off = Math.max(Math.abs(y1 - y2) * 0.42, 15);
+    const vwScale = window.innerWidth / 1600;
+    const off = Math.max(Math.abs(y1 - y2) * 0.42, 15 * vwScale);
     const color = opts.color || this.color;
     const op = opts.opacity || '0.55';
     this.mkPath(`M ${x1} ${y1} C ${x1} ${y1-off}, ${x2} ${y2+off}, ${x2} ${y2}`, color, op, opts.dashed);
@@ -243,7 +254,8 @@ class FlowChart {
     if (!a || !b) return;
     const x1 = a.x,       y1 = a.cy;
     const x2 = b.x + b.w, y2 = b.cy;
-    const off = Math.max(Math.abs(x1 - x2) * 0.42, 20);
+    const vwScale = window.innerWidth / 1600;
+    const off = Math.max(Math.abs(x1 - x2) * 0.42, 20 * vwScale);
     const color = opts.color || this.color;
     const op = opts.opacity || '0.55';
     this.mkPath(`M ${x1} ${y1} C ${x1-off} ${y1}, ${x2+off} ${y2}, ${x2} ${y2}`, color, op, opts.dashed);
@@ -262,7 +274,8 @@ class FlowChart {
     if (!a || !b) return;
     const x1 = a.cx, y1 = a.y + a.h;
     const x2 = b.cx, y2 = b.y;
-    const off = Math.max(Math.abs(y2 - y1) * 0.35, 20);
+    const vwScale = window.innerWidth / 1600;
+    const off = Math.max(Math.abs(y2 - y1) * 0.35, 20 * vwScale);
     const color = opts.color || this.color;
     const op = opts.opacity || '0.35';
     this.mkPath(`M ${x1} ${y1} C ${x1} ${y1+off}, ${x2} ${y2-off}, ${x2} ${y2}`, color, op, opts.dashed);

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../assets/pipeline.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Roboto', sans-serif;
+  width: 100vw; height: 100vh;
+  background:#fff;
+  display: flex; justify-content: center; align-items: center;
+  overflow: hidden; color: #111;
+}
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+<style>
+  .title, .title-main, .title-sub, h1, h2, .intro-text {
+    font-family: 'Ultra', serif !important;
+    font-weight: normal !important;
+  }
+</style>
+
+</head>
+<body>
+<svg id="gh-wires"></svg>
+<div class="gh-canvas" id="gh-canvas"></div>
+
+<script src="../assets/pipeline.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   DATA DECLARATIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+const LAYERS = [
+  /* ── L1 : Capture ──────────────────────────── */
+  {
+    id: 'L1', label: 'L1', title: '👁️ Capture', sub: 'Adaptive interval',
+    theme: 't1',
+    portsIn: [
+      { id: 'L1-in-cam', label: 'Camera', cls: 'ext' },
+      { id: 'L1-in-mic', label: 'Microphone', cls: 'ext' },
+      { id: 'L1-in-imu', label: 'IMU', cls: 'ext' },
+    ],
+    blocks: [
+      { title: 'Vision', desc: '',
+        portIn: 'L1-vision-in', portOut: 'L1-vision-out',
+        subs: [{ label: 'Adaptive interval', children: ['2s → 5s → 8s → 12s'] }] },
+      { title: 'Audio', desc: '',
+        portIn: 'L1-aud-in', portOut: 'L1-aud-out',
+        subs: [
+          { label: 'Speech Detection', children: ['Trigger (onset/offset)', 'Tag (speech detected)'] },
+          { label: 'Noise Level', children: ['Tag (quiet / moderate / loud)'] },
+        ] },
+      { title: 'Motion', desc: '',
+        portIn: 'L1-imu-in', portOut: 'L1-imu-out',
+        subs: [
+          { label: 'Motion Detection', children: ['Trigger (sustained motion)', 'Tag (stationary / sustained)'] },
+        ] },
+    ],
+    portsOut: [
+      { id: 'L1-out-vis', label: 'Frames', dark: true },
+      { id: 'L1-out-aud', label: 'Aud Tags', dark: true },
+      { id: 'L1-out-imu', label: 'IMU Tags', dark: true },
+    ],
+    footer: '<strong>Runs on Edge</strong> (📱 iPhone) · All sensing, triggering, and capture happen on-device',
+  },
+
+  /* ── L1.5 : Preprocess ─────────────────────── */
+  {
+    id: 'L15', label: 'L1.5', title: '🏭 Preprocess', sub: 'Passive consumer',
+    theme: 't15',
+    portsIn: [
+      { id: 'L15-in-all', label: 'Raw Data', dark: true },
+    ],
+    blocks: [
+      { title: 'Scene batching', desc: '',
+        portIn: 'L15-scene-in', portOut: 'L15-scene-out',
+        subs: [
+          { label: 'Boundary Detection', children: ['Visual similarity → cut', 'Max window fallback'] },
+        ] },
+      { title: 'Frame selection', desc: '',
+        portIn: 'L15-frame-in', portOut: 'L15-frame-out',
+        subs: [
+          { label: 'Multi-axis scoring', children: ['<code>w·vis + w·aud + w·imu + w·spar</code>', 'Visual clarity', 'Audio transition', 'Motion transition', 'Temporal spread'] },
+          { label: 'Score-aware dedup', children: ['Greedy · score-descending', 'Drop near-duplicates'] },
+        ] },
+    ],
+    portsOut: [
+      { id: 'L15-out-batch', label: 'Batch', dark: true },
+    ],
+    footer: '<strong>Runs on Edge</strong> (📱 iPhone) · Scene cut detection and frame selection on-device',
+  },
+
+  /* ── L2 : Inference ────────────────────────── */
+  {
+    id: 'L2', label: 'L2', title: '💡 Inference', sub: '1:1 with preprocess batch',
+    theme: 't2', sequential: true,
+    portsIn: [
+      { id: 'L2-in-prompt', label: 'Log Prompt', dark: true },
+      { id: 'L2-in-batch', label: 'Batch', dark: true },
+      { id: 'L2-in-ctx', label: 'Prior Context', dark: true },
+    ],
+    blocks: [
+      { title: 'VLM API call', desc: '',
+        portIn: 'L2-vlm-in', portOut: 'L2-vlm-out',
+        subs: [
+          { label: 'Prompt Assembly', children: ['Log Prompt (system)', 'Batch frames (multi-image)', 'Prior Context (few-shot)'] },
+        ] },
+    ],
+    portsOut: [
+      { id: 'L2-out-result', label: 'Structured JSON', dark: true },
+    ],
+    footer: '<strong>Runs on 🖥️ Mac</strong> (🦞 OpenClaw host) · VLM inference via ☁️ API call',
+  },
+
+  /* ── L3 : Memory ───────────────────────────── */
+  {
+    id: 'L3', label: 'L3', title: '📚 Memory', sub: 'Four-tier hierarchy',
+    theme: 't3',
+    portsIn: [
+      { id: 'L3-in-result', label: 'Structured JSON', dark: true },
+      { id: 'L3-in-inc', label: 'Incr. Prompt', dark: true },
+      { id: 'L3-in-con', label: 'Cons. Prompt', dark: true },
+      { id: 'L3-in-tl', label: 'TL Prompt', dark: true },
+      { id: 'L3-in-pp', label: 'Pat. Prompt', dark: true },
+    ],
+    blocks: [
+      { title: 'physical-logs/', titleClass: 'mono',
+        desc: 'Raw observations appended every batch of captures',
+        portIn: 'L3-logs-in', portOut: 'L3-logs-out',
+        subs: ['YYYY-MM-DD.md'] },
+      { title: 'physical-insights/', titleClass: 'mono',
+        desc: 'Current state + highlights updated every bunch of logs',
+        portIn: 'L3-ins-in', portOut: 'L3-ins-out',
+        subs: [{ label: 'YYYY-MM-DD.md', children: ['Current State', 'Today\'s Highlights'] }] },
+      { title: 'physical-daily-narrative/', titleClass: 'mono', titleStyle: 'font-size:0.85vw;',
+        desc: 'Accumulated states + nightly timeline summary',
+        portIn: 'L3-nar-in', portOut: 'L3-nar-out',
+        subs: ['YYYY-MM-DD-states.md', 'YYYY-MM-DD-timeline.md'] },
+      { title: 'physical-pattern.md', titleClass: 'mono', titleStyle: 'font-size:0.95vw;',
+        desc: 'Cross-day behavioral patterns (nightly summary)',
+        portIn: 'L3-pat-in', portOut: 'L3-pat-out' },
+    ],
+    portsOut: [
+      { id: 'L3-out-logs', label: 'Logs', dark: true },
+      { id: 'L3-out-insights', label: 'Insights', dark: true },
+      { id: 'L3-out-pattern', label: 'Pattern', dark: true },
+    ],
+    footer: '<strong>Runs on 🖥️ Mac</strong> · Memory stored in <code>.openclaw/</code> (🦞 OpenClaw home directory)',
+  },
+
+  /* ── L3.5 : Retrieval ──────────────────────── */
+  {
+    id: 'L35', label: 'L3.5', title: '🔍 Retrieval', sub: 'OpenClaw Agent Interface',
+    theme: 't35',
+    portsIn: [
+      { id: 'L35-in-query', label: 'Agent Query', cls: 'ext' },
+      { id: 'L35-in-logs', label: 'Logs', dark: true },
+      { id: 'L35-in-insights', label: 'Insights', dark: true },
+      { id: 'L35-in-pattern', label: 'Pattern', dark: true },
+    ],
+    blocks: [
+      { title: 'Context inject', desc: 'Inject insights & pattern files into AGENTS.md (to bootstrap agent to read them)',
+        portIn: 'L35-ctx-in', portOut: 'L35-ctx-out' },
+      { title: 'On-demand retrieval', desc: 'Query-triggered relevant memory retrieval',
+        portIn: 'L35-ondemand-in', portOut: 'L35-ondemand-out' },
+      { title: 'Proactive cron', desc: 'Scheduled, proactive context refresh',
+        portIn: 'L35-cron-in', portOut: 'L35-cron-out' },
+    ],
+    portsOut: [
+      { id: 'L35-out-session', label: 'Session Start' },
+      { id: 'L35-out-ondemand', label: 'On-demand' },
+      { id: 'L35-out-cron', label: 'Cron Job' },
+    ],
+    footer: '<strong>Runs on 🖥️ Mac</strong> · 🦞 OpenClaw Agent interface',
+  },
+];
+
+/* ── Unified Wire Definitions ──────────────────── */
+const WIRES = [
+  // External: L1 → L1.5
+  { from: 'L1-out-vis',  to: 'L15-in-all',  color: '#6B8C3F' },
+  { from: 'L1-out-aud',  to: 'L15-in-all',  color: '#6B8C3F' },
+  { from: 'L1-out-imu',  to: 'L15-in-all',  color: '#6B8C3F' },
+  // External: L1.5 → L2
+  { from: 'L15-out-batch', to: 'L2-in-batch', color: '#3E8E8A' },
+  // External: L2 → L3
+  { from: 'L2-out-result', to: 'L3-in-result', color: '#C4872F' },
+  // Loop: L2 output → Prior Context input
+  { from: 'L2-out-result', to: 'L2-in-ctx', color: '#C4872F', type: 'loop' },
+  // External: L3 → L3.5
+  { from: 'L3-out-logs',     to: 'L35-in-logs',     color: '#A64D5C' },
+  { from: 'L3-out-insights', to: 'L35-in-insights', color: '#A64D5C' },
+  { from: 'L3-out-pattern',  to: 'L35-in-pattern',  color: '#A64D5C' },
+  // Internal: L1 sensor inputs → blocks
+  { from: 'L1-in-cam', to: 'L1-vision-in', color: '#6B8C3F', type: 'internal' },
+  { from: 'L1-in-mic', to: 'L1-aud-in',   color: '#6B8C3F', type: 'internal' },
+  { from: 'L1-in-imu', to: 'L1-imu-in',   color: '#6B8C3F', type: 'internal' },
+  // Internal: L1 blocks → output ports
+  { from: 'L1-vision-out', to: 'L1-out-vis', color: '#6B8C3F', type: 'internal' },
+  { from: 'L1-aud-out',    to: 'L1-out-aud', color: '#6B8C3F', type: 'internal' },
+  { from: 'L1-imu-out',    to: 'L1-out-imu', color: '#6B8C3F', type: 'internal' },
+  // Internal: L1.5 Raw Data → Scene batching → Frame selection → Batch output
+  { from: 'L15-in-all',    to: 'L15-scene-in',  color: '#3E8E8A', type: 'internal' },
+  { from: 'L15-scene-out', to: 'L15-frame-in',  color: '#3E8E8A', type: 'internal' },
+  { from: 'L15-frame-out', to: 'L15-out-batch', color: '#3E8E8A', type: 'internal' },
+  // Internal: L2 inputs → VLM API call → output
+  { from: 'L2-in-prompt', to: 'L2-vlm-in', color: '#C4872F', type: 'internal' },
+  { from: 'L2-in-batch',  to: 'L2-vlm-in', color: '#C4872F', type: 'internal' },
+  { from: 'L2-in-ctx',    to: 'L2-vlm-in', color: '#C4872F', type: 'internal' },
+  { from: 'L2-vlm-out',   to: 'L2-out-result', color: '#C4872F', type: 'internal' },
+  // Config: L3 prompt inputs
+  { from: 'L3-in-inc',  to: 'L3-ins-in',  color: '#A64D5C', type: 'internal' },
+  { from: 'L3-in-con',  to: 'L3-ins-in',  color: '#A64D5C', type: 'internal' },
+  { from: 'L3-in-tl',   to: 'L3-nar-in',  color: '#A64D5C', type: 'internal' },
+  { from: 'L3-in-pp',   to: 'L3-pat-in',  color: '#A64D5C', type: 'internal' },
+  // Internal: L3 Memory wiring
+  { from: 'L3-in-result', to: 'L3-logs-in', color: '#A64D5C', type: 'internal' },
+  { from: 'L3-logs-out',  to: 'L3-ins-in',  color: '#A64D5C', type: 'internal', label: 'Incremental' },
+  { from: 'L3-ins-out',   to: 'L3-nar-in',  color: '#A64D5C', type: 'internal' },
+  { from: 'L3-ins-out',   to: 'L3-ins-in',  color: '#A64D5C', type: 'intLoop', label: 'Consolidated' },
+  { from: 'L3-ins-out',   to: 'L3-pat-in',  color: '#A64D5C', type: 'internal' },
+  { from: 'L3-nar-out',   to: 'L3-pat-in',  color: '#A64D5C', type: 'internal' },
+  { from: 'L3-pat-out',   to: 'L3-pat-in',  color: '#A64D5C', type: 'intLoop' },
+  // Internal: L3 outputs
+  { from: 'L3-logs-out',   to: 'L3-out-logs',    color: '#A64D5C', type: 'internal' },
+  { from: 'L3-ins-out',   to: 'L3-out-insights', color: '#A64D5C', type: 'internal' },
+  { from: 'L3-pat-out',   to: 'L3-out-pattern',  color: '#A64D5C', type: 'internal' },
+  // Internal: L3.5 Retrieval wiring
+  { from: 'L35-in-insights', to: 'L35-ctx-in',      color: '#6E5F50', type: 'internal' },
+  { from: 'L35-in-pattern',  to: 'L35-ctx-in',      color: '#6E5F50', type: 'internal' },
+  { from: 'L35-in-logs',     to: 'L35-ondemand-in',  color: '#6E5F50', type: 'internal' },
+  { from: 'L35-in-insights', to: 'L35-ondemand-in',  color: '#6E5F50', type: 'internal' },
+  { from: 'L35-in-pattern',  to: 'L35-ondemand-in',  color: '#6E5F50', type: 'internal' },
+  { from: 'L35-in-insights', to: 'L35-cron-in',      color: '#6E5F50', type: 'internal' },
+  { from: 'L35-in-query', to: 'L35-ctx-in',      color: '#6E5F50', type: 'trigger', label: 'Triggers' },
+  { from: 'L35-in-query', to: 'L35-ondemand-in',  color: '#6E5F50', type: 'trigger', label: 'Triggers' },
+  // Internal: L3.5 blocks → outputs
+  { from: 'L35-ctx-out',      to: 'L35-out-session',  color: '#6E5F50', type: 'internal' },
+  { from: 'L35-ondemand-out', to: 'L35-out-ondemand', color: '#6E5F50', type: 'internal' },
+  { from: 'L35-cron-out',     to: 'L35-out-cron',     color: '#6E5F50', type: 'internal' },
+  // Trigger: L1 Audio/IMU → Vision input
+  { from: 'L1-aud-out', to: 'L1-vision-in', color: '#6B8C3F', type: 'trigger', label: 'Triggers' },
+  { from: 'L1-imu-out', to: 'L1-vision-in', color: '#6B8C3F', type: 'trigger', label: 'Triggers' },
+];
+
+
+/* ═══════════════════════════════════════════════════════════════
+   BOOT
+   ═══════════════════════════════════════════════════════════════ */
+const canvas = new Canvas('gh-canvas', 'gh-wires');
+canvas.build(LAYERS, WIRES);
+</script>
+</body>
+</html>

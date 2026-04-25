@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../assets/monitor-slide.css">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+<style>
+  .title, .title-main, .title-sub, h1, h2, .intro-text {
+    font-family: 'Ultra', serif !important;
+    font-weight: normal !important;
+  }
+</style>
+
+</head>
+<body>
+
+<!-- Left: Settings -->
+<div class="panel panel-left">
+  <div class="panel-title">Settings - Parameters</div>
+
+  <div class="group-title">Capture Interval</div>
+  <div class="item"><div class="dot"></div><span class="item-label">Min interval</span><span class="item-desc">minimum capture cadence (s)</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Max interval</span><span class="item-desc">idle cadence ceiling (s)</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Ramp ratio</span><span class="item-desc">geometric step between ramp levels</span></div>
+
+  <div class="group-title">Audio</div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">VAD sensitivity</span><span class="item-desc">Low / Med / High</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Transcription</span><span class="item-desc">on-device speech-to-text toggle</span></div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">Noise quiet threshold</span><span class="item-desc">dB floor for "quiet" state</span></div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">Noise loud threshold</span><span class="item-desc">dB ceiling for "loud" state</span></div>
+
+  <div class="group-title">IMU</div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">Sustained motion threshold</span><span class="item-desc">seconds before motion trigger fires</span></div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">Variance low threshold</span><span class="item-desc">g² below → stationary</span></div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">Variance high threshold</span><span class="item-desc">g² above → active motion</span></div>
+
+  <div class="group-title">Batch / Frame Selection</div>
+  <div class="item"><div class="dot"></div><span class="item-label">First batch window</span><span class="item-desc">initial accumulation window (s)</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Max window</span><span class="item-desc">hard timeout per batch (min)</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">SSIM boundary threshold</span><span class="item-desc">scene-cut sensitivity</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Dedup SSIM threshold</span><span class="item-desc">similarity floor for greedy dedup</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">K density</span><span class="item-desc">target frames per minute</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">K min / K max</span><span class="item-desc">clamp range for dynamic K</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Score threshold</span><span class="item-desc">guaranteed-keep floor score</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Max output frames</span><span class="item-desc">hard cap per batch</span></div>
+
+  <div class="group-title">Outbox</div>
+  <div class="item"><div class="dot green"></div><span class="item-label">Upload endpoint</span><span class="item-desc">Tailscale URL for POST /ingest</span></div>
+</div>
+
+<!-- Center: Screenshot -->
+<img src="../assets/capture-monitor.png" alt="Capture Monitor">
+
+<!-- Right: Real-time Data -->
+<div class="panel">
+  <div class="panel-title">Real-time Monitor</div>
+
+  <div class="group-title">Sensor Pipeline</div>
+  <div class="item"><div class="dot green"></div><span class="item-label">Current interval</span><span class="item-desc">active capture cadence (s)</span></div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">VAD state</span><span class="item-desc">silent / speech — live RMS chart</span></div>
+  <div class="item"><div class="dot green"></div><span class="item-label">Noise level</span><span class="item-desc">smoothed dB — quiet / loud chart</span></div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">IMU state</span><span class="item-desc">stationary / moving — variance chart + sustained bar</span></div>
+
+  <div class="group-title">Frame Processing</div>
+  <div class="item"><div class="dot"></div><span class="item-label">SSIM debug</span><span class="item-desc">reference vs. incoming frame pair + score</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Buffer state</span><span class="item-desc">frames accumulated in current window</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Last batch</span><span class="item-desc">trigger type, frame count, timestamp</span></div>
+
+  <div class="group-title">Batch Output</div>
+  <div class="item"><div class="dot green"></div><span class="item-label">Latest batch output</span><span class="item-desc">selected frames + trigger tags</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Batch history</span><span class="item-desc">scrollable log of past batches</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Layer 1 latest frame</span><span class="item-desc">raw frame JSON with all sensor metadata</span></div>
+
+  <div class="group-title">Device Status</div>
+  <div class="item"><div class="dot"></div><span class="item-label">Live camera stream</span><span class="item-desc">current viewfinder with angle & resolution</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Battery</span><span class="item-desc">device charge level</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Frames captured</span><span class="item-desc">session total</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Batches sent</span><span class="item-desc">session total</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Storage used</span><span class="item-desc">local frames directory size</span></div>
+</div>
+
+</body>
+</html>

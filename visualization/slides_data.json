@@ -1,13 +1,6 @@
 {
   "slides": [
     {
-      "section": "Research Image",
-      "subtitle": "Representative Research Image",
-      "src": "/slides/slide-files/00_research_image.html",
-      "aspectRatio": "3.25/2.75",
-      "script": "NO NEED"
-    },
-    {
       "section": "cover",
       "src": "/slides/slide-files/01_cover.html",
       "subtitle": "",
@@ -51,195 +44,201 @@
     },
     {
       "section": "Intro",
+      "subtitle": "Personalization",
+      "src": "/slides/slide-files/08_personalization.html",
+      "script": "New personalization slide script."
+    },
+    {
+      "section": "Intro",
       "subtitle": "Why Personalization Matters",
-      "src": "/slides/slide-files/08_why_personalization_matters.html",
+      "src": "/slides/slide-files/09_why_personalization_matters.html",
       "script": "With all the agency provided by OpenClaw, why is personalization so critical? Quite simply: Personalization is Effectiveness. On the left is the Generic Agent. Because it doesn't know you, your unique context leaks out through a Fixed Prompt Bottleneck, often leading to scattered and irrelevant results. On the right is the Personalized Agent. It uses a Memory Fusion Engine to integrate your Preferences, History, and Goals into a single Continuous Context. By truly knowing who you are, the agent can hit your intended outcome with precision every single time."
     },
     {
       "section": "The Blind Spot",
       "subtitle": "The Blind Spot",
-      "src": "/slides/slide-files/09_the_blind_spot.html",
+      "src": "/slides/slide-files/10_the_blind_spot.html",
       "script": "However, there is a massive 'Blind Spot.'"
     },
     {
       "section": "The Blind Spot",
       "subtitle": "Two Worlds",
-      "src": "/slides/slide-files/10_two_worlds.html",
+      "src": "/slides/slide-files/11_two_worlds.html",
       "script": "This blind spot exists because we inhabit two worlds simultaneously. On the left is the Digital Dimension—the realm of browser tabs, calendar invites, and chat logs that our agents know perfectly. But on the right is the Physical World—where our actual lives unfold. This is where an agent could finally see that book gathering dust on your shelf, or recognize your stress levels in the clutter of your desk. Currently, our agents are personalizing from only half the picture. They understand the digital trace, but they are strangers to the human context."
     },
     {
       "section": "The Blind Spot",
       "subtitle": "Research Landscape",
-      "src": "/slides/slide-files/11_research_landscape.html",
+      "src": "/slides/slide-files/12_research_landscape.html",
       "script": "Existing research has focused on lifelogging or activity recognition, but rarely on how these physical observations can be integrated into the core memory of a persistent AI agent. We are moving beyond just 'tracking' to 'integrating' physical context into the agent's cognition."
     },
     {
       "section": "The Blind Spot",
       "subtitle": "Research Questions",
-      "src": "/slides/slide-files/12_research_questions.html",
+      "src": "/slides/slide-files/13_research_questions.html",
       "script": "My research addresses three core questions: First, what unique personalization data becomes visible through egocentric vision? Second, when does this information actually improve agent performance? And third, what are the design requirements for a memory system that can handle this continuous physical input?"
     },
     {
       "section": "Design Rationale",
       "subtitle": "Design Rationale",
-      "src": "/slides/slide-files/13_design_rationale_cover.html",
+      "src": "/slides/slide-files/14_design_rationale_cover.html",
       "script": "Let's dive into the Design Rationale."
     },
     {
       "section": "Design Rationale",
       "subtitle": "Why Egocentric Vision?",
-      "src": "/slides/slide-files/14_why_egocentric_vision.html",
+      "src": "/slides/slide-files/15_why_egocentric_vision.html",
       "script": "We chose egocentric vision because it captures the world from the user's perspective. \n\nIt doesn't just record video; it records the user's 'implicit attention.' What you look at, what you interact with, and how you move through space are powerful signals of your current state and long-term habits."
     },
     {
       "section": "Design Rationale",
       "subtitle": "Why OpenClaw?",
-      "src": "/slides/slide-files/15_why_openclaw.html",
+      "src": "/slides/slide-files/16_why_openclaw.html",
       "script": "OpenClaw was selected for its 'transparent memory' architecture. By using local markdown files, it ensures that sensitive physical-world data remains under the user's control. It allows us to build a memory system that is human-readable, auditable, and entirely private."
     },
     {
       "section": "Design Rationale",
       "subtitle": "How OpenClaw works",
-      "src": "/slides/slide-files/16_how_openclaw_works.html",
+      "src": "/slides/slide-files/17_how_openclaw_works.html",
       "script": "The core of OpenClaw is its ability to synthesize discrete notes into a long-term knowledge base. Our system leverages this by feeding structured physical observations directly into this existing knowledge loop."
     },
     {
       "section": "System Design",
       "subtitle": "System Design",
-      "src": "/slides/slide-files/17_system_design_cover.html",
+      "src": "/slides/slide-files/18_system_design_cover.html",
       "script": "I'd like to walk you through the system design of SpaceSelfLog—a full-stack pipeline designed to turn raw egocentric video into high-level agent intelligence."
     },
     {
       "section": "System Design",
       "subtitle": "The Pipeline",
-      "src": "/slides/slide-files/18_system_pipeline.html",
+      "src": "/slides/slide-files/19_system_pipeline.html",
       "script": "The pipeline is organized into four distinct layers: Capture, Preprocessing, Inference, and Memory Integration. This modular approach allows us to handle high-volume visual data on a resource-constrained mobile device while performing heavy semantic reasoning on the server."
     },
     {
       "section": "System Design",
       "subtitle": "Layer 1 Capture & Layer 1.5 Preprocess",
-      "src": "/slides/slide-files/19_layer1_layer1_5.html",
+      "src": "/slides/slide-files/20_layer1_layer1_5.html",
       "script": "To manage battery life and privacy, we use 'Adaptive Capture.' Sensors like VAD and IMU detect changes in the user's state—like starting a conversation or moving to a new room—and automatically trigger a higher frame rate. Preprocessing then filters out blurs and performs local deduplication to ensure only high-signal keyframes are processed."
     },
     {
       "section": "System Design",
       "subtitle": "Capture Monitor",
-      "src": "/slides/slide-files/20_capture_monitor.html",
+      "src": "/slides/slide-files/21_capture_monitor.html",
       "script": "This is our real-time capture monitor, where you can see the adaptive interval strategy in action. The system becomes 'attentive' exactly when the physical environment changes, ensuring we capture transitions without wasting computation on static scenes."
     },
     {
       "section": "System Design",
       "subtitle": "Layer 2 Inference",
-      "src": "/slides/slide-files/21_layer2_inference.html",
+      "src": "/slides/slide-files/22_layer2_inference.html",
       "script": "In the Inference layer, keyframes are sent to a Vision-Language Model. The model is prompted not just to describe the scene, but to interpret it: 'What does this reveal about the user's habits?' It extracts activities, locations, objects, and social context into structured JSON."
     },
     {
       "section": "System Design",
       "subtitle": "Layer 3 Memory",
-      "src": "/slides/slide-files/22_layer3_memory.html",
+      "src": "/slides/slide-files/23_layer3_memory.html",
       "script": "This is the core innovation: our 3-tier memory architecture. 'Physical Logs' store the raw sensory data; 'Physical Insights' provide a rolling intra-day distillation of noteworthy events; and 'Physical Pattern' maintains the user's long-term identity. This tiered approach mimics human memory—from immediate sensory perception to long-term behavioral abstraction."
     },
     {
       "section": "System Design",
       "subtitle": "Server Monitor",
-      "src": "/slides/slide-files/23_server_monitor.html",
+      "src": "/slides/slide-files/24_server_monitor.html",
       "script": "The server monitor tracks the flow of these inferences and manages the nightly consolidation of daily insights into the persistent pattern profile. It's the engine that powers the agent's long-term understanding."
     },
     {
       "section": "System Design",
       "subtitle": "Layer 3.5 Retrieval",
-      "src": "/slides/slide-files/24_layer3_5_retrieval.html",
+      "src": "/slides/slide-files/25_layer3_5_retrieval.html",
       "script": "Finally, the retrieval layer allows the agent to query this memory using semantic search. Whether the agent needs a specific detail from an hour ago or a general habit from last week, the memory is indexed and ready."
     },
     {
       "section": "System Design",
       "subtitle": "Full Pipeline Overview",
-      "src": "/slides/slide-files/25_full_pipeline.html",
+      "src": "/slides/slide-files/26_full_pipeline.html",
       "script": "From the wearable device to the structured memory file, this end-to-end pipeline enables a seamless bridge between a user's physical actions and their agent's digital reasoning."
     },
     {
       "section": "Study Design",
       "subtitle": "Study Design",
-      "src": "/slides/slide-files/26_study_design_cover.html",
+      "src": "/slides/slide-files/27_study_design_cover.html",
       "script": "To evaluate this architecture, I conducted a two-week autoethnographic study using a 'Research through Design' methodology."
     },
     {
       "section": "Study Design",
       "subtitle": "Study Design",
-      "src": "/slides/slide-files/27_study_design_overview.html",
+      "src": "/slides/slide-files/28_study_design_overview.html",
       "script": "The study was divided into two phases: a Calibration phase to tune the pipeline parameters, followed by a formal Observation phase where all system parameters were frozen to ensure the integrity of the collected data."
     },
     {
       "section": "Study Design",
       "subtitle": "Data Collection",
-      "src": "/slides/slide-files/28_study_design_metrics.html",
+      "src": "/slides/slide-files/29_study_design_metrics.html",
       "script": "We collected a comprehensive dataset including thousands of egocentric keyframes, full interaction transcripts with the agent, and daily structured journals to capture the interpretive nuances of the system's performance."
     },
     {
       "section": "Study Design",
       "subtitle": "Experimental Protocol",
-      "src": "/slides/slide-files/29_study_design_protocol.html",
+      "src": "/slides/slide-files/30_study_design_protocol.html",
       "script": "The study protocol involved three observation methods: Passive Observation of natural interactions, Structured Probes to test specific memory recall, and a Proactive Cron job that allowed the agent to initiate contact based on its own judgment of recent physical events."
     },
     {
       "section": "Study Design",
       "subtitle": "Study Device",
-      "src": "/slides/slide-files/30_study_device.html",
+      "src": "/slides/slide-files/31_study_device.html",
       "script": "The study device—a head-mounted iPhone proxy—approximates the perspective of upcoming smart glasses, capturing what the user actually looks at to maintain the 'implicit attention' signal central to our design."
     },
     {
       "section": "Study Design",
       "subtitle": "Design Iteration Log",
-      "src": "/slides/slide-files/31_design_iteration_log.html",
+      "src": "/slides/slide-files/32_design_iteration_log.html",
       "script": "Every modification made during the calibration phase was logged, documenting the iterative process of balancing capture density, VLM accuracy, and memory retention."
     },
     {
       "section": "Study Design",
       "subtitle": "Autoethnographic Journal",
       "script": "My journals captured the 'lived experience' of the system—identifying moments where the agent successfully anticipated a need versus moments where the physical context was misunderstood or ignored.",
-      "src": "/slides/slide-files/32_autoethnographic_journal.html"
+      "src": "/slides/slide-files/33_autoethnographic_journal.html"
     },
     {
       "section": "Results",
       "subtitle": "Results",
-      "src": "/slides/slide-files/33_results.html",
+      "src": "/slides/slide-files/34_results.html",
       "script": "Now, let's look at what this data reveals about the potential of physical-world observation for personalization."
     },
     {
       "section": "Results",
       "subtitle": "Full Timeline Wall",
-      "src": "/slides/slide-files/34_results_photowall.html",
+      "src": "/slides/slide-files/35_results_photowall.html",
       "wide": true,
       "script": "This 'Timeline Wall' represents two weeks of my life through the eyes of the agent. It captures the sheer diversity and density of information that egocentric perception makes visible—from morning routines to late-night work sessions—creating a visual tapestry of my personalized user model."
     },
     {
       "section": "Results",
       "subtitle": "Activity Daily Rhythm Matrix",
-      "src": "/slides/slide-files/35_results_activity_rhythm.html",
+      "src": "/slides/slide-files/36_results_activity_rhythm.html",
       "script": "The Activity Rhythm Matrix reveals the deep structure of my life. By logging physical activities over time, the agent can identify recurring routines and deviations, allowing it to adapt its suggestions to the specific rhythm of my day."
     },
     {
       "section": "Results",
       "subtitle": "Object Co-occurrence Network",
-      "src": "/slides/slide-files/36_results_object_network.html",
+      "src": "/slides/slide-files/37_results_object_network.html",
       "script": "This network graph shows how objects 'cluster' around certain activities. It illustrates my habits: which tools I use for work, which ingredients I use for cooking, and how these physical objects define the context of my needs."
     },
     {
       "section": "Results",
       "subtitle": "Context to Activity Flow",
-      "src": "/slides/slide-files/37_results_sankey.html",
+      "src": "/slides/slide-files/38_results_sankey.html",
       "script": "The Sankey diagram shows the flow between environments and actions. It proves that physical location is a primary driver of behavior, and by understanding this flow, the agent can better predict and support user intent."
     },
     {
       "section": "Results",
       "subtitle": "Apartment Activity Heatmap",
-      "src": "/slides/slide-files/38_results_floorplan.html",
+      "src": "/slides/slide-files/39_results_floorplan.html",
       "script": "By projecting activities onto a floor plan, we identify the 'hotspots' of my life. These aren't just coordinates; they are the physical anchors of my identity, which the agent can now use to ground its responses in spatial reality."
     },
     {
       "section": "Results",
       "subtitle": "Integrated Spatial Activity Map",
-      "src": "/slides/slide-files/39_results_fusion_map.html",
+      "src": "/slides/slide-files/40_results_fusion_map.html",
       "script": "Finally, this Integrated Map represents the ultimate vision: a personal AI agent that is no longer blind. By bridging the physical and digital worlds, we have created an agent that doesn't just manage your data—it understands your life. This is the future of truly personal intelligence. Thank you."
     }
   ]

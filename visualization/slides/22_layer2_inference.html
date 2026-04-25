@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../assets/flowchart.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      width: 100vw;
+      height: 100vh;
+      background: #fff;
+      color: #111;
+      overflow: hidden;
+    }
+
+    /* ── Full-viewport flow chart ── */
+    .flow-chart {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .flow-chart svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 1.2vw;
+      position: relative;
+      z-index: 10;
+    }
+
+    .flow-row+.flow-row {
+      margin-top: 1.5vw;
+    }
+
+    /* ── Main flow (upper-left area) ── */
+    .main-flow {
+      position: absolute;
+      left: 24vw;
+      top: 12vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Annotation (upper-right area) ── */
+    .annotation-area {
+      position: absolute;
+      right: 26vw;
+      top: 72vh;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5vw;
+      align-items: center;
+    }
+
+    /* ── Zone labels ── */
+    .zone-label {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3vw;
+    }
+
+    .zone-title {
+      font-size: 1.4vw;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .zone-subtitle {
+      font-size: 1vw;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .zone-desc {
+      font-size: 1vw;
+      color: #666;
+      line-height: 1.45;
+      max-width: 16vw;
+    }
+
+    .zone-desc strong {
+      color: #111;
+      font-weight: 600;
+    }
+
+    /* ── Design rationale box (top-right) ── */
+    .rationale-box {
+      position: absolute;
+      top: 2vw;
+      right: 2vw;
+      max-width: 22vw;
+      padding: 1.2vw 1.4vw;
+      border: 1.5px dashed #aaa;
+      border-radius: 1vw;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(4px);
+      z-index: 10;
+    }
+
+    .rationale-box .rationale-title {
+      font-size: 1.2vw;
+      font-weight: 700;
+      color: #555;
+      margin-bottom: 0.6vw;
+    }
+
+    .rationale-box .rationale-body {
+      font-size: 1vw;
+      color: #444;
+      line-height: 1.6;
+    }
+
+    .rationale-box .rationale-body strong {
+      color: #111;
+      font-weight: 600;
+    }
+
+    .rationale-box .rationale-body em {
+      font-style: normal;
+      color: #999;
+    }
+
+    .rationale-box .rationale-body ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .rationale-box .rationale-body li {
+      margin-bottom: 0.4vw;
+    }
+
+    .rationale-box .rationale-body li::before {
+      content: '-';
+      margin-right: 0.4vw;
+      color: #999;
+    }
+
+    .fn.wide {
+      max-width: 22vw;
+      white-space: normal;
+      text-align: center;
+    }
+
+    .fn.wide span {
+      white-space: normal;
+    }
+  </style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+<style>
+  .title, .title-main, .title-sub, h1, h2, .intro-text {
+    font-family: 'Ultra', serif !important;
+    font-weight: normal !important;
+  }
+</style>
+
+</head>
+
+<body>
+
+  <!-- Design rationale (top-right) -->
+  <div class="rationale-box">
+    <div class="rationale-title">Design Rationale</div>
+    <div class="rationale-body">
+      <ul>
+        <li><strong>Context accumulation.</strong> Every VLM call includes batch frames, metadata, <em>and</em> the
+          previous call's result as context.</li>
+        <li><strong>Batch, not stream.</strong> Grouping frames per-scene gives the VLM temporal context to reason about
+          transitions.</li>
+        <li><strong>Insight decoupling.</strong> A single batch rarely carries enough signal for a higher-level summary
+          — that will be handled in the next layer.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Zone labels -->
+  <div class="zone-label" id="l2-label" style="left: 3vw;">
+    <div class="zone-title">L2 Inference</div>
+    <div class="zone-subtitle">Per-Batch Analysis</div>
+    <div class="zone-desc">Receives frame batches, runs VLM analysis per batch, maintains session context, writes
+      structured logs.</div>
+  </div>
+
+  <div class="zone-label" id="l3-label" style="left: 3vw;">
+    <div class="zone-title">L3 Memory</div>
+    <div class="zone-subtitle">OpenClaw Memory Pipeline</div>
+
+  </div>
+
+  <div class="zone-label" id="ha-label" style="right: 6vw;">
+    <div class="zone-subtitle">Human Feedback</div>
+    <div class="zone-desc">User comments are captured and injected into the insight pipeline at the next trigger.</div>
+  </div>
+
+  <!-- Full-viewport flow chart -->
+  <div class="flow-chart" id="flow-chart">
+    <svg id="flow-svg"></svg>
+
+    <!-- Main flow (upper-left) -->
+    <div class="main-flow" id="main-flow">
+
+      <div class="flow-row" id="row-l2-start" style="justify-content: center;">
+        <div class="fn session" id="f-recv">📩 Receive Batch<br><span>from iOS client</span></div>
+      </div>
+
+      <div class="flow-row" style="justify-content: center;">
+        <div class="fn" id="f-save">💾 Save Frames<br><span>→ <code>frames_dir/{session}/{batch}/</code></span></div>
+      </div>
+
+      <div class="flow-row" style="justify-content: center; gap: 1.8vw;">
+        <div class="fn" id="f-ctx">💿 Load Context<br><span>← <code>context.json</code> (prior session summary)</span>
+        </div>
+        <div class="fn wide" id="f-build">🧩 Build VLM Input<br><span style="white-space:normal">Preamble: duration,
+            frame count, prior summary. Per-frame: index, Δt, motion_state, speech_detected, noise_level</span></div>
+      </div>
+
+
+      <div class="flow-row" style="justify-content: center;">
+        <div class="fn" id="f-call">☁️ Call VLM<br><span>model · prompt · max_tokens=512</span></div>
+      </div>
+
+      <div class="flow-row" style="justify-content: center; gap: 7vw; margin-left: 16.28vw;">
+        <div class="fn decision" id="f-valid">JSON Valid?</div>
+        <div class="fn" id="f-err">Return Error<br><span>HTTP 500 → iOS client</span></div>
+      </div>
+
+      <div class="flow-row" style="justify-content: center; gap: 1.8vw; margin-right: 10.12vw;">
+        <div class="fn" id="f-sctx">💿 Save Context<br><span>→ context.json</span></div>
+        <div class="fn session" id="f-output">VLM Output<br><span>→ Structured JSON</span></div>
+      </div>
+
+      <div class="flow-row" style="justify-content: center;">
+        <div class="fn" id="f-wlog">📝 Append to Log<br><span>→ physical-logs/YYYY-MM-DD.md</span></div>
+      </div>
+
+      <div class="layer-gap"></div>
+
+      <div class="flow-row" style="justify-content: center;">
+        <div class="fn file" id="f-logs">📄 physical-logs/YYYY-MM-DD.md<br><span>← L1~L2 Batches</span></div>
+      </div>
+
+      <div class="flow-row" id="row-l3-start" style="justify-content: center;">
+        <div class="fn decision" id="f-spawn">Insight Trigger<br><span style="white-space:normal">Background thread;
+            checks min_batches OR min_minutes</span></div>
+      </div>
+    </div>
+
+    <!-- Human Annotation (upper-right) -->
+    <div class="annotation-area" id="row-ha-start">
+      <div class="fn" id="f-comment">💬 POST /api/comment<br><span>User comment</span></div>
+      <div class="fn" id="f-pend">📄 pending_comments.jsonl<br><span>Consumed at next insight</span></div>
+    </div>
+  </div>
+
+  <script src="../assets/flowchart.js"></script>
+  <script>
+    const fc = new FlowChart('flow-chart', 'flow-svg');
+
+    function positionLabels() {
+      const l2Row = document.getElementById('row-l2-start');
+      document.getElementById('l2-label').style.top = l2Row.getBoundingClientRect().top + 'px';
+
+      const haRow = document.getElementById('row-ha-start');
+      document.getElementById('ha-label').style.top = haRow.getBoundingClientRect().top + 'px';
+
+      const l3Row = document.getElementById('row-l3-start');
+      document.getElementById('l3-label').style.top = l3Row.getBoundingClientRect().top + 'px';
+    }
+
+    function drawFlow() {
+      fc.clear();
+
+      // ── Main vertical chain ──
+      fc.vConnect('f-recv', 'f-save');
+      fc.vConnect('f-save', 'f-ctx');
+      fc.hConnect('f-ctx', 'f-build');
+      fc.vConnect('f-build', 'f-call');
+      fc.vConnect('f-call', 'f-valid');
+
+      // ── VALID branches ──
+      fc.hConnect('f-valid', 'f-err', { label: 'Failed all retries' });
+
+      fc.sideLoop('f-valid', 'f-call', { label: 'No → Retry (≤ 2×)', leftOffset: 55, opacity: '0.55' });
+
+      // ── VALID → SCTX (Yes) ──
+      fc.vConnect('f-valid', 'f-output', { label: 'Yes' });
+      fc.hConnectReverse('f-output', 'f-sctx');
+
+
+      // ── SCTX → CTX loop (context.json for next batch) ──
+      fc.sideLoop('f-sctx', 'f-ctx', { label: 'Next batch', leftOffset: 55, opacity: '0.35' });
+
+      // ── Continue chain ──
+      fc.vConnect('f-output', 'f-wlog');
+      fc.vConnect('f-wlog', 'f-logs');
+      fc.vConnect('f-logs', 'f-l3');
+
+      // ── L3 → Insight Trigger ──
+      fc.sideLoop('f-wlog', 'f-spawn', { label: 'Threshold met' });
+
+      // ── Human Annotation ──
+      fc.vConnect('f-comment', 'f-pend');
+
+      // ── PEND → Insight Trigger ──
+      fc.hConnectReverse('f-pend', 'f-logs', { label: 'Insert', opacity: '0.55', dashed: true, });
+    }
+
+    window.addEventListener('load', () => { setTimeout(() => { drawFlow(); positionLabels(); }, 50); });
+    window.addEventListener('resize', () => { drawFlow(); positionLabels(); });
+  </script>
+</body>
+
+</html>

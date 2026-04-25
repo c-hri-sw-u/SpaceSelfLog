@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../assets/flowchart.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Roboto', sans-serif;
+  width: 100vw; height: 100vh;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #111;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Zone labels (absolutely positioned) ── */
+.zone-label {
+  position: absolute;
+  left: 3vw;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vw;
+}
+.zone-title {
+  font-size: 1.4vw;
+  font-weight: 700;
+  color: #111;
+}
+.zone-subtitle {
+  font-size: 1vw;
+  font-weight: 600;
+  color: #111;
+}
+.zone-desc {
+  font-size: 1vw;
+  color: #666;
+  line-height: 1.45;
+  max-width: 16vw;
+}
+.zone-desc strong { color: #111; font-weight: 600; }
+
+/* ── Design rationale box (top-right) ── */
+.rationale-box {
+  position: absolute;
+  top: 2vw;
+  right: 2vw;
+  max-width: 22vw;
+  padding: 1.2vw 1.4vw;
+  border: 1.5px dashed #aaa;
+  border-radius: 1vw;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
+.rationale-box .rationale-title {
+  font-size: 1.2vw;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 0.5vw;
+}
+.rationale-box .rationale-body {
+  font-size: 1vw;
+  color: #444;
+  line-height: 1.55;
+}
+.rationale-box .rationale-body strong {
+  color: #111;
+  font-weight: 600;
+}
+.rationale-box .rationale-body em {
+  font-style: normal;
+  color: #999;
+  font-size: 1vw;
+}
+
+/* ── Flowchart ── */
+.flow-chart {
+  padding-bottom: 1vw;
+  padding-left: 10vw;
+  padding-right: 10vw;
+}
+.flow-row + .flow-row { margin-top: 1.5vw; }
+
+
+
+.pill-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3vw;
+}
+.pill-label {
+  font-size: 0.65vw;
+  color: #999;
+  text-align: center;
+  max-width: 10vw;
+  line-height: 1.35;
+}
+.trigger-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5vw;
+  align-items: center;
+}
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+<style>
+  .title, .title-main, .title-sub, h1, h2, .intro-text {
+    font-family: 'Ultra', serif !important;
+    font-weight: normal !important;
+  }
+</style>
+
+</head>
+<body>
+
+<!-- Design rationale (top-right) -->
+<div class="rationale-box">
+  <div class="rationale-title">Design Rationale</div>
+  <div class="rationale-body">
+    Sending every frame to the cloud is prohibitively expensive.<br>
+    <em>Together these two layers compress <span style="font-weight: 800 !important;">~2.6M frames/day</span> down to <span style="font-weight: 800 !important;">~300–600</span>.</em><br>
+    <strong>Only meaningful frames leave the device.</strong>
+  </div>
+</div>
+
+<!-- Zone labels -->
+<div class="zone-label" id="l1-label">
+  <div class="zone-title">L1 Capture</div>
+  <div class="zone-subtitle">Decides <strong>when to capture</strong>.</div>
+  <div class="zone-desc">Audio &amp; Motion triggers adjust Vision's interval. All sensors contribute tags.</div>
+</div>
+<div class="zone-label" id="l15-label">
+  <div class="zone-title">L1.5 Preprocess</div>
+  <div class="zone-subtitle">Decides <strong>what to keep</strong>.</div>
+  <div class="zone-desc">Scene boundary detection, filtering, importance scoring, and smart frame selection.</div>
+</div>
+
+<!-- Centered flowchart -->
+<div class="flow-chart" id="flow-chart">
+  <svg id="flow-svg"></svg>
+
+  <!-- L1: Capture -->
+  <div class="flow-row" id="row-l1-start" style="justify-content: center; gap: 8vw; margin-right: 1vw;">
+    <div class="trigger-stack">
+      <div class="pill-wrap">
+        <div class="fn pill" id="f-audio">🎤 Audio</div>
+        <div class="pill-label">VAD + noise level</div>
+      </div>
+      <div class="pill-wrap">
+        <div class="fn pill" id="f-motion">🏃 Motion</div>
+        <div class="pill-label">stationary / sustained</div>
+      </div>
+    </div>
+    <div class="fn trigger" id="f-trigger" style="margin-bottom: 1vw;">Trigger</div>
+    <div class="pill-wrap">
+      <div class="fn pill" id="f-vision">📷 Vision</div>
+      <div class="pill-label">Adaptive interval</div>
+    </div>
+  </div>
+  <div class="flow-row" style="justify-content: center;">
+    <div class="fn session" id="f-frame">🎞️ Frame + 🏷️ metadata (tags)<br><span>Write to disk</span></div>
+  </div>
+
+  <!-- Gap between L1 and L1.5 -->
+  <div class="layer-gap"></div>
+
+  <!-- L1.5: Preprocess -->
+  <div class="flow-row" id="row-l15-start" style="justify-content: center;">
+    <div class="fn" id="f-buffer">⌛️ Buffer<br><span>Accumulate frames until boundary or timeout</span></div>
+  </div>
+  <div class="flow-row" style="justify-content: center;">
+    <div class="fn decision" id="f-boundary" style="margin-left: 16vw;">🪚 Scene Boundary?<br><span>SSIM current frame vs. last in buffer</span></div>
+  </div>
+  <div class="flow-row" style="justify-content: center; margin-left: 16vw; gap: 2vw;">
+    <div class="group-box">
+      <div class="group-title">Filters</div>
+      <div style="display: flex; gap: 1.8vw; align-items: center;">
+        <div class="fn" id="f-black">🗑️ Black Filter<br><span>Remove all-black frames</span></div>
+        <div class="fn" id="f-blur">🗑️ Blur Filter<br><span>Remove blurry frames</span></div>
+        <div class="fn" id="f-inherit">🗑️ Inherit Triggers<br><span>Deleted frames' triggers → nearest survivor</span></div>
+      </div>
+    </div>
+    <div class="fn decision" id="f-empty1" style="margin-top: 1.2vw;">0 frames?</div>
+  </div>
+  <div class="flow-row" style="justify-content: center; gap: 1.8vw;">
+    <div class="fn" id="f-score">📊 Score &amp; Sort<br><span><code>w·vis + w·aud + w·imu + w·spar</code> → desc</span></div>
+  </div>
+  <div class="flow-row" style="justify-content: center; gap: 1.8vw;">
+    <div class="group-box">
+      <div class="group-title">Filters</div>
+      <div class="fn" id="f-dedup">🗑️ Greedy Dedup<br><span>Skip if too similar to any already-selected frame</span></div>
+    </div>
+  </div>
+  <div class="flow-row" style="justify-content: center; gap: 1.8vw; margin-right: 16vw;">
+    <div class="fn" id="f-kdyn">Dynamic K<br><span><code>K = clamp(⌈dur × density⌉, kMin, kMax)</code></span></div>
+    <div class="fn" id="f-guar">Guaranteed Set<br><span>Score ≥ threshold → kept (capped by model max input)</span></div>
+    <div class="fn decision" id="f-comp">guaranteed ≥ K?</div>
+  </div>
+  <div class="flow-row" style="justify-content: center; gap: 2vw;">
+    <div class="fn" id="f-topk">Top-K Selected</div>
+    <div class="fn decision" id="f-empty2">0 frames?</div>
+  </div>
+  <div class="flow-row" style="justify-content: center;">
+    <div class="fn session" id="f-outbox">📫 Outbox → POST<br><span>Write to local outbox → HTTP POST via Tailscale</span></div>
+  </div>
+</div>
+
+<script src="../assets/flowchart.js"></script>
+<script>
+const fc = new FlowChart('flow-chart', 'flow-svg');
+
+function positionLabels() {
+  const chart = document.getElementById('flow-chart');
+  const cr = chart.getBoundingClientRect();
+
+  const l1Row = document.getElementById('row-l1-start');
+  const l1r = l1Row.getBoundingClientRect();
+  const l1Label = document.getElementById('l1-label');
+  l1Label.style.top = (l1r.top) + 'px';
+
+  const l15Row = document.getElementById('row-l15-start');
+  const l15r = l15Row.getBoundingClientRect();
+  const l15Label = document.getElementById('l15-label');
+  l15Label.style.top = (l15r.top) + 'px';
+}
+
+function drawFlow() {
+  fc.clear();
+
+  // ── L1: horizontal flow ──
+  fc.hConnect('f-audio', 'f-trigger', { label: 'VAD Onset/Offset' });
+  fc.hConnect('f-motion', 'f-trigger', { label: 'Motion State Change' });
+  fc.hConnect('f-trigger', 'f-vision', { label: 'Drop to minInterval' });
+  fc.vConnect('f-vision', 'f-frame');
+  fc.vConnect('f-trigger', 'f-frame', { dashed: true, label: 'Attach Tags' });
+
+  // ── L1 → L1.5 ──
+  fc.vConnect('f-frame', 'f-buffer');
+
+  // ── Trigger → Buffer (left side arc) ──
+  fc.sideLoop('f-trigger', 'f-buffer', { label: 'Attach Tags', leftOffset: 55, opacity: '0.3' });
+
+  // ── L1.5: Buffer → Boundary → Filter chain ──
+  fc.vConnect('f-buffer', 'f-boundary', { label: 'Sensor Trigger Fires' });
+  fc.vConnect('f-buffer', 'f-black', { label: 'First Batch \nor \nReachs Max Num' });
+  fc.vConnect('f-boundary', 'f-black', { label: 'Cut' });
+  fc.hConnect('f-black', 'f-blur');
+  fc.hConnect('f-blur', 'f-inherit');
+  fc.hConnect('f-inherit', 'f-empty1');
+
+  // ── L1.5: Empty check → Score pipeline ──
+  fc.vConnect('f-empty1', 'f-score', { label: 'No' });
+  fc.vConnect('f-score', 'f-dedup');
+  fc.vConnect('f-dedup', 'f-kdyn');
+  fc.hConnect('f-kdyn', 'f-guar');
+  fc.hConnect('f-guar', 'f-comp');
+
+  // ── L1.5: Selection → Output ──
+  fc.vConnect('f-comp', 'f-topk', { label: 'Yes → Top-K' });
+  fc.vConnect('f-comp', 'f-empty2', { label: 'No' });
+  fc.hConnect('f-topk', 'f-empty2');
+  fc.vConnect('f-empty2', 'f-outbox', { label: 'No' });
+
+  // ── L1.5: Loops back to Buffer (side loops) ──
+  fc.sideLoop('f-boundary', 'f-buffer', { label: 'Similar → Continue', leftOffset: 55 });
+  fc.sideLoopRight('f-empty1', 'f-buffer', { label: 'Yes → Discard', opacity: '0.3', rightOffset: 80 });
+  fc.sideLoopRight('f-empty2', 'f-buffer', { label: 'Yes → Discard', opacity: '0.3', rightOffset: 540 });
+  fc.sideLoop('f-outbox', 'f-buffer', { label: 'Next Batch', opacity: '0.3', leftOffset: 200 });
+}
+
+window.addEventListener('load', () => { setTimeout(() => { drawFlow(); positionLabels(); }, 50); });
+window.addEventListener('resize', () => { drawFlow(); positionLabels(); });
+</script>
+</body>
+</html>

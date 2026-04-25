@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <meta charset="UTF-8">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      width: 100vw;
+      height: 100vh;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 8vw;
+      color: #111;
+      overflow: hidden;
+    }
+
+    .header {
+      margin-bottom: 3vw;
+    }
+
+    h1 {
+      font-size: 3.8vw;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 1vw;
+    }
+
+    .intro {
+      font-size: 1.4vw;
+      font-weight: 400;
+      color: #666;
+      max-width: 65vw;
+      line-height: 1.4;
+    }
+
+    .highlight {
+      background: #ffe94d;
+      padding: 0 0.2vw;
+      color: #111;
+    }
+
+    /* Flex layout */
+    .layout-row {
+      display: flex;
+      gap: 5vw;
+      width: 100%;
+    }
+
+    .group-col {
+      flex: 1;
+    }
+
+    .group-header {
+      font-size: 1.2vw;
+      font-weight: 700;
+      color: #999;
+      margin-bottom: 2vw;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 0.8vw;
+    }
+
+    /* Individual Data Blocks */
+    .data-block {
+      margin-bottom: 2vw;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .data-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.4vw;
+    }
+
+    .data-title {
+      font-size: 1.4vw;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .data-phase {
+      font-size: 0.8vw;
+      font-weight: 700;
+      color: #aaa;
+      background: #f7f7f7;
+      padding: 0.2vw 0.5vw;
+      border-radius: 0.2vw;
+    }
+
+    .data-desc {
+      font-size: 1.1vw;
+      line-height: 1.5;
+      color: #666;
+      margin-bottom: 0.6vw;
+    }
+
+    .data-link {
+      font-size: 0.9vw;
+      font-weight: 600;
+      color: #aaa;
+    }
+
+    .data-link span {
+      color: #333;
+    }
+  </style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+<style>
+  .title, .title-main, .title-sub, h1, h2, .intro-text {
+    font-family: 'Ultra', serif !important;
+    font-weight: normal !important;
+  }
+</style>
+
+</head>
+
+<body>
+
+  <div class="header">
+    <h1>Data <span class="highlight">Collection</span></h1>
+    <div class="intro">
+      A combined methodology integrating system <span class="highlight">telemetry</span> with researcher-produced <span
+        class="highlight">autoethnographic</span> reflections.
+    </div>
+  </div>
+
+  <div class="layout-row">
+
+    <!-- Column 1: Automated -->
+    <div class="group-col">
+      <div class="group-header">🖥️ Automated Data Sources</div>
+
+      <div class="data-block">
+        <div class="data-title-row">
+          <div class="data-title">📄 Perception Log</div>
+          <div class="data-phase">Phase 1</div>
+        </div>
+        <div class="data-desc">The complete record of unfiltered VLM outputs. Represents everything the egocentric
+          capture pipeline made visible.</div>
+        <div class="data-link">&rarr; Feeds <span>RQ1 (Content Classification)</span></div>
+      </div>
+
+      <div class="data-block">
+        <div class="data-title-row">
+          <div class="data-title">📁 4-Tier Memory Output</div>
+          <div class="data-phase">Phase 1</div>
+        </div>
+        <div class="data-desc">Records what OpenClaw gracefully retained, distilled, or discarded across physical-logs,
+          physical-insights, and physical-pattern.</div>
+        <div class="data-link">&rarr; Feeds <span>RQ3 (Memory Flow Analysis)</span></div>
+      </div>
+
+      <div class="data-block">
+        <div class="data-title-row">
+          <div class="data-title">💬 Interaction Transcripts</div>
+          <div class="data-phase">Phase 1</div>
+        </div>
+        <div class="data-desc">Continuous transcript corpus logging passive use, structured probes, and autonomous cron
+          behaviors.</div>
+        <div class="data-link">&rarr; Feeds <span>RQ2 (Interaction-Level Coding)</span></div>
+      </div>
+    </div>
+
+    <!-- Column 2: Researcher -->
+    <div class="group-col">
+      <div class="group-header">📝 Researcher-Produced</div>
+
+      <div class="data-block">
+        <div class="data-title-row">
+          <div class="data-title">🔢 Design Iteration Log</div>
+          <div class="data-phase">Phase 0</div>
+        </div>
+        <div class="data-desc">Documents every permissive pipeline modification alongside its rationale and before/after
+          output comparison.</div>
+        <div class="data-link">&rarr; Feeds <span>RQ3 (Thematic Analysis)</span></div>
+      </div>
+
+      <div class="data-block">
+        <div class="data-title-row">
+          <div class="data-title">📓 Autoethnographic Journal</div>
+          <div class="data-phase">Phase 0 &middot; Phase 1</div>
+        </div>
+        <div class="data-desc">Twice-daily structured entries (mid-day review and end-of-day reflection) capturing
+          interpretative judgments that automated logs cannot represent. Covers interaction assessments, missed
+          opportunities, noise, and design reflection.</div>
+        <div class="data-link">&rarr; Feeds <span>All RQs (Interpretive Anchor)</span></div>
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+
+</html>

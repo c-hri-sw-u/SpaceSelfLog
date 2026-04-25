@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../assets/flowchart.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      width: 100vw;
+      height: 100vh;
+      background: #fff;
+      color: #111;
+      overflow: hidden;
+    }
+
+    .flow-chart {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .flow-chart svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 1.2vw;
+      position: relative;
+      z-index: 10;
+    }
+
+    .flow-row+.flow-row {
+      margin-top: 1.5vw;
+    }
+
+    .main-flow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    .zone-label {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3vw;
+    }
+
+    .zone-title {
+      font-size: 1.4vw;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .zone-subtitle {
+      font-size: 1vw;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .zone-desc {
+      font-size: 1vw;
+      color: #666;
+      line-height: 1.45;
+      max-width: 16vw;
+    }
+
+    .rationale-box {
+      position: absolute;
+      top: 2vw;
+      right: 2vw;
+      max-width: 22vw;
+      padding: 1.2vw 1.4vw;
+      border: 1.5px dashed #aaa;
+      border-radius: 1vw;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(4px);
+      z-index: 10;
+    }
+
+    .rationale-box .rationale-title {
+      font-size: 1.2vw;
+      font-weight: 700;
+      color: #555;
+      margin-bottom: 0.5vw;
+    }
+
+    .rationale-box .rationale-body {
+      font-size: 1vw;
+      color: #444;
+      line-height: 1.55;
+    }
+
+    .rationale-box .rationale-body strong {
+      color: #111;
+      font-weight: 600;
+    }
+
+    .rationale-box .rationale-body em {
+      font-style: normal;
+      color: #999;
+    }
+
+    .rationale-box .rationale-body ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .rationale-box .rationale-body li {
+      margin-bottom: 0.35vw;
+    }
+
+    .rationale-box .rationale-body li::before {
+      content: '-';
+      margin-right: 0.3vw;
+      color: #999;
+    }
+
+    #f-insight {
+      background: #fefce7;
+    }
+
+    .fn.wide {
+      max-width: 26vw;
+      white-space: normal;
+      text-align: center;
+    }
+
+    .fn.wide span {
+      white-space: normal;
+    }
+  </style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+<style>
+  .title, .title-main, .title-sub, h1, h2, .intro-text {
+    font-family: 'Ultra', serif !important;
+    font-weight: normal !important;
+  }
+</style>
+
+</head>
+
+<body>
+
+  <div class="rationale-box">
+    <div class="rationale-title">Design Rationale</div>
+    <div class="rationale-body">
+      <ul>
+        <li><strong>4-layer memory.</strong> From short-term logs to long-term patterns.</li>
+        <li>Enough context to summarize; timely enough to be useful.</li>
+        <li><strong>Overwrite</strong> if only the latest value matters (current state, pattern);
+          <strong>append</strong> if history accumulates (logs, highlights, states) — then <strong>consolidate</strong>
+          periodically to bound growth. </li>
+        <li>Direct write to OpenClaw's memory directory.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="zone-label" id="l3-label" style="left: 2vw;">
+    <div class="zone-title">L3 Memory</div>
+    <div class="zone-subtitle">OpenClaw Memory Pipeline</div>
+    <div class="zone-desc"><strong>Logs</strong>: seconds~minutes snapshots → <strong>Insights</strong>: minutes~hours
+      states & highlights → <strong>Narrative</strong>: daily timeline → <strong>Patterns</strong>: days~weeks patterns
+    </div>
+  </div>
+
+  <div class="zone-label" id="ha-label" style="right: 2vw;">
+    <div class="zone-subtitle">Human Feedback</div>
+    <div class="zone-desc">User can add/edit/delete states to fill gaps in the timeline.</div>
+  </div>
+
+  <div class="flow-chart" id="flow-chart">
+    <svg id="flow-svg"></svg>
+
+    <div class="main-flow" id="main-flow">
+
+      <!-- Row 1: Logs input -->
+      <div class="flow-row" id="row-start" style="justify-content: center; gap: 1.8vw; margin-right: 24vw;">
+        <div class="fn file" id="f-logs" style="margin-bottom: 1vw;">📄 physical-logs/YYYY-MM-DD.md<br><span>← L1~L2
+            Batches</span></div>
+        <div class="seq-box" id="f-batch">
+          <div class="seq-inner">
+            <div class="fn sm sec">batch_1</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm sec">batch_2</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm sec">…</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm" id="f-bn">batch_n</div>
+          </div>
+          <div class="seq-sub">A batch = A chunk of logs</div>
+        </div>
+      </div>
+
+
+      <!-- Row 2: Incremental sequence (SI subgraph) -->
+      <div class="flow-row" style="justify-content: center; margin-right: 8.4vw;">
+        <div class="seq-box" id="f-seq">
+          <div class="seq-inner">
+            <div class="fn sm sec">incremental_1</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm sec">incremental_2</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm sec">…</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm" id="f-inc">incremental_new</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm sec">…</div>
+            <span class="seq-arrow">→</span>
+            <div class="fn sm" id="f-inn">incremental_n</div>
+          </div>
+          <div class="seq-sub">Reaches <code>min_batches</code> or <code>min_minutes</code></div>
+        </div>
+      </div>
+
+      <!-- Row 3: Insight file (SF subgraph) -->
+      <div class="flow-row" style="justify-content: center; gap: 1.8vw; margin-right: 16vw;">
+        <div class="fn session" id="f-md">LLM Output<br><span>## Current State / ## New Highlights</span></div>
+        <div class="group-box" id="f-insight">
+          <div class="group-title">📄 physical-insights/YYYY-MM-DD.md</div>
+          <div class="group-inner">
+            <div class="fn" id="f-cs">Current State<br><span>User's most recent activity</span></div>
+            <div class="fn" id="f-hl">Today's Highlights<br><span>Anything that could inform a helpful action</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3.5: Consolidation -->
+      <div class="flow-row" style="justify-content: center; gap: 1.8vw; margin-left: 48vw;">
+        <div class="fn session" id="f-md2">LLM Output<br><span>## Consolidated Highlights</span></div>
+        <div class="fn" id="f-con">Consolidation Pass<br><span>every N incremental updates</span></div>
+      </div>
+
+      <!-- Row 4: States + Timeline + Manual entry -->
+      <div class="flow-row" style="justify-content: center; gap: 8vw; margin-left: 24vw;">
+        <div class="group-box" id="f-narrative">
+          <div class="group-title">physical-daily-narrative/</div>
+          <div class="group-inner">
+            <div class="fn file" id="f-states">📄 YYYY-MM-DD-states.md<br><span>Accumulated states</span></div>
+            <div class="fn file" id="f-tl">📄 YYYY-MM-DD-timeline.md<br><span>The nightly timeline summary</span></div>
+          </div>
+        </div>
+        <div class="fn" id="f-manual">✏️ Manual Entry<br><span>add / edit / delete</span></div>
+      </div>
+
+      <!-- Row 5: Nightly -->
+      <div class="flow-row" style="justify-content: center; gap: 1.8vw;">
+        <div class="fn wide" id="f-night">🌙 Nightly Profile Update<br><span style="white-space:normal"></span></div>
+
+        <div class="fn session" id="f-md3">LLM Output<br><span></span></div>
+      </div>
+
+      <!-- Row 9: Pattern output (PATNEW + PAT) -->
+      <div class="flow-row" style="justify-content: center; gap: 4vw;">
+        <div class="fn file" id="f-pat">📄 physical-pattern.md<br><span>User's long-term behavioral patterns</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../assets/flowchart.js"></script>
+  <script>
+    const fc = new FlowChart('flow-chart', 'flow-svg');
+
+    function positionLabels() {
+      const startRow = document.getElementById('row-start');
+      document.getElementById('l3-label').style.top = startRow.getBoundingClientRect().top + 'px';
+    }
+
+    function positionHumanFeedback() {
+      const manualNode = document.getElementById('f-manual');
+      document.getElementById('ha-label').style.top = manualNode.getBoundingClientRect().top + 'px';
+    }
+
+    function drawFlow() {
+      fc.clear();
+
+      // ── Main chain ──
+      fc.diagConnect('f-bn', 'f-inc', { label: 'Triggers' });
+      fc.vConnect('f-inc', 'f-md');
+
+      // ── MD branches to CS (overwrites) and HL (appends to) ──
+      fc.hConnect('f-md', 'f-cs', { label: 'Overwrites' });
+      fc.hConnect('f-md', 'f-hl', { label: 'Appends to' });
+
+      // ── CS → States ──
+      fc.vConnect('f-cs', 'f-states', { label: 'Appends snapshot' });
+
+      // ── States → Timeline → Nightly ──
+      fc.vConnect('f-states', 'f-tl', { label: 'Parsed into' });
+
+
+      // ── Nightly → Updated Profile → Pattern ──
+      fc.hConnect('f-night', 'f-md3');
+      fc.vConnect('f-md3', 'f-pat', { label: 'Overwrites' });
+
+      // ── Insight feedback: reads existing insight for next cycle ──
+      fc.vConnectReverse('f-insight', 'f-inc', { label: 'Feed-in', opacity: '0.35', dashed: true });
+
+      // ── INC reads batch data ──
+      fc.vConnect('f-batch', 'f-inc', { label: 'Feed-in', opacity: '0.35', dashed: true });
+
+      // ── Pattern feedback: reads existing pattern for next nightly ──
+      fc.sideLoop('f-pat', 'f-night', { label: 'Feed-in', leftOffset: 55, opacity: '0.35' });
+
+      // ── Consolidation: inn → con (triggers every N) ──
+      fc.vConnect('f-inn', 'f-con', { label: 'Triggers' });
+
+      // ── Consolidation: con → hl (overwrites highlights) ──
+      fc.hConnectReverse('f-con', 'f-md2');
+      fc.sideLoopRight('f-hl', 'f-con', { label: 'Feed-in', opacity: '0.35', dashed: true });
+      fc.hConnectReverse('f-md2', 'f-hl', { label: 'Overwrites' });
+
+      // ── Manual entry → states ──
+      fc.hConnectReverse('f-manual', 'f-states', { label: 'Add / Edit / Delete', dashed: true, opacity: '0.55' });
+
+      // ── Nightly reads timeline ──
+      fc.sideLoop('f-hl', 'f-night', { label: 'Feed-in', opacity: '0.35', leftOffset: 60 });
+      fc.sideLoop('f-tl', 'f-night', { label: 'Feed-in', opacity: '0.35', leftOffset: 55 });
+    }
+
+    window.addEventListener('load', () => { setTimeout(() => { drawFlow(); positionLabels(); positionHumanFeedback(); }, 50); });
+    window.addEventListener('resize', () => { drawFlow(); positionLabels(); positionHumanFeedback(); });
+  </script>
+</body>
+
+</html>

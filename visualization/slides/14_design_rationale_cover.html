@@ -27,35 +27,15 @@ body {
   position: relative;
   display: flex;
   justify-content: center;
-  align-items: flex-end;
-  overflow: visible;
+  align-items: center;
 }
 
-.keyboard {
-  width: 65vw;
-  height: auto;
+.lobster-img {
+  width: 100vw;
+  max-height: 100vh;
+  object-fit: contain;
   position: absolute;
-  z-index: 5;
-  top: 0%;
-  left: 5%;
-}
-
-.claw {
-  width: auto;
-  height: 120vh;
-  position: absolute;
-  bottom: -20%;
-  right: 0%;
   z-index: 10;
-  /* Horizontal flip + slight lean into the keyboard for 'typing' action */
-  transform: scaleX(-1) rotate(-15deg);
-  transform-origin: bottom center;
-  pointer-events: none;
-  /* Add a stroke to the claw content using multiple drop-shadows */
-  filter: drop-shadow(1px 0 0 #fff) 
-          drop-shadow(-1px 0 0 #fff) 
-          drop-shadow(0 1px 0 #fff) 
-          drop-shadow(0 -1px 0 #fff);
 }
 
 .intro-text {
@@ -63,14 +43,16 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 8vw;
+  font-size: 7vw;
   font-weight: 700;
   color: rgba(255, 255, 255, 1);
   z-index: 100;
   letter-spacing: -0.05em;
   pointer-events: none;
   font-family: 'Roboto', sans-serif;
+  white-space: nowrap;
 }
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -87,9 +69,8 @@ body {
 <body>
 
 <div class="visual-container">
-  <div class="intro-text">INTRO</div>
-  <img src="../assets/keyboard_transparent.png" alt="Keyboard" class="keyboard">
-  <img src="../assets/claw_transparent.png" alt="The Claw" class="claw">
+  <img src="../assets/lobster_taming_llm.png" alt="Lobster Taming LLM" class="lobster-img">
+  <div class="intro-text">DESIGN RATIONALE</div>
 </div>
 
 </body>

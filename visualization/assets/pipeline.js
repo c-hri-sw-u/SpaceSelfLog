@@ -158,18 +158,26 @@ class WireEngine {
   }
 
   _path(d, color, extra) {
+    const vwScale = window.innerWidth / 1600;
     const p = document.createElementNS(this.NS, 'path');
     p.setAttribute('d', d);
     p.setAttribute('stroke', color);
-    p.setAttribute('stroke-width', '2');
+    p.setAttribute('stroke-width', 2 * vwScale);
     p.setAttribute('fill', 'none');
     p.setAttribute('opacity', '0.55');
-    if (extra) Object.entries(extra).forEach(([k, v]) => p.setAttribute(k, v));
+    if (extra) {
+      Object.entries(extra).forEach(([k, v]) => {
+        if (k === 'stroke-width') v = parseFloat(v) * vwScale;
+        if (k === 'stroke-dasharray') v = v.split(' ').map(n => parseFloat(n) * vwScale).join(' ');
+        p.setAttribute(k, v);
+      });
+    }
     this.svg.appendChild(p);
   }
 
   _arrow(x, y, angle, color, opacity) {
-    const s = 11;
+    const vwScale = window.innerWidth / 1600;
+    const s = 11 * vwScale;
     const hw = s * 0.4;
     const tipX = x + (s / 2) * Math.cos(angle);
     const tipY = y + (s / 2) * Math.sin(angle);
@@ -201,7 +209,8 @@ class WireEngine {
   }
 
   _normal(a, b, w) {
-    const off = Math.max(Math.abs(b.x - a.x) * 0.42, 45);
+    const vwScale = window.innerWidth / 1600;
+    const off = Math.max(Math.abs(b.x - a.x) * 0.42, 45 * vwScale);
     this._path(
       'M ' + a.x + ' ' + a.y +
       ' C ' + (a.x + off) + ' ' + a.y +
@@ -212,7 +221,8 @@ class WireEngine {
   }
 
   _loop(a, b, w) {
-    const off = Math.max(Math.abs(b.x - a.x) * 0.42, 45);
+    const vwScale = window.innerWidth / 1600;
+    const off = Math.max(Math.abs(b.x - a.x) * 0.42, 45 * vwScale);
     this._path(
       'M ' + a.x + ' ' + a.y +
       ' C ' + (a.x - off) + ' ' + a.y +
@@ -230,7 +240,8 @@ class WireEngine {
   }
 
   _internal(a, b, w) {
-    const off = Math.max(Math.abs(b.x - a.x) * 0.35, 15);
+    const vwScale = window.innerWidth / 1600;
+    const off = Math.max(Math.abs(b.x - a.x) * 0.35, 15 * vwScale);
     this._path(
       'M ' + a.x + ' ' + a.y +
       ' C ' + (a.x + off) + ' ' + a.y +
@@ -248,7 +259,8 @@ class WireEngine {
   }
 
   _trigger(a, b, w) {
-    const off = Math.max(Math.abs(b.x - a.x) * 0.35, 15);
+    const vwScale = window.innerWidth / 1600;
+    const off = Math.max(Math.abs(b.x - a.x) * 0.35, 15 * vwScale);
     this._path(
       'M ' + a.x + ' ' + a.y +
       ' C ' + (a.x + off) + ' ' + a.y +
@@ -264,11 +276,12 @@ class WireEngine {
   }
 
   _intLoop(a, b, w) {
-    const h = 30;
+    const vwScale = window.innerWidth / 1600;
+    const h = 30 * vwScale;
     const portEl = document.querySelector('[data-port-id="' + w.from + '"]');
     const blockEl = portEl ? portEl.closest('.inner-block') : null;
     const blockTop = blockEl ? blockEl.getBoundingClientRect().top : Math.min(a.y, b.y);
-    const boxH = blockEl ? blockEl.getBoundingClientRect().height : 30;
+    const boxH = blockEl ? blockEl.getBoundingClientRect().height : 30 * vwScale;
     const padding = Math.max(6, boxH * 0.12);
     const peakY = blockTop - padding;
     const midX = (a.x + b.x) / 2;
@@ -299,7 +312,7 @@ class WireEngine {
     t.setAttribute('text-anchor', 'middle');
     t.setAttribute('dominant-baseline', 'central');
     t.setAttribute('font-size', isTrigger ? '0.66vw' : '0.72vw');
-    t.setAttribute('font-family', "'Helvetica Neue', Arial, sans-serif");
+    t.setAttribute('font-family', "'Roboto', sans-serif");
     t.setAttribute('font-weight', isTrigger ? '400' : '600');
     if (isTrigger) t.setAttribute('letter-spacing', '0.05em');
     t.setAttribute('fill', isTrigger ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.65)');
@@ -319,8 +332,9 @@ class WireEngine {
       rect.setAttribute('fill', 'rgba(255,255,255,0.9)');
       if (isTrigger) {
         rect.setAttribute('stroke', 'rgba(0,0,0,0.15)');
-        rect.setAttribute('stroke-width', '0.5');
-        rect.setAttribute('stroke-dasharray', '2 2');
+        const vwScale = window.innerWidth / 1600;
+        rect.setAttribute('stroke-width', 0.5 * vwScale);
+        rect.setAttribute('stroke-dasharray', `${2 * vwScale} ${2 * vwScale}`);
       } else {
         rect.setAttribute('stroke', 'none');
       }

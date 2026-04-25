@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <meta charset="UTF-8">
+  <title>Activity Daily Rhythm Matrix</title>
+  <style>
+    :root {
+      --bg-color: #ffffff;
+      --text-main: #111111;
+      --text-muted: #888888;
+      --border-color: #eeeeee;
+      /* Activity colors are now loaded from theme_config.js */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Roboto', sans-serif;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 6vw;
+      overflow: hidden;
+      gap: 0;
+    }
+
+    h1 {
+      font-size: 3vw;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4vw;
+    }
+
+    p.subtitle {
+      font-size: 0.9vw;
+      font-weight: 400;
+      color: var(--text-muted);
+      max-width: 65vw;
+      line-height: 1.5;
+      margin-top: 0.8vw;
+      margin-left: 5vw;
+    }
+
+    /* Heatmap Grid */
+    .heatmap-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35vw;
+      margin-bottom: 0.4vw;
+    }
+
+    .day-row {
+      display: flex;
+      align-items: center;
+    }
+
+    .day-label {
+      width: 5vw;
+      font-size: 0.9vw;
+      color: var(--text-muted);
+      text-align: right;
+      padding-right: 1vw;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .grid-cells {
+      display: flex;
+      gap: 0.2vw;
+      flex: 1;
+    }
+
+    .cell {
+      flex: 1;
+      aspect-ratio: 1 / 1;
+      border-radius: 0.1vw;
+      background-color: var(--c-sleep);
+      cursor: crosshair;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+      position: relative;
+    }
+
+    .cell:hover {
+      transform: scale(1.6);
+      z-index: 10;
+      box-shadow: 0 0 1vw rgba(0, 0, 0, 0.15);
+      border-radius: 0.2vw;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 2vw;
+      margin-top: 0.8vw;
+      justify-content: flex-start;
+      margin-left: 5vw;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5vw;
+      font-size: 0.8vw;
+      color: var(--text-muted);
+    }
+
+    .legend-color {
+      width: 0.7vw;
+      height: 0.7vw;
+      border-radius: 0.1vw;
+    }
+
+    /* Charts */
+    .charts-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8vw;
+      margin-top: 0;
+    }
+
+    .chart-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .chart-axis-label {
+      width: 5vw;
+      font-size: 0.9vw;
+      color: var(--text-muted);
+      text-align: right;
+      padding-right: 1vw;
+      flex-shrink: 0;
+    }
+
+    canvas.chart {
+      flex: 1;
+      height: 5vw;
+      display: block;
+    }
+
+    /* Tooltip */
+    #tooltip {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 1vw;
+      border-radius: 0.4vw;
+      font-size: 0.9vw;
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      width: max-content;
+      max-width: 20vw;
+      box-shadow: 0 1vw 2vw -0.5vw rgba(0, 0, 0, 0.1);
+    }
+
+    #tooltip .tt-time {
+      font-weight: 600;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 0.4vw;
+      font-size: 0.8vw;
+    }
+
+    #tooltip .tt-activity {
+      font-weight: 700;
+      font-size: 1vw;
+      margin-bottom: 0.6vw;
+      color: #111;
+    }
+
+    #tooltip .tt-summary {
+      color: var(--text-muted);
+      line-height: 1.4;
+      display: block;
+    }
+
+    /* Time guides */
+    .time-guides {
+      display: flex;
+      padding-left: 5vw;
+      /* match day-label width */
+      margin-bottom: 0.5vw;
+    }
+
+    .time-guide {
+      flex: 1;
+      font-size: 0.8vw;
+      color: var(--text-muted);
+      text-align: left;
+    }
+
+    /* Coloring Mapping */
+    .type-focused {
+      background-color: var(--c-focus);
+    }
+
+    .type-learning {
+      background-color: var(--c-learn);
+    }
+
+    .type-maint {
+      background-color: var(--c-maint);
+    }
+
+    .type-movement {
+      background-color: var(--c-move);
+    }
+
+    .type-rest {
+      background-color: var(--c-rest);
+    }
+
+    .type-sleep {
+      background-color: var(--c-sleep);
+    }
+
+    .type-fitness {
+      background-color: var(--c-fitness);
+    }
+
+  </style>
+  <link rel="stylesheet" href="../assets/results_shared.css">
+  <script src="theme_config.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+<style>
+  .title, .title-main, .title-sub, h1, h2, .intro-text {
+    font-family: 'Ultra', serif !important;
+    font-weight: normal !important;
+  }
+</style>
+
+</head>
+
+<body>
+
+  <div id="data-range" class="data-range"></div>
+
+
+
+  <div id="heatmap" class="heatmap-wrapper">
+    <div class="time-guides" id="timeGuides"></div>
+  </div>
+
+  <div class="charts-col">
+    <div class="chart-wrap">
+      <div class="chart-axis-label">Lines</div>
+      <canvas id="lineChart" class="chart"></canvas>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-axis-label">Stacked</div>
+      <canvas id="areaChart" class="chart"></canvas>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-color type-focused"></div> <script>document.write(getActivityLabel("Focused Work"))</script>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color type-learning"></div> <script>document.write(getActivityLabel("Learning & Review"))</script>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color type-maint"></div> <script>document.write(getActivityLabel("Life Maintenance"))</script>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color type-movement"></div> <script>document.write(getActivityLabel("Movement & Transit"))</script>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color type-rest"></div> <script>document.write(getActivityLabel("Rest & Leisure"))</script>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color type-sleep"></div> <script>document.write(getActivityLabel("Sleep / Untracked"))</script>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color type-fitness"></div> <script>document.write(getActivityLabel("Fitness & Well-being"))</script>
+    </div>
+  </div>
+  <p class="subtitle">15-minute intervals across six standardized cognitive states — aggregated across all days.</p>
+
+  <div id="tooltip">
+    <div class="tt-time"></div>
+    <div class="tt-activity"></div>
+    <div class="tt-summary"></div>
+  </div>
+
+  <script>
+    const ACTIVITIES = [
+      "Focused Work",
+      "Learning & Review",
+      "Life Maintenance",
+      "Movement & Transit",
+      "Rest & Leisure",
+      "Sleep / Untracked",
+      "Fitness & Well-being"
+    ];
+
+    const colorMap = {
+      "Focused Work": { cls: "type-focused", hex: ACTIVITY_THEME["Focused Work"] },
+      "Learning & Review": { cls: "type-learn", hex: ACTIVITY_THEME["Learning & Review"] },
+      "Life Maintenance": { cls: "type-maint", hex: ACTIVITY_THEME["Life Maintenance"] },
+      "Movement & Transit": { cls: "type-move", hex: ACTIVITY_THEME["Movement & Transit"] },
+      "Rest & Leisure": { cls: "type-rest", hex: ACTIVITY_THEME["Rest & Leisure"] },
+      "Sleep / Untracked": { cls: "type-sleep", hex: ACTIVITY_THEME["Sleep / Untracked"] },
+      "Fitness & Well-being": { cls: "type-fitness", hex: ACTIVITY_THEME["Fitness & Well-being"] }
+    };
+
+    fetch('/slides/api/activity-rhythm')
+      .then(res => res.json())
+      .then(data => {
+        renderHeatmap(data);
+        const slotStats = computeSlotStats(data);
+        drawLineChart(slotStats);
+        drawAreaChart(slotStats);
+      })
+      .catch(err => console.error("Error fetching data:", err));
+
+
+    // ── compute per-slot frequency (fraction 0-1) across all days ──────────
+    function computeSlotStats(datesData) {
+      const numDays = datesData.length;
+      const counts = {};
+      ACTIVITIES.forEach(a => counts[a] = new Array(96).fill(0));
+
+      datesData.forEach(day => {
+        day.boxes.forEach((box, idx) => {
+          if (counts[box.activity]) counts[box.activity][idx]++;
+        });
+      });
+
+      // Normalize to fraction — exclude Sleep/Untracked
+      const fracs = {};
+      ACTIVITIES.filter(a => a !== 'Sleep / Untracked').forEach(a => {
+        fracs[a] = counts[a].map(c => c / numDays);
+      });
+      return fracs;
+    }
+
+    // ── helpers ────────────────────────────────────────────────────────────
+    function hexToRgba(hex, alpha) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    function setupCanvas(el) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = el.getBoundingClientRect();
+      el.width = rect.width * dpr;
+      el.height = rect.height * dpr;
+      const ctx = el.getContext('2d');
+      ctx.scale(dpr, dpr);
+      return { ctx, w: rect.width, h: rect.height };
+    }
+
+    // ── Line Chart ─────────────────────────────────────────────────────────
+    function drawLineChart(slotStats) {
+      const el = document.getElementById('lineChart');
+      const { ctx, w, h } = setupCanvas(el);
+      const pad = { t: 8, r: 8, b: 4, l: 4 };
+      const cw = w - pad.l - pad.r;
+      const ch = h - pad.t - pad.b;
+
+      // Y grid lines
+      ctx.strokeStyle = '#eeeeee';
+      ctx.lineWidth = 0.5;
+      [0.25, 0.5, 0.75, 1].forEach(v => {
+        const y = pad.t + ch * (1 - v);
+        ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + cw, y); ctx.stroke();
+      });
+
+      // Lines — skip Sleep/Untracked
+      const activeActs = ACTIVITIES.filter(a => a !== 'Sleep / Untracked');
+      activeActs.forEach(act => {
+        const data = slotStats[act];
+        if (!data) return;
+        const hex = colorMap[act].hex;
+        ctx.beginPath();
+        ctx.strokeStyle = hex;
+        ctx.lineWidth = 1.5;
+        ctx.lineJoin = 'round';
+        data.forEach((v, i) => {
+          const x = pad.l + (i / 95) * cw;
+          const y = pad.t + ch * (1 - v);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+      });
+    }
+
+    // ── Stacked Area Chart ─────────────────────────────────────────────────
+    function drawAreaChart(slotStats) {
+      const el = document.getElementById('areaChart');
+      const { ctx, w, h } = setupCanvas(el);
+      const pad = { t: 8, r: 8, b: 4, l: 4 };
+      const cw = w - pad.l - pad.r;
+      const ch = h - pad.t - pad.b;
+
+      // Stack only non-sleep activities
+      const activeActs = ACTIVITIES.filter(a => a !== 'Sleep / Untracked');
+      let prevBaseline = new Array(96).fill(0);
+
+      activeActs.forEach(act => {
+        const data = slotStats[act];
+        if (!data) return;
+        const hex = colorMap[act].hex;
+        const topBaseline = prevBaseline.map((b, i) => b + data[i]);
+
+        ctx.beginPath();
+        topBaseline.forEach((v, i) => {
+          const x = pad.l + (i / 95) * cw;
+          const y = pad.t + ch * (1 - Math.min(v, 1));
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        for (let i = 95; i >= 0; i--) {
+          const x = pad.l + (i / 95) * cw;
+          const y = pad.t + ch * (1 - Math.min(prevBaseline[i], 1));
+          ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = hexToRgba(hex, 0.85);
+        ctx.fill();
+
+        prevBaseline = topBaseline;
+      });
+    }
+
+    // ── Heatmap ────────────────────────────────────────────────────────────
+    function renderHeatmap(datesData) {
+      const heatmap = document.getElementById("heatmap");
+      const tooltip = document.getElementById("tooltip");
+      const timeGuides = document.getElementById("timeGuides");
+
+      for (let i = 0; i < 96; i += 12) {
+        let el = document.createElement("div");
+        el.className = "time-guide";
+        el.innerText = `${String(Math.floor(i / 4)).padStart(2, '0')}:00`;
+        el.style.flex = "12";
+        timeGuides.appendChild(el);
+      }
+
+      datesData.forEach(day => {
+        const row = document.createElement("div");
+        row.className = "day-row";
+
+        const label = document.createElement("div");
+        label.className = "day-label";
+        const dateObj = new Date(day.date + 'T00:00:00');
+        label.innerText = `${dateObj.toLocaleString('default', { month: 'short' })} ${String(dateObj.getDate()).padStart(2, '0')}`;
+        row.appendChild(label);
+
+        const cellsWrapper = document.createElement("div");
+        cellsWrapper.className = "grid-cells";
+
+        day.boxes.forEach(box => {
+          const cell = document.createElement("div");
+          cell.className = `cell ${colorMap[box.activity]?.cls || "type-sleep"}`;
+
+          cell.addEventListener("mouseenter", () => {
+            const rect = cell.getBoundingClientRect();
+            tooltip.querySelector(".tt-time").innerText = `${day.date} • ${box.time}`;
+            tooltip.querySelector(".tt-activity").innerText = getActivityLabel(box.activity);
+            tooltip.querySelector(".tt-activity").style.color = colorMap[box.activity]?.hex || '#888';
+            tooltip.querySelector(".tt-summary").innerText = box.summary || "No active context logged.";
+            tooltip.style.opacity = "1";
+            tooltip.style.left = `${rect.left + window.scrollX - 100}px`;
+            tooltip.style.top = `${rect.top + window.scrollY - tooltip.offsetHeight - 15}px`;
+          });
+
+          cell.addEventListener("mouseleave", () => { tooltip.style.opacity = "0"; });
+          cellsWrapper.appendChild(cell);
+        });
+
+        row.appendChild(cellsWrapper);
+        heatmap.appendChild(row);
+      });
+    }
+  </script>
+</body>
+
+</html>

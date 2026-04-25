@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../assets/monitor-slide.css">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+<style>
+  .title, .title-main, .title-sub, h1, h2, .intro-text {
+    font-family: 'Ultra', serif !important;
+    font-weight: normal !important;
+  }
+</style>
+
+</head>
+<body>
+
+<!-- Left: Settings -->
+<div class="panel panel-left">
+  <div class="panel-title">Settings - Parameters</div>
+
+  <div class="group-title">Vision Model</div>
+  <div class="item"><div class="dot purple"></div><span class="item-label">Vision provider</span><span class="item-desc">OpenRouter or Anthropic</span></div>
+  <div class="item"><div class="dot purple"></div><span class="item-label">Vision API key</span><span class="item-desc">provider credential</span></div>
+  <div class="item"><div class="dot purple"></div><span class="item-label">Vision model</span><span class="item-desc">e.g. claude-sonnet-4-6</span></div>
+
+  <div class="group-title">Text Model (Optional)</div>
+  <div class="item"><div class="dot"></div><span class="item-label">Text provider / key / model</span><span class="item-desc">separate model for insight summarization</span></div>
+
+  <div class="group-title">Prompts</div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">VLM prompt</span><span class="item-desc">per-batch frame analysis instruction</span></div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">Incremental prompt</span><span class="item-desc">extract new highlights since last update</span></div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">Consolidation prompt</span><span class="item-desc">merge & deduplicate highlights</span></div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">Pattern prompt</span><span class="item-desc">nightly physical-pattern.md generation</span></div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">Timeline prompt</span><span class="item-desc">nightly structured timeline from states</span></div>
+
+  <div class="group-title">Directories</div>
+  <div class="item"><div class="dot"></div><span class="item-label">OpenClaw memory/</span><span class="item-desc">path to OpenClaw memory dir</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Project dir</span><span class="item-desc">SpaceSelfLog project root</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Frames dir</span><span class="item-desc">received frame storage path</span></div>
+
+  <div class="group-title">Scheduling & Auto Insight</div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">Nightly summary time</span><span class="item-desc">local hour for pattern + timeline jobs</span></div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">Min batches to trigger</span><span class="item-desc">batch count before incremental insight</span></div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">Min minutes between runs</span><span class="item-desc">cooldown between incremental runs</span></div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">Consolidation every N</span><span class="item-desc">incremental updates per consolidation</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Hook re-inject interval</span><span class="item-desc">minutes between insight → OpenClaw hooks</span></div>
+
+  <div class="group-title">Alerts</div>
+  <div class="item"><div class="dot"></div><span class="item-label">Email + SMTP</span><span class="item-desc">error alert delivery config</span></div>
+</div>
+
+<!-- Center: Screenshot -->
+<img src="../assets/server-monitor.png" alt="Server Monitor">
+
+<!-- Right: Real-time Monitor -->
+<div class="panel">
+  <div class="panel-title">Real-time Monitor</div>
+
+  <div class="group-title">Batch Feed</div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">Incoming batches</span><span class="item-desc">frames + VLM output per batch, live</span></div>
+  <div class="item"><div class="dot green"></div><span class="item-label">VLM latency</span><span class="item-desc">per-batch inference time (ms)</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Insight trigger bar</span><span class="item-desc">batch count & time progress to next run</span></div>
+
+  <div class="group-title">Log Files</div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">Daily log</span><span class="item-desc">physical-logs/YYYY-MM-DD.md</span></div>
+  <div class="item"><div class="dot green"></div><span class="item-label">Insights</span><span class="item-desc">incremental highlights + consolidations</span></div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">Pattern</span><span class="item-desc">physical-pattern.md — nightly</span></div>
+
+  <div class="group-title">User Annotations</div>
+  <div class="item"><div class="dot"></div><span class="item-label">States</span><span class="item-desc">user-labeled time blocks per day</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Timeline</span><span class="item-desc">structured timeline generated from states</span></div>
+
+  <div class="group-title">Event Log</div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">Batch events</span><span class="item-desc">timestamp, trigger, frame count</span></div>
+  <div class="item"><div class="dot green"></div><span class="item-label">Insight events</span><span class="item-desc">incremental + consolidation runs</span></div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">Pattern events</span><span class="item-desc">nightly pattern generation runs</span></div>
+  <div class="item"><div class="dot"></div><span class="item-label">Errors</span><span class="item-desc">failed VLM calls, retry attempts</span></div>
+</div>
+
+</body>
+</html>

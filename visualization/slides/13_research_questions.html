@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Roboto', sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 8vw;
+  color: #111;
+  overflow: hidden;
+}
+
+h2 {
+  font-size: 1.8vw;
+  font-weight: 700;
+  margin-bottom: 1.5vw;
+  color: #111;
+  text-align: center;
+}
+
+.slide-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  position: relative;
+}
+
+.header-row {
+  display: flex;
+  gap: 8vw;
+  width: 100%;
+  margin-bottom: 3vw;
+}
+.header-row h1 {
+  text-align: center;
+  width: 100%;
+}
+
+.mapping-row {
+  display: flex;
+  gap: 8vw;
+  width: 100%;
+  position: relative;
+  margin-bottom: 3vw;
+}
+
+.link-group-1 {
+  position: absolute;
+  left: calc(50% - 4vw); 
+  top: 22%;
+  bottom: 22%;
+  width: 4vw;
+  border: 2px dashed #ccc;
+  border-left: none; 
+  border-top-right-radius: 1vw;
+  border-bottom-right-radius: 1vw;
+  z-index: 1;
+  pointer-events: none;
+}
+.link-group-1::after {
+  content: '';
+  position: absolute;
+  left: 100%; 
+  top: 50%;
+  width: 4vw; 
+  border-top: 2px dashed #ccc;
+}
+
+.link-group-2 {
+  position: absolute;
+  left: 50%; 
+  top: 25%;
+  bottom: 25%;
+  width: 4vw;
+  border: 2px dashed #ccc;
+  border-right: none; 
+  border-top-left-radius: 1vw;
+  border-bottom-left-radius: 1vw;
+  z-index: 1;
+  pointer-events: none;
+}
+.link-group-2::before {
+  content: '';
+  position: absolute;
+  right: 100%; 
+  top: 50%;
+  width: 4vw; 
+  border-top: 2px dashed #ccc;
+}
+
+.col-left {
+  flex: 1;
+  padding-right: 1vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.col-right {
+  flex: 1;
+  padding-left: 1vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+h1 {
+  font-size: 3vw;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0 0.2vw;
+  color: #111;
+}
+
+.intro-text {
+  font-size: 1.5vw;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 2vw;
+  margin-top: -1.5vw;
+}
+
+.rq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2vw;
+}
+
+.rq-item {
+  display: flex;  
+  gap: 2vw;
+  align-items: flex-start;
+  position: relative;
+}
+
+.rq-id {
+  font-size: 1.4vw;
+  font-weight: 800 !important;
+  color: #111;
+  line-height: 1.2;
+  width: 3.5vw;
+  flex-shrink: 0;
+}
+
+.rq-text {
+  font-size: 1.4vw;
+  font-weight: 400;
+  color: #666;
+  line-height: 1.4;
+}
+
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+<style>
+  .title, .title-main, .title-sub, h1, h2, .intro-text {
+    font-family: 'Ultra', serif !important;
+    font-weight: normal !important;
+  }
+</style>
+
+</head>
+<body>
+
+<div class="slide-content">
+  
+  <div class="header-row">
+    <div class="col-left">
+      <h2>❓ Research Questions</h2>
+    </div>
+    <div class="col-right">
+      <h2>🏗️ Contributions</h2>
+    </div>
+  </div>
+
+  <div class="mapping-row">
+    <div class="link-group-1"></div>
+    <div class="col-left">
+      <div class="rq-list">
+        <div class="rq-item">
+          <div class="rq-id">RQ1</div>
+          <div class="rq-text">
+            <strong>What</strong> <span class="highlight">physical-world information</span> becomes <strong>visible</strong> through egocentric perception that remains invisible through digital traces alone?
+          </div>
+        </div>
+        <div class="rq-item">
+          <div class="rq-id">RQ2</div>
+          <div class="rq-text">
+            <strong>In what</strong> <span class="highlight">task & interaction contexts</span> does this physical-world information meaningfully <strong>improve personalization</strong>, and when does it <strong>introduce noise or redundancy</strong>?
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-right">
+      <div class="rq-list">
+        <div class="rq-item">
+          <div class="rq-id">C1</div>
+          <div class="rq-text">
+            A two-week <span class="highlight">autoethnographic deployment study</span> examining <strong>what</strong> physical-world information egocentric perception makes visible and <strong>when</strong> it improves agent personalization.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mapping-row">
+    <div class="link-group-2"></div>
+    <div class="col-left">
+      <div class="rq-list">
+        <div class="rq-item">
+          <div class="rq-id">RQ3</div>
+          <div class="rq-text">
+            <strong>What</strong> <span class="highlight">design requirements</span> emerge for integrating <strong>continuous egocentric sensing</strong> into <strong>existing agent memory architectures</strong>?
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-right">
+      <div class="rq-list">
+        <div class="rq-item">
+          <div class="rq-id">C2</div>
+          <div class="rq-text">
+            A <span class="highlight">system artifact</span> integrating egocentric vision into <strong>OpenClaw's markdown-based memory architecture</strong>.
+          </div>
+        </div>
+        <div class="rq-item">
+          <div class="rq-id">C3</div>
+          <div class="rq-text">
+            <span class="highlight">Design implications</span> for physical-world memory integration, covering <strong>storage granularity</strong>, <strong>retrieval visibility</strong>, and <strong>privacy trade-offs</strong>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

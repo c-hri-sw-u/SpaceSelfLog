@@ -250,7 +250,9 @@
       font-size: 1vw;
       color: var(--text-muted);
     }
+
   </style>
+  <link rel="stylesheet" href="../assets/results_shared.css">
   <script src="theme_config.js"></script>
   <script>
     if (new URLSearchParams(window.location.search).get('clean') === '1') {
@@ -260,6 +262,8 @@
 </head>
 
 <body>
+
+  <div id="data-range" class="data-range"></div>
 
   <div id="layout">
     <!-- Left Overlay: Common / Life -->
@@ -379,6 +383,7 @@
         document.getElementById('loading').style.display = 'none';
         init();
       });
+
 
     function init() {
       layout();

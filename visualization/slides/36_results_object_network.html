@@ -157,10 +157,15 @@
       color: var(--text-muted);
       z-index: 20;
     }
+
   </style>
+  <link rel="stylesheet" href="../assets/results_shared.css">
+  <script src="theme_config.js"></script>
 </head>
 
 <body>
+
+  <div id="data-range" class="data-range"></div>
 
 
   <svg id="graph"></svg>
@@ -250,6 +255,7 @@
         document.getElementById('loading').textContent = 'Failed to load data.';
         console.error(err);
       });
+
 
     // ── Render ──────────────────────────────────────────────────
     function renderGraph({ nodes, links }) {

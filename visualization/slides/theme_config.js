@@ -57,3 +57,22 @@ function getActivityLabel(act, withEmoji = true) {
     }
   });
 })();
+
+/**
+ * Fetch and display the data range in elements with id="data-range".
+ */
+window.addEventListener('DOMContentLoaded', () => {
+  const el = document.getElementById('data-range');
+  if (el) {
+    fetch('/slides/api/data-range')
+      .then(r => r.json())
+      .then(data => {
+        if (data.start && data.end) {
+          const range = `${data.start} — ${data.end}`;
+          const hours = data.total_hours != null ? `  ·  ${data.total_hours} hrs recorded` : '';
+          el.textContent = range + hours;
+        }
+      })
+      .catch(err => console.error("Error fetching data range:", err));
+  }
+});

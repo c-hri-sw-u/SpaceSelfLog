@@ -249,12 +249,16 @@
       z-index: 100;
       background: #fff;
     }
+
   </style>
+  <link rel="stylesheet" href="../assets/results_shared.css">
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="theme_config.js"></script>
 </head>
 
 <body>
+
+  <div id="data-range" class="data-range"></div>
 
   <div id="layout">
     <!-- Left Sidebar: Utilization Ranking -->
@@ -370,6 +374,7 @@
         document.getElementById('loading').style.display = 'none';
         initViz(data);
       });
+
 
     function initViz(data) {
       const roomData = {};

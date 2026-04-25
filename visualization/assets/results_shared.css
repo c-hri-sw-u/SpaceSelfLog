@@ -1,0 +1,13 @@
+/* Unified styling for results slides data annotations */
+.data-range {
+  position: absolute;
+  top: 1vw;
+  left: 3vw;
+  font-size: 0.85vw;
+  color: var(--text-muted, #888888);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  z-index: 100;
+  text-transform: uppercase;
+  pointer-events: none;
+}

@@ -230,11 +230,15 @@
     .type-fitness {
       background-color: var(--c-fitness);
     }
+
   </style>
+  <link rel="stylesheet" href="../assets/results_shared.css">
   <script src="theme_config.js"></script>
 </head>
 
 <body>
+
+  <div id="data-range" class="data-range"></div>
 
 
 
@@ -314,6 +318,7 @@
         drawAreaChart(slotStats);
       })
       .catch(err => console.error("Error fetching data:", err));
+
 
     // ── compute per-slot frequency (fraction 0-1) across all days ──────────
     function computeSlotStats(datesData) {

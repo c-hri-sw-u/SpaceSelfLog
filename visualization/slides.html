@@ -153,6 +153,55 @@
     border-right: none;
   }
 
+  /* ── Script Sidebar (Right) ── */
+  #script-sidebar {
+    width: 320px;
+    min-width: 320px;
+    background: #111;
+    border-left: 1px solid #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: width 0.22s ease, min-width 0.22s ease;
+  }
+  #script-sidebar.collapsed {
+    width: 0;
+    min-width: 0;
+    border-left: none;
+  }
+
+  #script-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px 8px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #555;
+    flex-shrink: 0;
+    background: #0a0a0a;
+    border-bottom: 1px solid #222;
+  }
+
+  #script-editor {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #ccc;
+    font-family: 'SF Mono', Monaco, Consolas, 'Liberation Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 16px;
+    resize: none;
+    width: 100%;
+  }
+  #script-editor::placeholder { color: #333; }
+  #script-editor::-webkit-scrollbar { width: 6px; }
+  #script-editor::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
+  #script-editor::-webkit-scrollbar-thumb:hover { background: #333; }
+
   #sidebar-header {
     display: flex;
     align-items: center;
@@ -331,6 +380,7 @@
   <div id="toolbar-right">
     <span id="save-status"></span>
     <button class="tb-btn" id="btn-refresh" title="Refresh current slide">&#8635;</button>
+    <button class="tb-btn" id="btn-script-toggle" title="Toggle script panel">Script</button>
   </div>
 </div>
 
@@ -352,6 +402,11 @@
       <iframe id="slide-frame" src="about:blank"></iframe>
     </div>
   </div>
+
+  <div id="script-sidebar">
+    <div id="script-header"><span>Script / Notes</span></div>
+    <textarea id="script-editor" placeholder="Write slide script here..." spellcheck="false"></textarea>
+  </div>
 </div>
 
 <button class="nav-arrow" id="nav-prev" disabled>&#8249;</button>
@@ -363,6 +418,7 @@ let slides  = [{ section: "", subtitle: "", src: "/slides/slide-files/01_cover.h
 let current = 0;
 let saveTimer   = null;
 let sidebarOpen = true;
+let scriptSidebarOpen = true;
 
 // ── DOM refs ───────────────────────────────────────────────────────────────
 const sectionEl    = document.getElementById("section-name");
@@ -379,12 +435,21 @@ const navPrev      = document.getElementById("nav-prev");
 const navNext      = document.getElementById("nav-next");
 const sidebar      = document.getElementById("sidebar");
 const sidebarList  = document.getElementById("sidebar-list");
+const scriptSidebar = document.getElementById("script-sidebar");
+const scriptEditor  = document.getElementById("script-editor");
+const btnScriptToggle = document.getElementById("btn-script-toggle");
 const slideFrame   = document.getElementById("slide-frame");
 
 // ── Sidebar toggle ─────────────────────────────────────────────────────────
 btnSidebar.addEventListener("click", () => {
   sidebarOpen = !sidebarOpen;
   sidebar.classList.toggle("collapsed", !sidebarOpen);
+});
+
+btnScriptToggle.addEventListener("click", () => {
+  scriptSidebarOpen = !scriptSidebarOpen;
+  scriptSidebar.classList.toggle("collapsed", !scriptSidebarOpen);
+  btnScriptToggle.classList.toggle("primary", scriptSidebarOpen);
 });
 
 // ── Thumbnails ─────────────────────────────────────────────────────────────
@@ -456,8 +521,16 @@ function render() {
   const s = slides[current];
   sectionEl.value  = s.section  || "";
   subtitleEl.value = s.subtitle || "";
+  scriptEditor.value = s.script || "";
   resizeSection();
   slideFrame.src = s.src || "about:blank";
+  
+  // When iframe loads, send the initial script
+  slideFrame.onload = () => {
+    if (slideFrame.contentWindow) {
+      slideFrame.contentWindow.postMessage({ type: 'script-update', script: s.script || "" }, "*");
+    }
+  };
 
   counterEl.textContent = `${current + 1} / ${slides.length}`;
 
@@ -506,6 +579,17 @@ subtitleEl.addEventListener("input", () => {
   slides[current].subtitle = subtitleEl.value;
   scheduleSave();
   renderSidebar();
+});
+
+scriptEditor.addEventListener("input", () => {
+  const text = scriptEditor.value;
+  slides[current].script = text;
+  scheduleSave();
+  
+  // Sync to iframe
+  if (slideFrame.contentWindow) {
+    slideFrame.contentWindow.postMessage({ type: 'script-update', script: text }, "*");
+  }
 });
 
 // ── Navigation ─────────────────────────────────────────────────────────────

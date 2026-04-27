@@ -1,0 +1,51 @@
+flowchart TD
+  %% === Capture → Batch formation ===
+  subgraph SC["Layer 1–2: Capture → Inference"]
+    direction LR
+    CAM["📷 Adaptive Capture"] --> PRE["Layer 1.5: Preprocessing"] --> VLM["Layer 2: VLM Inference"]
+  end
+  VLM ==> |appends to| LOGS["physical-logs/YYYY-MM-DD.md"]
+  %% === Batch accumulation ===
+  subgraph SB["　"]
+    direction TB
+    B1[batch_1] --> B2[batch_2] --> B3[...] --> Bn["batch_{min_batches or min_minutes}"]
+  end
+  LOGS --> SB
+  subgraph SI["　"]
+    direction TB
+    I1[incremental_1] --> I2[incremental_2] --> I3[...] --> INC[[incremental_new]] --> I4[...] --> In["incremental_{every_n}"]
+  end
+  Bn --> |triggers| INC
+  In --> |triggers| CON[[Consolidation Pass]]
+  INC -.-> |reads| SB
+  INC -.-> |reads| SF
+  INC ==> |LLM output| MD["## Current State\n## New Highlights"]
+  subgraph SF["physical-insights/YYYY-MM-DD.md"]
+    CS["Current State"]
+    HL["Today's Highlights"]
+  end
+  MD ==> |overwrites| CS
+  MD ==> |appends to| HL
+  CON -.-> |reads| HL
+  CON ==> |LLM output| CHL[consolidated bullet list]
+  CHL ==> |overwrites| HL
+  %% === Daily Narrative: States ===
+  CS ==> |appends snapshot| STATES["physical-daily-narrative/YYYY-MM-DD-states.md\n## HH:MM sections"]
+  MANUAL["✏️ Manual Entry"] -.-> |add / edit / delete| STATES
+  %% === Timeline ===
+  STATES -.-> |parsed into| TL["physical-daily-narrative/YYYY-MM-DD-timeline.json"]
+  %% === Nightly pattern update ===
+  NIGHT[[Nightly Profile Update]]
+  NIGHT -.-> |reads| HL
+  NIGHT -.-> |reads| TL
+  NIGHT -.-> |reads| PAT
+  NIGHT ==> |LLM: highlights + timeline + pattern| PATNEW[updated profile]
+  PATNEW ==> |overwrites| PAT["physical-pattern.md"]
+  
+  Bn ~~~ I1
+  CS ~~~ MANUAL
+  TL ~~~ NIGHT
+
+  style SB stroke-dasharray: 5 5
+  style SI stroke-dasharray: 5 5
+  style SC stroke-dasharray: 5 5

@@ -1,0 +1,67 @@
+flowchart TD
+      subgraph L1["Layer 1: Capture (iPhone)"]
+          V["Vision capture<br/>adaptive interval:
+  minInterval–maxInterval"]
+          A["Audio (AVAudioEngine)<br/>VAD + noise level"]
+          IMU["IMU (CMAccelerometer)<br/>stationary / sustained_motion"]
+
+          A -- "VAD onset/offset" --> TRG(("trigger"))
+          IMU -- "motion state change" --> TRG
+          TRG -- "drop to minInterval" --> V
+
+          V --> F["Frame + metadata → write to disk"]
+          A -. "attach tags" .-> F
+          IMU -. "attach tags" .-> F
+      end
+
+      subgraph L15["Layer 1.5: Preprocessing (iPhone)"]
+          AWAIT["Awaiting batch cut<br/>frames accumulating in buffer"]
+
+          AWAIT -- "sensor trigger fires" --> SSIM{"Boundary
+  similarity<br/>current frame<br/>vs.<br/>last frame in
+  buffer<br/>(fallback: last batch tail)"}
+          AWAIT -- "first batch:<br/>firstBatchWindowSeconds elapsed" -->
+   BATCH
+          AWAIT -- "subsequent batches:<br/>maxWindowSeconds elapsed" -->
+   BATCH
+
+          SSIM -- "similarity &lt; ssimBoundaryThreshold" -->
+  BATCH["Batch confirmed"]
+          SSIM -- "similarity ≥ ssimBoundaryThreshold" --> AWAIT
+
+          BATCH --> BLK["Black frame filter"]
+          BLK --> BLUR["Blur filter"]
+          BLUR --> INHERIT["Inherit trigger events<br/>deleted frames'
+  triggers<br/>→<br/>nearest surviving frame"]
+          INHERIT --> EMPTY1{"0 frames surviving?"}
+          EMPTY1 -- "Yes: discard batch" --> AWAIT
+          EMPTY1 -- "No" --> TAIL["Save tail reference<br/>last surviving
+   frame"]
+          TAIL --> IMP["Importance scoring<br/>visual(clarity) + audio +
+  imu + sparsity"]
+          IMP --> SORT["Sort by score desc"]
+          SORT --> DEDUP["Greedy dedup<br/>iterate high→low
+  score;<br/>drop if similarity > ssimDedupThreshold<br/>vs. any
+  already-kept frame"]
+          DEDUP --> KDYN["Dynamic K<br/>K = clamp(⌈duration_min ×
+  kDensityPerMin⌉, kMin, kMax)"]
+          KDYN --> GUAR["Guaranteed set<br/>score ≥ scoreThreshold →
+  always kept"]
+          GUAR --> COMP{"guaranteed ≥ K?"}
+          COMP -- "Yes<br/>keep top-K from guaranteed" --> TOPK["Top
+  frames selected"]
+          COMP -- "No<br/>fill with next-best<br/>until K reached" -->
+  TOPK
+          TOPK --> EMPTY2{"0 frames?"}
+          EMPTY2 -- "Yes: discard batch" --> AWAIT
+          EMPTY2 -- "No" --> OUTBOX["Write to local outbox"]
+          OUTBOX --> AWAIT
+      end
+
+      F --> AWAIT
+      TRG --> AWAIT
+      TAIL -. "used by next batch" .-> SSIM
+
+      OUTBOX --> POST["HTTP POST via Tailscale"]
+      POST -- "success" --> CLEAN["Clear outbox entry"]
+      POST -- "fail" --> RETRY["Queue retry"]

@@ -1,0 +1,122 @@
+/* Unified styling for results slides data annotations */
+.data-range {
+  position: absolute;
+  top: 1vw;
+  left: 3vw;
+  font-size: 0.85vw;
+  color: var(--text-muted, #888888);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  z-index: 100;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+body.spread-mode .data-range {
+  top: 6vw;
+  left: 4vw;
+}
+
+/* Unified styling for bottom-right annotations (metadata) */
+.metadata {
+  position: absolute;
+  bottom: 2vw;
+  right: 6vw;
+  text-align: right;
+  font-size: 0.8vw;
+  color: #aaa;
+  line-height: 1.4;
+  font-weight: 400;
+  z-index: 10;
+}
+
+.metadata b {
+  color: #888;
+  font-weight: 500;
+}
+
+/* Move metadata up in spread mode */
+body.spread-mode .metadata {
+  bottom: 8vw; 
+}
+
+/* ── Design rationale box (top-right) ── */
+.rationale-box {
+  position: absolute;
+  top: 2vw;
+  right: 2vw;
+  max-width: 22vw;
+  padding: 1.2vw 1.4vw;
+  border: 1.5px dashed #aaa;
+  border-radius: 1vw;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
+.rationale-box .rationale-title {
+  font-size: 1.2vw;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 0.5vw;
+}
+.rationale-box .rationale-body {
+  font-size: 1vw;
+  color: #444;
+  line-height: 1.55;
+}
+.rationale-box .rationale-body strong {
+  color: #111;
+  font-weight: 600;
+}
+.rationale-box .rationale-body em {
+  font-style: normal;
+  color: #999;
+}
+.rationale-box .rationale-body ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.rationale-box .rationale-body li {
+  margin-bottom: 0.35vw;
+}
+.rationale-box .rationale-body li::before {
+  content: '-';
+  margin-right: 0.3vw;
+  color: #999;
+}
+
+body.spread-mode .rationale-box {
+  top: 4vw; 
+  right: 4vw;
+}
+
+/* ── Zone labels (absolutely positioned) ── */
+.zone-label {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vw;
+  z-index: 5;
+}
+.zone-title {
+  font-size: 1.4vw;
+  font-weight: 700;
+  color: #111;
+}
+.zone-subtitle {
+  font-size: 1vw;
+  font-weight: 600;
+  color: #111;
+}
+.zone-desc {
+  font-size: 1vw;
+  color: #666;
+  line-height: 1.45;
+  max-width: 16vw;
+}
+.zone-desc strong { color: #111; font-weight: 600; }
+
+body.spread-mode .zone-label[style*="left:"] {
+  left: 4vw !important; /* Move right slightly in spread mode, overriding inline styles */
+}

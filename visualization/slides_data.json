@@ -46,13 +46,13 @@
       "section": "Intro",
       "subtitle": "Personalization",
       "src": "/slides/slide-files/08_personalization.html",
-      "script": "New personalization slide script."
+      "script": "But first — what do we even mean by personalization?\n\nBlom defined it as changing a system to increase its personal relevance to the individual. My framing: the service fits, or better yet, exceeds, your expectation.\n\nThink of it as a spectrum — from systems that barely notice you exist, to AI that adapts in real time, all the way to human conversation, which is continuous personalization at every single moment. That's the bar we're aiming for."
     },
     {
       "section": "Intro",
       "subtitle": "Why Personalization Matters",
       "src": "/slides/slide-files/09_why_personalization_matters.html",
-      "script": "With all the agency provided by OpenClaw, why is personalization so critical? Quite simply: Personalization is Effectiveness. On the left is the Generic Agent. Because it doesn't know you, your unique context leaks out through a Fixed Prompt Bottleneck, often leading to scattered and irrelevant results. On the right is the Personalized Agent. It uses a Memory Fusion Engine to integrate your Preferences, History, and Goals into a single Continuous Context. By truly knowing who you are, the agent can hit your intended outcome with precision every single time."
+      "script": "So why does this matter so much for an AI agent specifically?\n\nLook at the left side. This is a generic agent — one that doesn't know you. Every task has to pass through a fixed prompt bottleneck. Your context, your preferences, your goals — they leak out. The output scatters. It might be technically correct, but it rarely hits what you actually needed.\n\nNow look at the right side. A personalized agent fuses your preferences, your history, your workflows into a single continuous context. The same task comes in — and it reaches the intended outcome, every time.\n\nThis is what I mean when I say: Personalization is Effectiveness. It's not a nice-to-have feature. It is the difference between an agent that works and one that doesn't."
     },
     {
       "section": "The Blind Spot",
@@ -64,13 +64,13 @@
       "section": "The Blind Spot",
       "subtitle": "Two Worlds",
       "src": "/slides/slide-files/11_two_worlds.html",
-      "script": "This blind spot exists because we inhabit two worlds simultaneously. On the left is the Digital Dimension—the realm of browser tabs, calendar invites, and chat logs that our agents know perfectly. But on the right is the Physical World—where our actual lives unfold. This is where an agent could finally see that book gathering dust on your shelf, or recognize your stress levels in the clutter of your desk. Currently, our agents are personalizing from only half the picture. They understand the digital trace, but they are strangers to the human context."
+      "script": "This blind spot exists because we inhabit two worlds simultaneously. \n\nOn the left is the Digital Dimension—the realm of browser tabs, calendar invites, and chat logs that our agents know perfectly. \n\nBut on the right is the Physical World—where our actual lives unfold. This is where an agent could finally see that book gathering dust on your shelf, or recognize your stress levels in the clutter of your desk. \n\nCurrently, our agents are personalizing from only half the picture. They understand the digital trace, but they are strangers to the human context."
     },
     {
       "section": "The Blind Spot",
       "subtitle": "Research Landscape",
       "src": "/slides/slide-files/12_research_landscape.html",
-      "script": "Existing research has focused on lifelogging or activity recognition, but rarely on how these physical observations can be integrated into the core memory of a persistent AI agent. We are moving beyond just 'tracking' to 'integrating' physical context into the agent's cognition."
+      "script": "Existing research has focused on lifelogging or activity recognition, but rarely on how these physical observations can be integrated into the core memory of a persistent AI agent. \n\nWe are moving beyond just 'tracking' to 'integrating' physical context into the agent's cognition."
     },
     {
       "section": "The Blind Spot",

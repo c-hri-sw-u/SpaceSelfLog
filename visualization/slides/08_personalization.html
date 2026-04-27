@@ -1,2 +1,352 @@
-<!-- 08_personalization -->
-<div>New Personalization Slide</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Roboto', sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 6vw;
+  color: #111;
+  overflow: hidden;
+}
+
+.slide-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Header & Quote */
+.header {
+  margin-bottom: 2.5vw;
+}
+
+h1 {
+  font-size: 3.4vw;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5vw;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0 0.2vw;
+  color: #111;
+}
+
+.quote-box {
+  background: #fdfdfd;
+  border-left: 0.3vw solid #ffe94d;
+  padding: 1.2vw 1.5vw;
+  margin-bottom: 1.2vw;
+}
+
+.quote-text {
+  font-size: 1.3vw;
+  font-weight: 400;
+  color: #444;
+  line-height: 1.4;
+  margin-bottom: 0.6vw;
+}
+
+.quote-cite {
+  font-size: 0.9vw;
+  color: #999;
+  font-style: italic;
+}
+
+.user-insight {
+  font-size: 1.3vw;
+  font-weight: 400;
+  color: #222;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+}
+
+.user-insight .label {
+  background: #111;
+  color: #fff;
+  font-weight: 700;
+  padding: 0.25vw 0.6vw;
+  margin-right: 1vw;
+  font-size: 0.9vw;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 0.1vw;
+}
+
+.user-insight strong {
+  font-weight: 700;
+  color: #111;
+}
+
+/* 3-Column Comparison */
+.comparison-container {
+  display: flex;
+  position: relative;
+  margin-top: 1vw;
+  border-top: 0.1vw solid #eee;
+  padding-top: 2.5vw;
+}
+
+.col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.col.system {
+  padding-right: 2.5vw;
+  border-right: 0.1vw solid #eee;
+}
+
+.col.ai {
+  padding-left: 2.5vw;
+  padding-right: 2.5vw;
+  border-right: 0.1vw solid #eee;
+}
+
+.col.human {
+  padding-left: 2.5vw;
+}
+
+/* Title colors to show progression */
+.col h2 {
+  font-size: 1.6vw;
+  font-weight: 700;
+  margin-bottom: 2vw;
+}
+
+.col.system h2 { color: #aaa; }
+.col.ai h2 { color: #444; }
+.col.human h2 { color: #111; }
+
+/* Standard Trait Blocks */
+.trait {
+  margin-bottom: 1.5vw;
+  display: flex;
+  align-items: flex-start;
+}
+
+.trait-icon {
+  font-size: 1.4vw;
+  margin-right: 1vw;
+  line-height: 1;
+  margin-top: 0.1vw;
+}
+
+.system .trait-icon { filter: grayscale(100%); opacity: 0.3; }
+.ai .trait-icon { filter: grayscale(30%); opacity: 0.8; }
+.human .trait-icon { filter: grayscale(0%); opacity: 1; }
+
+.trait-text h3 {
+  font-size: 1.1vw;
+  font-weight: 600;
+  margin-bottom: 0.3vw;
+}
+
+.system .trait-text h3 { color: #888; }
+.ai .trait-text h3 { color: #333; }
+.human .trait-text h3 { color: #111; }
+
+.trait-text p {
+  font-size: 0.95vw;
+  line-height: 1.4;
+}
+
+.system .trait-text p { color: #aaa; }
+.ai .trait-text p { color: #666; }
+.human .trait-text p { color: #444; }
+
+.tldr {
+  margin-top: auto;
+  padding-top: 1.2vw;
+  border-top: 0.1vw solid #f5f5f5;
+  font-size: 0.95vw;
+  line-height: 1.4;
+}
+
+.system .tldr { color: #aaa; }
+.ai .tldr { color: #666; }
+.human .tldr { color: #444; border-top-color: #ddd; }
+
+.tldr strong {
+  font-weight: 700;
+  margin-right: 0.4vw;
+  font-size: 0.8vw;
+  text-transform: uppercase;
+}
+.system .tldr strong { color: #aaa; }
+.ai .tldr strong { color: #333; }
+.human .tldr strong { color: #111; }
+
+.spectrum-arrow {
+  margin-top: 3vw;
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.arrow-line {
+  width: 100%;
+  height: 0.15vw;
+  background: linear-gradient(to right, #eee, #111);
+  position: relative;
+}
+
+.arrow-line::after {
+  content: '';
+  position: absolute;
+  right: -0.1vw;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 0.5vw solid transparent;
+  border-bottom: 0.5vw solid transparent;
+  border-left: 0.8vw solid #111;
+}
+
+.arrow-label {
+  margin-top: 0.8vw;
+  font-size: 0.8vw;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #999;
+}
+
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+<style>
+  .title, .title-main, .title-sub, h1, h2, .intro-text {
+    font-family: 'Ultra', serif !important;
+    font-weight: normal !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="slide-content">
+  <div class="header">
+    <h1>Defining <span class="highlight">Personalization</span></h1>
+    
+    <div class="quote-box">
+      <div class="quote-text">"Personalization is a process that changes the functionality, interface, information content, or distinctiveness of a system as to increase its personal relevance to an individual."</div>
+      <div class="quote-cite">— Blom, J. (2000). Personalization - a taxonomy.</div>
+    </div>
+    
+    <div class="user-insight">
+      <span class="label">Our Goal</span> 
+      Modifying the system so that the service or assistant&nbsp;<strong>fits or exceeds the expectation.</strong>
+    </div>
+  </div>
+
+  <div class="comparison-container">
+    <!-- Col 1: Normal System -->
+    <div class="col system">
+      <h2>Normal System</h2>
+      <div class="trait">
+        <div class="trait-icon">⚙️</div>
+        <div class="trait-text">
+          <h3>Pre-programmed</h3>
+          <p>Static rules and generic logic designed for the average user.</p>
+        </div>
+      </div>
+      <div class="trait">
+        <div class="trait-icon">📉</div>
+        <div class="trait-text">
+          <h3>Low Personalization</h3>
+          <p>Limited mostly to recommendation algorithms and targeted ads.</p>
+        </div>
+      </div>
+      <div class="trait">
+        <div class="trait-icon">👻</div>
+        <div class="trait-text">
+          <h3>Invisible</h3>
+          <p>Changes happen silently behind the scenes; hard to perceive.</p>
+        </div>
+      </div>
+      <div class="tldr">
+        <strong>TLDR</strong> One-size-fits-all approach with minimal dynamic adaptation.
+      </div>
+    </div>
+
+    <!-- Col 2: AI / LLM -->
+    <div class="col ai">
+      <h2>AI Assistant (LLM)</h2>
+      <div class="trait">
+        <div class="trait-icon">🎲</div>
+        <div class="trait-text">
+          <h3>Probabilistic</h3>
+          <p>Complex, non-deterministic responses based on vast training distributions.</p>
+        </div>
+      </div>
+      <div class="trait">
+        <div class="trait-icon">⚡</div>
+        <div class="trait-text">
+          <h3>Real-time Adaptation</h3>
+          <p>Can dynamically shift tone and output based on immediate human feedback.</p>
+        </div>
+      </div>
+      <div class="trait">
+        <div class="trait-icon">🧠</div>
+        <div class="trait-text">
+          <h3>Evolving Models</h3>
+          <p>A spectrum of alignment techniques from pre-training to post-training.</p>
+        </div>
+      </div>
+      <div class="tldr">
+        <strong>TLDR</strong> Highly flexible systems capable of aligning deeply with individual feedback.
+      </div>
+    </div>
+
+    <!-- Col 3: Human to Human -->
+    <div class="col human">
+      <h2>Human Interaction</h2>
+      <div class="trait">
+        <div class="trait-icon">👁️</div>
+        <div class="trait-text">
+          <h3>Constant Observation</h3>
+          <p>Unconsciously reading cues, context, and subtle emotional states.</p>
+        </div>
+      </div>
+      <div class="trait">
+        <div class="trait-icon">🔄</div>
+        <div class="trait-text">
+          <h3>Immediate Loop</h3>
+          <p>Instantly sensing misunderstandings and adjusting explanations on the fly.</p>
+        </div>
+      </div>
+      <div class="trait">
+        <div class="trait-icon">🤝</div>
+        <div class="trait-text">
+          <h3>Mutual Alignment</h3>
+          <p>A two-way street of continuous empathy and shared understanding.</p>
+        </div>
+      </div>
+      <div class="tldr">
+        <strong>TLDR</strong> The ultimate gold standard for personalized, context-aware communication.
+      </div>
+    </div>
+  </div>
+
+  <div class="spectrum-arrow">
+    <div class="arrow-line"></div>
+    <div class="arrow-label">Degree of Personalization</div>
+  </div>
+</div>
+
+</body>
+</html>

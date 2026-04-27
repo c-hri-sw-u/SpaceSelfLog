@@ -51,8 +51,6 @@
       color: var(--text-muted);
       max-width: 65vw;
       line-height: 1.5;
-      margin-top: 0.8vw;
-      margin-left: 5vw;
     }
 
     /* Heatmap Grid */
@@ -100,13 +98,24 @@
       border-radius: 0.2vw;
     }
 
-    /* Legend */
+    /* Legend & Subtitle standardized as #info-block */
+    #info-block {
+      position: absolute;
+      bottom: 2vw;
+      left: 6vw;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9vw;
+    }
+
+    /* ── Spread Mode Adjustments ── */
+    body.spread-mode #info-block { left: 4vw; bottom: 8vw; }
+
     .legend {
       display: flex;
-      gap: 2vw;
-      margin-top: 0.8vw;
-      justify-content: flex-start;
-      margin-left: 5vw;
+      flex-wrap: wrap;
+      gap: 1.6vw;
     }
 
     .legend-item {
@@ -237,7 +246,7 @@
     }
 
   </style>
-  <link rel="stylesheet" href="../assets/results_shared.css">
+  <link rel="stylesheet" href="../assets/~shared.css">
   <script src="theme_config.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -273,30 +282,32 @@
     </div>
   </div>
 
-  <div class="legend">
-    <div class="legend-item">
-      <div class="legend-color type-focused"></div> <script>document.write(getActivityLabel("Focused Work"))</script>
+  <div id="info-block">
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-color type-focused"></div> <script>document.write(getActivityLabel("Focused Work"))</script>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color type-learning"></div> <script>document.write(getActivityLabel("Learning & Review"))</script>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color type-maint"></div> <script>document.write(getActivityLabel("Life Maintenance"))</script>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color type-movement"></div> <script>document.write(getActivityLabel("Movement & Transit"))</script>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color type-rest"></div> <script>document.write(getActivityLabel("Rest & Leisure"))</script>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color type-sleep"></div> <script>document.write(getActivityLabel("Sleep / Untracked"))</script>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color type-fitness"></div> <script>document.write(getActivityLabel("Fitness & Well-being"))</script>
+      </div>
     </div>
-    <div class="legend-item">
-      <div class="legend-color type-learning"></div> <script>document.write(getActivityLabel("Learning & Review"))</script>
-    </div>
-    <div class="legend-item">
-      <div class="legend-color type-maint"></div> <script>document.write(getActivityLabel("Life Maintenance"))</script>
-    </div>
-    <div class="legend-item">
-      <div class="legend-color type-movement"></div> <script>document.write(getActivityLabel("Movement & Transit"))</script>
-    </div>
-    <div class="legend-item">
-      <div class="legend-color type-rest"></div> <script>document.write(getActivityLabel("Rest & Leisure"))</script>
-    </div>
-    <div class="legend-item">
-      <div class="legend-color type-sleep"></div> <script>document.write(getActivityLabel("Sleep / Untracked"))</script>
-    </div>
-    <div class="legend-item">
-      <div class="legend-color type-fitness"></div> <script>document.write(getActivityLabel("Fitness & Well-being"))</script>
-    </div>
+    <p class="subtitle">15-minute intervals across six standardized cognitive states — aggregated across all days.</p>
   </div>
-  <p class="subtitle">15-minute intervals across six standardized cognitive states — aggregated across all days.</p>
 
   <div id="tooltip">
     <div class="tt-time"></div>

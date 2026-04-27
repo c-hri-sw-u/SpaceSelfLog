@@ -19,7 +19,7 @@ body {
   justify-content: center;
   padding: 0 8vw;
   color: #111;
-  overflow: visible; /* changed from hidden to allow annotations in padding to show */
+  overflow: hidden; /* Fix scrollbar: hidden clips to padding-box, so annotations in padding will still show safely */
 }
 
 .slide-content {
@@ -137,16 +137,35 @@ body {
   background: #ffe94d; height: 0.2vw; z-index: -1;
 }
 
-.anno-model { top: 16%; right: 50%; }
+.anno-model { top: 16%; right: 54%; }
 .anno-model .anno-text::before { 
-  width: 9vw; top: 50%; right: 100%; 
-  transform: rotate(-10deg); transform-origin: right center; 
+  width: 8vw; top: 50%; right: 100%; 
+  transform: rotate(-15deg); transform-origin: right center; 
 }
 
-.anno-specs { bottom: 20%; left: 80%; }
+.anno-specs { bottom: 20%; left: 75%; }
 .anno-specs .anno-text::before { 
-  width: 10vw; top: 50%; right: 100%; 
-  transform: rotate(15deg); transform-origin: right center; 
+  width: 8vw; top: 50%; right: 100%; 
+  transform: rotate(25deg); transform-origin: right center; 
+}
+
+/* ── Spread Mode Overrides ── */
+body.spread-mode .anno-model { 
+  top: 20%; 
+  right: 54%; 
+}
+body.spread-mode .anno-model .anno-text::before { 
+  width: 8vw; 
+  transform: rotate(-15deg); 
+}
+
+body.spread-mode .anno-specs { 
+  bottom: 24%; 
+  left: 75%; 
+}
+body.spread-mode .anno-specs .anno-text::before { 
+  width: 8vw; 
+  transform: rotate(25deg); 
 }
 </style>
 
@@ -176,7 +195,7 @@ body {
   <div class="comparison-container">
     <div class="col left-col">
       <div class="image-wrapper">
-        <img src="../assets/device1.png" alt="Device 1">
+        <img src="../assets/img/device1.png" alt="Device 1">
       </div>
 
       <!-- Annotations for Device 1 -->
@@ -186,7 +205,7 @@ body {
     </div>
     <div class="col right-col" style="position: relative;">
       <div class="image-wrapper">
-        <img src="../assets/device2.png" alt="Device 2">
+        <img src="../assets/img/device2.png" alt="Device 2">
       </div>
       
       <!-- Annotations for Device 2 -->

@@ -26,6 +26,9 @@ body {
   overflow: hidden;
   display: flex; align-items: center;
 }
+body.spread-mode .lobster-container {
+  flex: 0 0 46vw; /* Adjust width for spread mode */
+}
 .lobster-img { width: 100%; object-fit: cover; object-position: center; }
 
 /* ── Right side ── */
@@ -94,11 +97,14 @@ body {
 }
 
 /* ── Annotations ── */
-.annotation { position: absolute; pointer-events: none; z-index: 100; }
-.anno-llm { bottom: 6vw; left: 2.5vw; }
-.anno-llm .anno-text::before { width: 6vw; top: 5%; left: 50%; transform: rotate(-60deg); transform-origin: left center; }
+.annotation { position: absolute; pointer-events: none;z-index: 100; }
+.anno-llm { bottom: 6vw; left: 12vw; }
+.anno-llm .anno-text::before { width: 6vw; top: 5%; left: 50%; transform: rotate(-120deg); transform-origin: left center; }
 .anno-openclaw { top: 8vw; left: 4vw; }
 .anno-openclaw .anno-text::before { width: 6vw; top: 90%; left: 50%; transform: rotate(60deg); transform-origin: left center; }
+
+body.spread-mode .anno-llm { bottom: 12vw; }
+body.spread-mode .anno-openclaw { top: 18vw; }
 
 /* ── Page-specific flowchart overrides ── */
 .flow-chart { margin-top: 1vw; padding-bottom: 1.5vw; }
@@ -128,7 +134,7 @@ body {
 
 <!-- LEFT: Lobster image -->
 <div class="lobster-container" id="lobster-container">
-  <img src="../assets/lobster_taming_llm.png" class="lobster-img" alt="Agent Brain (LLM)">
+  <img src="../assets/img/lobster_taming_llm.png" class="lobster-img" alt="Agent Brain (LLM)">
 </div>
 
 <!-- RIGHT: File pills + Flowchart -->

@@ -9,6 +9,7 @@
 
   <meta charset="UTF-8">
   <link rel="stylesheet" href="../assets/flowchart.css">
+  <link rel="stylesheet" href="../assets/~shared.css">
   <style>
     * {
       box-sizing: border-box;
@@ -66,83 +67,8 @@
       z-index: 10;
     }
 
-    .zone-label {
-      position: absolute;
-      display: flex;
-      flex-direction: column;
-      gap: 0.3vw;
-    }
 
-    .zone-title {
-      font-size: 1.4vw;
-      font-weight: 700;
-      color: #111;
-    }
 
-    .zone-subtitle {
-      font-size: 1vw;
-      font-weight: 600;
-      color: #111;
-    }
-
-    .zone-desc {
-      font-size: 1vw;
-      color: #666;
-      line-height: 1.45;
-      max-width: 16vw;
-    }
-
-    .rationale-box {
-      position: absolute;
-      top: 2vw;
-      right: 2vw;
-      max-width: 22vw;
-      padding: 1.2vw 1.4vw;
-      border: 1.5px dashed #aaa;
-      border-radius: 1vw;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(4px);
-      z-index: 10;
-    }
-
-    .rationale-box .rationale-title {
-      font-size: 1.2vw;
-      font-weight: 700;
-      color: #555;
-      margin-bottom: 0.5vw;
-    }
-
-    .rationale-box .rationale-body {
-      font-size: 1vw;
-      color: #444;
-      line-height: 1.55;
-    }
-
-    .rationale-box .rationale-body strong {
-      color: #111;
-      font-weight: 600;
-    }
-
-    .rationale-box .rationale-body em {
-      font-style: normal;
-      color: #999;
-    }
-
-    .rationale-box .rationale-body ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .rationale-box .rationale-body li {
-      margin-bottom: 0.35vw;
-    }
-
-    .rationale-box .rationale-body li::before {
-      content: '-';
-      margin-right: 0.3vw;
-      color: #999;
-    }
 
     #f-insight {
       background: #fefce7;
@@ -187,7 +113,7 @@
     </div>
   </div>
 
-  <div class="zone-label" id="l3-label" style="left: 2vw;">
+  <div class="zone-label" id="l3-label" style="left: 3vw;">
     <div class="zone-title">L3 Memory</div>
     <div class="zone-subtitle">OpenClaw Memory Pipeline</div>
     <div class="zone-desc"><strong>Logs</strong>: seconds~minutes snapshots → <strong>Insights</strong>: minutes~hours
@@ -195,7 +121,7 @@
     </div>
   </div>
 
-  <div class="zone-label" id="ha-label" style="right: 2vw;">
+  <div class="zone-label" id="ha-label" style="right: 3vw;">
     <div class="zone-subtitle">Human Feedback</div>
     <div class="zone-desc">User can add/edit/delete states to fill gaps in the timeline.</div>
   </div>
@@ -206,7 +132,7 @@
     <div class="main-flow" id="main-flow">
 
       <!-- Row 1: Logs input -->
-      <div class="flow-row" id="row-start" style="justify-content: center; gap: 1.8vw; margin-right: 24vw;">
+      <div class="flow-row" id="row-start" style="justify-content: center; gap: 1.8vw; margin-right: 20vw;">
         <div class="fn file" id="f-logs" style="margin-bottom: 1vw;">📄 physical-logs/YYYY-MM-DD.md<br><span>← L1~L2
             Batches</span></div>
         <div class="seq-box" id="f-batch">

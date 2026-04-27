@@ -22,6 +22,11 @@
   z-index: 1;
 }
 
+body.spread-mode .gh-canvas {
+  width: 90vw;
+  height: 80vh; /* Adjust height/width for spread mode */
+}
+
 /* ── Battery Wrapper ─────────────────────────── */
 .batt-wrapper {
   flex: 1;

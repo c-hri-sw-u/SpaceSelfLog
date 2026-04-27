@@ -319,12 +319,12 @@
   #slide {
     background: #111;
     width: 100%;
-    /* Constrain the width mathematically based on available height to enforce strict 16:9 projection */
     max-width: calc((100vh - 140px) * 16 / 9);
     aspect-ratio: 16 / 9;
     border-radius: 4px;
     box-shadow: 0 8px 40px rgba(0,0,0,0.6);
     overflow: hidden;
+    position: relative;  /* needed for keep-alive iframes */
     transition: max-width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
                 aspect-ratio 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
                 box-shadow 0.55s ease;
@@ -435,11 +435,11 @@
   .page-number.right-page { right: 3cqw; }
   
   .spread-page.wide-page .page-number {
-    bottom: 0.75cqw;
+    bottom: 1.5cqw;
     font-size: 0.6cqw;
   }
-  .spread-page.wide-page .page-number.left-page { left: 1cqw; }
-  .spread-page.wide-page .page-number.right-page { right: 1cqw; }
+  .spread-page.wide-page .page-number.left-page { left: 1.5cqw; }
+  .spread-page.wide-page .page-number.right-page { right: 1.5cqw; }
   
   @media screen {
     .spread-page:not(.empty).is-left::after {
@@ -577,6 +577,13 @@ const btnScriptToggle = document.getElementById("btn-script-toggle");
 const slideFrame   = document.getElementById("slide-frame");
 const spreadContainer = document.getElementById("spread-container");
 
+// ── Mode-filtered slide indices ────────────────────────────────────────────
+function getVisible() {
+  return slides
+    .map((s, i) => i)
+    .filter(i => isSpreadMode ? !slides[i].slidesOnly : !slides[i].spreadOnly);
+}
+
 // ── Sidebar toggle ─────────────────────────────────────────────────────────
 btnSidebar.addEventListener("click", () => {
   sidebarOpen = !sidebarOpen;
@@ -588,7 +595,14 @@ btnModeToggle.addEventListener("click", () => {
   localStorage.setItem("isSpreadMode", isSpreadMode);
   btnModeToggle.textContent = isSpreadMode ? "Slides" : "Spreads";
   btnModeToggle.classList.toggle("primary", isSpreadMode);
-  
+
+  // Snap current to nearest valid entry for the new mode
+  const visible = getVisible();
+  if (visible.length > 0 && !visible.includes(current)) {
+    current = visible.reduce((best, v) =>
+      Math.abs(v - current) < Math.abs(best - current) ? v : best, visible[0]);
+  }
+
   if (isSpreadMode) {
     slideEl.style.display = "none";
     spreadContainer.classList.add("active");
@@ -598,7 +612,7 @@ btnModeToggle.addEventListener("click", () => {
     spreadContainer.classList.remove("active");
     spreadContainer.innerHTML = "";
   }
-  render(); // Update nav buttons state
+  render();
 });
 
 function renderSpreads() {
@@ -607,23 +621,28 @@ function renderSpreads() {
   let currentRow = document.createElement("div");
   currentRow.className = "spread-row";
   
+  // The first slide (cover) is always Page 1 on the right.
   let emptyLeft = document.createElement("div");
   emptyLeft.className = "spread-page empty is-left";
   currentRow.appendChild(emptyLeft);
   
   let nextSlot = 'right';
   
-  for (let i = 0; i < slides.length; i++) {
+  // Filter out slides marked for slidesOnly
+  const spreadVisible = slides.map((s, i) => i).filter(i => !slides[i].slidesOnly);
+  
+  let physicalPageCounter = 1;
+  
+  for (let vi = 0; vi < spreadVisible.length; vi++) {
+    const i = spreadVisible[vi];
     let s = slides[i];
-    let pageNum = i + 1;
     
     if (s.wide) {
-      if (nextSlot === 'right') {
+      if (nextSlot === 'right' && vi > 0) {
         let emptyRight = document.createElement("div");
         emptyRight.className = "spread-page empty is-right";
         currentRow.appendChild(emptyRight);
         spreadContainer.appendChild(currentRow);
-        
         currentRow = document.createElement("div");
         currentRow.className = "spread-row";
       }
@@ -632,17 +651,29 @@ function renderSpreads() {
       widePage.className = "spread-page wide-page";
       let iframe = document.createElement("iframe");
       iframe.src = s.src;
+      iframe.onload = function() {
+        try {
+          if (this.contentDocument && this.contentDocument.body) {
+            this.contentDocument.body.classList.add("spread-mode");
+          }
+        } catch(e) {}
+      };
       widePage.appendChild(iframe);
       
-      if (i > 0) {
-        let pNum = document.createElement("div");
-        pNum.className = "page-number right-page";
-        pNum.textContent = pageNum;
-        widePage.appendChild(pNum);
+      if (vi > 0) {
+        let pNumL = document.createElement("div");
+        pNumL.className = "page-number left-page";
+        pNumL.textContent = physicalPageCounter;
+        widePage.appendChild(pNumL);
+        
+        let pNumR = document.createElement("div");
+        pNumR.className = "page-number right-page";
+        pNumR.textContent = physicalPageCounter + 1;
+        widePage.appendChild(pNumR);
       }
+      physicalPageCounter += 2;
 
       currentRow.appendChild(widePage);
-      
       spreadContainer.appendChild(currentRow);
       
       currentRow = document.createElement("div");
@@ -659,15 +690,23 @@ function renderSpreads() {
       
       let iframe = document.createElement("iframe");
       iframe.src = s.src;
+      iframe.onload = function() {
+        try {
+          if (this.contentDocument && this.contentDocument.body) {
+            this.contentDocument.body.classList.add("spread-mode");
+          }
+        } catch(e) {}
+      };
       page.appendChild(iframe);
       
-      if (i > 0) {
+      if (vi > 0) {
         let pNum = document.createElement("div");
         pNum.className = "page-number " + (nextSlot === 'left' ? 'left-page' : 'right-page');
-        pNum.textContent = pageNum;
+        pNum.textContent = physicalPageCounter;
         page.appendChild(pNum);
       }
       
+      physicalPageCounter += 1;
       currentRow.appendChild(page);
       
       if (nextSlot === 'left') {
@@ -681,11 +720,17 @@ function renderSpreads() {
     }
   }
   
+  // Close the last row if it only has one page
   if (nextSlot === 'right' && currentRow.children.length === 1) {
     let emptyRight = document.createElement("div");
     emptyRight.className = "spread-page empty is-right";
     currentRow.appendChild(emptyRight);
     spreadContainer.appendChild(currentRow);
+  } else if (nextSlot === 'left' && currentRow.children.length === 0) {
+    // empty row, ignore
+  } else if (currentRow.children.length > 0) {
+    // If there's something in the row but it wasn't appended (e.g. wide page logic already appended)
+    if (!currentRow.parentElement) spreadContainer.appendChild(currentRow);
   }
 }
 
@@ -697,23 +742,32 @@ btnScriptToggle.addEventListener("click", () => {
 
 // ── Thumbnails ─────────────────────────────────────────────────────────────
 function renderSidebar() {
-  if (sidebarList.children.length !== slides.length) {
+  const visible = getVisible();
+
+  // Rebuild DOM if count changed (mode switch or slide add/delete)
+  if (sidebarList.children.length !== visible.length) {
     const st = sidebarList.scrollTop;
     sidebarList.innerHTML = "";
-    // sidebar-list is 200px.
-    // clientWidth handles scrollbar logic. We subtract 16px (padding) + 2px (thumb borders).
     let availableW = sidebarList.clientWidth;
-    if (availableW < 50) availableW = 196; // fallback if rendered while sidebar is closed
+    if (availableW < 50) availableW = 196;
     const thumbW = availableW - 18;
     const scale  = thumbW / 1600;
 
-    slides.forEach((s, i) => {
+    visible.forEach((slideIdx, pos) => {
+      const s = slides[slideIdx];
       const div = document.createElement("div");
       div.className = "thumb";
 
       const preview = document.createElement("div");
       preview.className = "thumb-preview";
-      if (s.src && s.src !== "about:blank") {
+      if (s.keepAlive) {
+        // Static placeholder — avoid triggering a full page load just for a thumbnail
+        preview.style.cssText = "background:#0d0d0d;display:flex;align-items:center;justify-content:center;";
+        const lbl = document.createElement("span");
+        lbl.style.cssText = "font-size:9px;color:#444;text-align:center;padding:4px;pointer-events:none;";
+        lbl.textContent = s.subtitle || "—";
+        preview.appendChild(lbl);
+      } else if (s.src && s.src !== "about:blank") {
         const f = document.createElement("iframe");
         f.className = "thumb-iframe";
         f.src = s.src;
@@ -730,19 +784,20 @@ function renderSidebar() {
 
       div.appendChild(preview);
       div.appendChild(meta);
-      div.addEventListener("click", () => goTo(i));
+      div.addEventListener("click", () => goTo(slideIdx));
       sidebarList.appendChild(div);
     });
     sidebarList.scrollTop = st;
   }
 
-  // Fast update without reflow
+  // Fast metadata update
   const thumbs = sidebarList.children;
-  for (let i = 0; i < slides.length; i++) {
-    const s = slides[i];
-    const t = thumbs[i];
-    t.className = "thumb" + (i === current ? " active" : "");
-    
+  visible.forEach((slideIdx, pos) => {
+    const s = slides[slideIdx];
+    const t = thumbs[pos];
+    if (!t) return;
+    t.className = "thumb" + (slideIdx === current ? " active" : "");
+
     const sectEl = t.querySelector(".thumb-section");
     if (s.section) {
       sectEl.style.display = "";
@@ -750,14 +805,17 @@ function renderSidebar() {
     } else {
       sectEl.style.display = "none";
     }
-    
+
     t.querySelector(".thumb-subtitle").innerHTML = s.subtitle || "<em style='color:#555'>untitled</em>";
-    t.querySelector(".thumb-num").textContent = i + 1;
-  }
+    t.querySelector(".thumb-num").textContent = pos + 1;
+  });
 }
 
 // ── Slide element ref ──────────────────────────────────────────────────────
 const slideEl = document.getElementById("slide");
+
+// ── Keep-alive iframe cache (src → iframe element) ─────────────────────────
+const keepAliveMap = new Map();
 
 // ── Render ─────────────────────────────────────────────────────────────────
 function render() {
@@ -766,20 +824,42 @@ function render() {
   subtitleEl.value = s.subtitle || "";
   scriptEditor.value = s.script || "";
   resizeSection();
-  slideFrame.src = s.src || "about:blank";
-  
-  // When iframe loads, send the initial script
-  slideFrame.onload = () => {
-    if (slideFrame.contentWindow) {
-      slideFrame.contentWindow.postMessage({ type: 'script-update', script: s.script || "" }, "*");
+
+  if (s.keepAlive) {
+    // ── Keep-alive slide: create once, show/hide on subsequent visits ──
+    const src = s.src || "about:blank";
+    let kIframe = keepAliveMap.get(src);
+    if (!kIframe) {
+      kIframe = document.createElement("iframe");
+      kIframe.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;border:none;display:block;";
+      kIframe.src = src;
+      slideEl.appendChild(kIframe);
+      keepAliveMap.set(src, kIframe);
     }
-  };
+    // Hide normal frame + all other cached iframes, show this one
+    slideFrame.style.display = "none";
+    keepAliveMap.forEach((iframe, iSrc) => {
+      iframe.style.display = iSrc === src ? "block" : "none";
+    });
+  } else {
+    // ── Normal slide: use the shared slideFrame ──
+    slideFrame.style.display = "";
+    keepAliveMap.forEach(iframe => { iframe.style.display = "none"; });
+    slideFrame.src = s.src || "about:blank";
+    slideFrame.onload = () => {
+      if (slideFrame.contentWindow) {
+        slideFrame.contentWindow.postMessage({ type: 'script-update', script: s.script || "" }, "*");
+      }
+    };
+  }
 
-  counterEl.textContent = `${current + 1} / ${slides.length}`;
+  const visible = getVisible();
+  const visPos  = visible.indexOf(current);
+  counterEl.textContent = `${visPos + 1} / ${visible.length}`;
 
-  const hasPrev = current > 0;
-  const hasNext = current < slides.length - 1;
-  
+  const hasPrev = visPos > 0;
+  const hasNext = visPos < visible.length - 1;
+
   if (isSpreadMode) {
     btnPrev.disabled   = true;
     btnNext.disabled   = true;
@@ -850,21 +930,35 @@ scriptEditor.addEventListener("input", () => {
 
 // ── Navigation ─────────────────────────────────────────────────────────────
 function goTo(idx) {
-  current = Math.max(0, Math.min(slides.length - 1, idx));
+  // Snap to nearest visible entry in current mode
+  const visible = getVisible();
+  if (visible.length === 0) return;
+  if (!visible.includes(idx)) {
+    idx = visible.reduce((best, v) =>
+      Math.abs(v - idx) < Math.abs(best - idx) ? v : best, visible[0]);
+  }
+  current = idx;
   render();
   const thumbs = sidebarList.querySelectorAll(".thumb");
   if (thumbs[current]) thumbs[current].scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 
-btnPrev.addEventListener("click",  () => goTo(current - 1));
-btnNext.addEventListener("click",  () => goTo(current + 1));
-navPrev.addEventListener("click",  () => goTo(current - 1));
-navNext.addEventListener("click",  () => goTo(current + 1));
+function navStep(delta) {
+  const visible = getVisible();
+  const pos = visible.indexOf(current);
+  const next = pos + delta;
+  if (next >= 0 && next < visible.length) goTo(visible[next]);
+}
+
+btnPrev.addEventListener("click",  () => navStep(-1));
+btnNext.addEventListener("click",  () => navStep(+1));
+navPrev.addEventListener("click",  () => navStep(-1));
+navNext.addEventListener("click",  () => navStep(+1));
 
 document.addEventListener("keydown", e => {
   if (e.target === sectionEl || e.target === subtitleEl) return;
-  if (e.key === "ArrowLeft")  goTo(current - 1);
-  if (e.key === "ArrowRight") goTo(current + 1);
+  if (e.key === "ArrowLeft")  navStep(-1);
+  if (e.key === "ArrowRight") navStep(+1);
 });
 
 // ── Add / Delete ───────────────────────────────────────────────────────────

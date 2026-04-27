@@ -8,6 +8,7 @@
 
 <meta charset="UTF-8">
 <link rel="stylesheet" href="../assets/flowchart.css">
+<link rel="stylesheet" href="../assets/~shared.css">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -60,34 +61,20 @@ body {
   align-items: center;
 }
 
+body.spread-mode .main-flow,
+body.spread-mode .other-area {
+  top: 18vh;
+}
+body.spread-mode .cron-area {
+  top: 66vh;
+}
+
 .seq-box {
   margin-bottom: 0 !important;
 }
 
-/* ── Zone labels ── */
-.zone-label {
-  position: absolute;
-  display: flex; flex-direction: column; gap: 0.3vw;
-}
-.zone-title   { font-size: 1.4vw; font-weight: 700; color: #111; }
-.zone-subtitle { font-size: 1vw; font-weight: 600; color: #111; }
-.zone-desc    { font-size: 1vw; color: #666; line-height: 1.45; max-width: 12vw; }
 
-/* ── Design rationale box ── */
-.rationale-box {
-  position: absolute; top: 2vw; right: 2vw;
-  max-width: 22vw; padding: 1.2vw 1.4vw;
-  border: 1.5px dashed #aaa; border-radius: 1vw;
-  background: rgba(255,255,255,0.85); backdrop-filter: blur(4px);
-  z-index: 10;
-}
-.rationale-box .rationale-title { font-size: 1.2vw; font-weight: 700; color: #555; margin-bottom: 0.5vw; }
-.rationale-box .rationale-body  { font-size: 1vw; color: #444; line-height: 1.55; }
-.rationale-box .rationale-body strong { color: #111; font-weight: 600; }
-.rationale-box .rationale-body em     { font-style: normal; color: #999; }
-.rationale-box .rationale-body ul { list-style: none; padding: 0; margin: 0; }
-.rationale-box .rationale-body li { margin-bottom: 0.35vw; }
-.rationale-box .rationale-body li::before { content: '-'; margin-right: 0.3vw; color: #999; }
+
 
 .fn.wide { max-width: 26vw; white-space: normal; text-align: center; }
 .fn.wide span { white-space: normal; }
@@ -117,19 +104,19 @@ body {
 </div>
 
 <!-- Zone labels -->
-<div class="zone-label" id="l35-label" style="left: 2vw;">
+<div class="zone-label" id="l35-label" style="left: 3vw;">
   <div class="zone-title">L3.5 Retrieval</div>
   <div class="zone-subtitle">When the agent uses memory<br> & How the agent accesses memory</div>
   <div class="zone-desc">Declarative rules tell the agent when and what to read from memory files.</div>
 </div>
 
-<div class="zone-label" id="agent-label" style="left: 2vw;">
+<div class="zone-label" id="agent-label" style="left: 3vw;">
   <div class="zone-title">OpenClaw Agent</div>
   <div class="zone-subtitle">Where the memory is used</div>
 </div>
   
 
-<div class="zone-label" id="pc-label" style="right: 16vw;">
+<div class="zone-label" id="pc-label" style="right: 6vw;">
   <div class="zone-title">Proactive Cron</div>
   <div class="zone-subtitle">Via OpenClaw Hook</div>
   <div class="zone-desc">Background hook pushes fresh insight into the active session on a schedule.</div>

@@ -174,6 +174,11 @@
       right: 2vw;
     }
 
+    /* ── Spread Mode Adjustments ── */
+    body.spread-mode .sidebar-left { left: 4vw; top: 12vw;}
+    body.spread-mode .sidebar-right { right: 4vw; top: 12vw; }
+    body.spread-mode #info-block { left: 4vw; bottom: 8vw; }
+
     .sidebar-title {
       font-size: 0.7vw;
       font-weight: 600;
@@ -256,7 +261,7 @@
     }
 
   </style>
-  <link rel="stylesheet" href="../assets/results_shared.css">
+  <link rel="stylesheet" href="../assets/~shared.css">
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="theme_config.js"></script>
 
@@ -368,7 +373,17 @@
     function layoutPlan() {
       const margin = { x: window.innerWidth * 0.04, y: window.innerHeight * 0.12 };
       const avW = window.innerWidth - margin.x * 2, avH = window.innerHeight - margin.y * 2;
-      const scale = Math.min(avW / SVG_W, avH / SVG_H) * 0.9;
+      
+      let scale;
+      const isSpread = document.body.classList.contains('spread-mode') || (window.innerWidth / window.innerHeight < 1.4);
+      
+      if (isSpread) {
+        // In spread mode, force width-based scaling and make it smaller (0.72x width)
+        scale = (avW / SVG_W) * 0.6;
+      } else {
+        scale = Math.min(avW / SVG_W, avH / SVG_H) * 0.9;
+      }
+
       const pw = SVG_W * scale, ph = SVG_H * scale;
       wrap.style.width = pw + 'px'; wrap.style.height = ph + 'px';
       ['struct-layer', 'furn-layer', 'hit-layer'].forEach(id => {
@@ -393,6 +408,7 @@
 
 
     function initViz(data) {
+      SCALE = layoutPlan(); // Recalculate scale now that we might have the spread-mode class
       const roomData = {};
       const actColors = data.activity_colors || {};
       const maxTotal = Math.max(...Object.values(data.room_data).map(d => d.total), 1);

@@ -175,6 +175,27 @@
       background: #3b82f6;
       transition: width 0.1s;
     }
+
+
+
+    .fake-cursor-dot { display: none; }
+    .fake-cursor-dot.visible { display: block; }
+    .fake-cursor-dot {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(255, 225, 60, 0.92);
+      border: 2px solid rgba(255,255,255,0.95);
+      cursor: grab;
+      transform: translate(-50%, -50%);
+      z-index: 50;
+      box-shadow: 0 0 0 3px rgba(255,200,0,0.35), 0 2px 8px rgba(0,0,0,0.7);
+      pointer-events: auto;
+      transition: box-shadow 0.15s ease;
+    }
+    .fake-cursor-dot:hover { box-shadow: 0 0 0 5px rgba(255,200,0,0.5), 0 2px 10px rgba(0,0,0,0.8); }
+    .fake-cursor-dot.dragging { cursor: grabbing; box-shadow: 0 0 0 7px rgba(255,200,0,0.4), 0 4px 14px rgba(0,0,0,0.9); }
   </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -234,10 +255,24 @@
     <div id="inner">
       <canvas id="wall"></canvas>
       <canvas id="overlay"></canvas>
+      <div id="fake-cursor" class="fake-cursor-dot"></div>
+      <div id="fake-cursor-2" class="fake-cursor-dot"></div>
     </div>
   </div>
 
   <script>
+    // ── Pagination params ─────────────────────────────────────────
+    const _urlParams = new URLSearchParams(window.location.search);
+    const PAGE_INDEX  = parseInt(_urlParams.get('pg')  ?? '0', 10);  // 0-based page index
+    const PAGE_COUNT  = parseInt(_urlParams.get('pgs') ?? '1', 10);  // total pages
+    const IS_PAGED    = PAGE_COUNT > 1;
+    const IS_LEADER   = !IS_PAGED || PAGE_INDEX === 0;  // only pg=0 shows the controls
+
+    // Hide controls panel on follower pages
+    if (!IS_LEADER) {
+      document.getElementById('controls-area').style.display = 'none';
+    }
+
     let ALL_IMAGES = []; // {url, ts}
     let FILTERED_IMAGES = [];
     let normalizedGaps = [];
@@ -255,7 +290,9 @@
     const innerDiv = document.getElementById('inner');
     const loadingOverlay = document.getElementById('loading-overlay');
 
-    let hoverIndex = -1;
+    let hoverIndex = -1;          // compat (slides mode)
+    let hoverIndices = [-1, -1];  // per-dot hover index (spread mode)
+    let hiResImages  = [null, null];
     let cachedLayoutPoses = [];
     let cachedW = 0; let cachedH = 0; let cachedOffsetY = 0;
 
@@ -291,12 +328,26 @@
       return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = async () => {
-          const scale = targetWidth / img.width;
+          const isPortrait = img.naturalHeight > img.naturalWidth;
           const off = document.createElement('canvas');
-          off.width = targetWidth;
-          off.height = img.height * scale;
-          const oCtx = off.getContext('2d');
-          oCtx.drawImage(img, 0, 0, off.width, off.height);
+
+          if (isPortrait) {
+            // Rotate 90° CW: portrait (W×H) → landscape (H×W)
+            const scale = targetWidth / img.naturalHeight;  // fit the long side into targetWidth
+            off.width  = targetWidth;                                        // = H * scale
+            off.height = Math.round(img.naturalWidth * scale);               // = W * scale
+            const c = off.getContext('2d');
+            c.translate(off.width, 0);   // move origin to top-right corner
+            c.rotate(Math.PI / 2);       // 90° CW: x-axis now points down
+            c.drawImage(img, 0, 0, off.height, off.width); // draw in rotated space
+          } else {
+            const scale = targetWidth / img.width;
+            off.width  = targetWidth;
+            off.height = Math.round(img.height * scale);
+            const c = off.getContext('2d');
+            c.drawImage(img, 0, 0, off.width, off.height);
+          }
+
           try {
             const bmp = await createImageBitmap(off);
             resolve(bmp);
@@ -317,7 +368,16 @@
       const startMs = startDateInput.value ? new Date(startDateInput.value).getTime() : -Infinity;
       const endMs = endDateInput.value ? new Date(endDateInput.value).getTime() : Infinity;
 
-      FILTERED_IMAGES = ALL_IMAGES.filter(img => img.ts >= startMs && img.ts <= endMs);
+      let all = ALL_IMAGES.filter(img => img.ts >= startMs && img.ts <= endMs);
+
+      // ── Slice to the current page ──
+      if (IS_PAGED) {
+        const chunkSize = Math.ceil(all.length / PAGE_COUNT);
+        const start = PAGE_INDEX * chunkSize;
+        all = all.slice(start, start + chunkSize);
+      }
+
+      FILTERED_IMAGES = all;
 
       const N = FILTERED_IMAGES.length;
       normalizedGaps = [];
@@ -348,17 +408,28 @@
       }
     }
 
+    // ── sessionStorage key for metadata cache (shared across all pages of this wall) ──
+    const _CACHE_KEY = 'photowall_all_images_v1';
+
     async function init() {
       try {
         resizeCanvas();
 
-        const res = await fetch('/slides/api/frames');
-        const data = await res.json();
-        ALL_IMAGES = data.images || [];
-        const N = ALL_IMAGES.length;
-        document.getElementById('total-count').innerText = N;
+        // ── Fix 2: try sessionStorage cache first to skip API re-fetch on back-nav ──
+        let cachedRaw = sessionStorage.getItem(_CACHE_KEY);
+        if (cachedRaw) {
+          try { ALL_IMAGES = JSON.parse(cachedRaw); } catch(e) { ALL_IMAGES = []; }
+        }
 
-        if (N === 0) { loadingOverlay.innerHTML = "No frames found."; return; }
+        if (ALL_IMAGES.length === 0) {
+          const res = await fetch('/slides/api/frames');
+          const data = await res.json();
+          ALL_IMAGES = data.images || [];
+          // Cache for same-session re-navigation
+          try { sessionStorage.setItem(_CACHE_KEY, JSON.stringify(ALL_IMAGES)); } catch(e) {}
+        }
+
+        if (ALL_IMAGES.length === 0) { loadingOverlay.innerHTML = "No frames found."; return; }
 
         // Restore saved configs if available
         if (localStorage.getItem('config-overlap')) overlapSlider.value = localStorage.getItem('config-overlap');
@@ -366,27 +437,48 @@
         if (localStorage.getItem('config-max-dist')) maxDistSlider.value = localStorage.getItem('config-max-dist');
         if (localStorage.getItem('config-hover-n')) hoverNSlider.value = localStorage.getItem('config-hover-n');
 
-        // Setup Date UI bounds
+        const N_ALL = ALL_IMAGES.length;
         const defaultStart = toDTLocal(ALL_IMAGES[0].ts);
-        const defaultEnd = toDTLocal(ALL_IMAGES[N - 1].ts);
+        const defaultEnd   = toDTLocal(ALL_IMAGES[N_ALL - 1].ts);
         startDateInput.value = localStorage.getItem('config-start-date') || defaultStart;
-        endDateInput.value = localStorage.getItem('config-end-date') || defaultEnd;
+        endDateInput.value   = localStorage.getItem('config-end-date')   || defaultEnd;
 
-        recalculateDataFilters();
+        // ── Fix 1: slice to this page BEFORE loading any thumbnails ──
+        recalculateDataFilters();  // populates FILTERED_IMAGES (this page's chunk only)
 
-        await new Promise((resolve) => {
-          const firstImg = new Image();
-          firstImg.onload = () => { aspectRatio = firstImg.naturalWidth / firstImg.naturalHeight; resolve(); };
-          firstImg.onerror = resolve;
-          firstImg.src = ALL_IMAGES[0].url;
-        });
+        const PAGE_IMAGES = FILTERED_IMAGES; // alias for clarity
+        const N = PAGE_IMAGES.length;
+        document.getElementById('total-count').innerText = N;
 
-        // Concurrent Worker Pool Fetch
+        if (N === 0) { loadingOverlay.innerHTML = "No frames found for this page."; return; }
+
+        // Probe aspect ratio from the GLOBAL first image (consistent across all pages).
+        // Cache in sessionStorage so follower pages skip the network request.
+        const _AR_KEY = 'photowall_aspect_ratio_v1';
+        const _cachedAR = parseFloat(sessionStorage.getItem(_AR_KEY) || '0');
+        if (_cachedAR > 0.1) {
+          aspectRatio = _cachedAR;
+        } else {
+          await new Promise((resolve) => {
+            const firstImg = new Image();
+            firstImg.onload = () => {
+              aspectRatio = firstImg.naturalWidth / firstImg.naturalHeight;
+              // Ensure landscape — if somehow portrait, flip
+              if (aspectRatio < 1) aspectRatio = 1 / aspectRatio;
+              try { sessionStorage.setItem(_AR_KEY, String(aspectRatio)); } catch(e) {}
+              resolve();
+            };
+            firstImg.onerror = resolve;
+            firstImg.src = ALL_IMAGES[0].url;  // global reference, not slice-local
+          });
+        }
+
+        // ── Concurrent worker pool — only loads THIS PAGE's thumbnails ──
         let loaded = 0, currentIndex = 0;
         const workers = Array(60).fill(0).map(async () => {
           while (currentIndex < N) {
             const idx = currentIndex++;
-            const imgObj = ALL_IMAGES[idx];
+            const imgObj = PAGE_IMAGES[idx];
             try {
               const bmp = await loadThumbnail(imgObj.url, 64);
               loadedBitmaps.set(imgObj.url, bmp);
@@ -395,7 +487,6 @@
               const tmpCanvas = document.createElement('canvas');
               tmpCanvas.width = 1; tmpCanvas.height = 1;
               const tCtx = tmpCanvas.getContext('2d', { willReadFrequently: true });
-              // drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
               tCtx.drawImage(bmp, bmp.width - 1, 0, 1, bmp.height, 0, 0, 1, 1);
               const data = tCtx.getImageData(0, 0, 1, 1).data;
               loadedColors.set(imgObj.url, { r: data[0], g: data[1], b: data[2] });
@@ -506,7 +597,8 @@
 
       const rect = innerDiv.getBoundingClientRect();
       const W = rect.width;
-      const TOP_RESERVED_SPACE = 20;
+      // In paged mode use full height; otherwise reserve space for top label
+      const TOP_RESERVED_SPACE = IS_PAGED ? 0 : 20;
       const H = rect.height - TOP_RESERVED_SPACE;
       const A = aspectRatio;
       const G = window.innerWidth * 0.01;
@@ -514,7 +606,7 @@
       const N = FILTERED_IMAGES.length;
 
       ctx.fillStyle = '#111';
-      ctx.fillRect(0, 0, W, H);
+      ctx.fillRect(0, 0, W, rect.height);
 
       if (N === 0) return;
 
@@ -611,6 +703,20 @@
       }
       ctx.globalAlpha = 1.0;
 
+      // ── Page indicator (paged mode only) ──────────────────────
+      if (IS_PAGED) {
+        const baseScale = W / 1600;
+        const label = `${PAGE_INDEX + 1} / ${PAGE_COUNT}`;
+        const fs = baseScale * 11;
+        ctx.font = `500 ${fs}px 'Roboto', sans-serif`;
+        ctx.globalAlpha = 0.45;
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'right';
+        ctx.fillText(label, W - baseScale * 12, rect.height - baseScale * 10);
+        ctx.textAlign = 'left';
+        ctx.globalAlpha = 1.0;
+      }
+
       // Save metric state for overlay hit detection
       cachedLayoutPoses = layout.poses;
       cachedW = w;
@@ -618,186 +724,209 @@
       cachedOffsetY = offsetY;
       oCtx.save(); oCtx.setTransform(1, 0, 0, 1, 0, 0); oCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height); oCtx.restore();
       hoverIndex = -1;
+      hoverIndices = [-1, -1]; hiResImages = [null, null];
+    }
+
+    // ── Shared hover logic ─────────────────────────────────────────────────
+    let fakeCursorDragging = false;
+
+    function findNearestIdx(mx, my) {
+      let found = -1, minD = Infinity;
+      const n = Math.min(FILTERED_IMAGES.length, cachedLayoutPoses.length);
+      for (let i = 0; i < n; i++) {
+        const pos = cachedLayoutPoses[i];
+        const d = (mx - pos.x - cachedW/2) ** 2 + (my - pos.y - cachedOffsetY - cachedH/2) ** 2;
+        if (d < minD) { minD = d; found = i; }
+      }
+      return found;
+    }
+
+    function buildDock(imgIdx, rect) {
+      if (imgIdx === -1) return [];
+      const pos = cachedLayoutPoses[imgIdx];
+      const cyRaw = pos.y + cachedOffsetY;
+      const scaleMax = 3.5, hoverN = parseInt(hoverNSlider.value, 10), GAP = 2;
+      let items = [], total = 0;
+      for (let k = -hoverN; k <= hoverN; k++) {
+        const ti = imgIdx + k;
+        if (ti < 0 || ti >= FILTERED_IMAGES.length) continue;
+        let s = 1.0 + (scaleMax-1.0) * Math.pow(1-Math.abs(k)/(hoverN+1), 1.5);
+        let w = cachedW * s;
+        if (w > rect.width * 0.35) { s = (rect.width*0.35)/cachedW; w = cachedW*s; }
+        items.push({ idx: ti, k, s, w, h: cachedH*s });
+        total += w;
+      }
+      total += Math.max(0, items.length-1) * GAP;
+      const center = items.find(it => it.k === 0);
+      if (!center) return [];
+      let leftW = 0; for (const it of items) if (it.k < 0) leftW += it.w + GAP;
+      let sx = pos.x + cachedW/2 - leftW - center.w/2;
+      if (sx < 10) sx = 10;
+      if (sx + total > rect.width - 10) sx = rect.width - total - 10;
+      let cx = sx;
+      for (const it of items) {
+        it.x = cx; it.y = cyRaw + cachedH/2 - it.h/2;
+        if (it.y < 35) it.y = 35;
+        if (it.y + it.h > rect.height - 10) it.y = rect.height - it.h - 10;
+        cx += it.w + GAP;
+      }
+      items.sort((a,b) => a.s - b.s);
+      return items;
+    }
+
+    function renderAllOverlays() {
+      const rect = innerDiv.getBoundingClientRect();
+      const bs = rect.width / 1600;
+      oCtx.save(); oCtx.setTransform(1,0,0,1,0,0); oCtx.clearRect(0,0,overlayCanvas.width,overlayCanvas.height); oCtx.restore();
+      // Draw both docks (one per dot)
+      for (let di = 0; di < 2; di++) {
+        const imgIdx = hoverIndices[di];
+        if (imgIdx === -1) continue;
+        for (const it of buildDock(imgIdx, rect)) {
+          const imgObj = FILTERED_IMAGES[it.idx];
+          const bmp = (it.k === 0 && hiResImages[di]) ? hiResImages[di] : loadedBitmaps.get(imgObj.url);
+          if (!bmp) continue;
+          oCtx.shadowColor='rgba(0,0,0,0.85)'; oCtx.shadowBlur=10*bs*it.s; oCtx.shadowOffsetX=0; oCtx.shadowOffsetY=5*bs*it.s; oCtx.globalAlpha=1.0;
+          oCtx.drawImage(bmp, it.x, it.y, it.w, it.h);
+          oCtx.shadowColor='transparent'; oCtx.strokeStyle='rgba(255,255,255,0.9)'; oCtx.lineWidth=bs+it.s*0.2;
+          oCtx.strokeRect(it.x, it.y, it.w, it.h);
+          if (it.k === 0) {
+            const d = new Date(imgObj.ts);
+            const ts = `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+            oCtx.font=`bold ${bs*13}px 'Courier New',monospace`;
+            const tW=oCtx.measureText(ts).width, tx=it.x+it.w/2-tW/2, ty=it.y-28*bs;
+            oCtx.fillStyle='rgba(0,0,0,0.85)'; oCtx.fillRect(tx-10*bs,ty,tW+20*bs,22*bs);
+            oCtx.fillStyle='rgba(255,255,255,1)'; oCtx.fillText(ts,tx,ty+15*bs);
+          }
+        }
+      }
+    }
+
+    function applyHoverAt(mx, my, dotIdx = 0) {
+      if (!isCanvasReady || cachedLayoutPoses.length === 0) return;
+      const found = findNearestIdx(mx, my);
+      if (found === hoverIndices[dotIdx]) return;
+      hoverIndices[dotIdx] = found;
+      hiResImages[dotIdx] = null;
+      // For slides-mode compat, mirror into legacy hoverIndex
+      if (dotIdx === 0) hoverIndex = found;
+      renderAllOverlays();
+      if (found === -1) return;
+      const di = dotIdx, snap = found;
+      const img = new Image();
+      img.onload = () => {
+        if (hoverIndices[di] === snap) { hiResImages[di] = img; renderAllOverlays(); }
+      };
+      img.src = FILTERED_IMAGES[found].url.replace('thumbnails-data','frames-data');
     }
 
     innerDiv.addEventListener('mousemove', (e) => {
-      if (!isCanvasReady || cachedLayoutPoses.length === 0) return;
-
+      if (fakeCursorDragging || PAGE_COUNT === 3) return;  // disabled in spread mode
       const rect = innerDiv.getBoundingClientRect();
-      const mx = e.clientX - rect.left;
-      const my = e.clientY - rect.top;
-
-      let foundIndex = -1;
-      let minDistSq = Infinity;
-      const renderCount = Math.min(FILTERED_IMAGES.length, cachedLayoutPoses.length);
-
-      for (let i = 0; i < renderCount; i++) {
-        const pos = cachedLayoutPoses[i];
-        const cy = pos.y + cachedOffsetY;
-
-        let cx = pos.x + cachedW / 2;
-        let centerY = cy + cachedH / 2;
-
-        let dx = mx - cx;
-        let dy = my - centerY;
-        let distSq = dx * dx + dy * dy;
-
-        if (distSq < minDistSq) {
-          minDistSq = distSq;
-          foundIndex = i;
-        }
-      }
-
-      if (foundIndex !== hoverIndex) {
-        hoverIndex = foundIndex;
-        oCtx.save(); oCtx.setTransform(1, 0, 0, 1, 0, 0); oCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height); oCtx.restore();
-
-        if (hoverIndex !== -1) {
-          const centralImgObj = FILTERED_IMAGES[hoverIndex];
-          const pos = cachedLayoutPoses[hoverIndex];
-          const cyRaw = pos.y + cachedOffsetY;
-
-          const scaleMax = 3.5;
-          const hoverN = parseInt(hoverNSlider.value, 10);
-          const GAP = 2; // px padding
-
-          let dockItems = [];
-          let totalWidth = 0;
-
-          for (let k = -hoverN; k <= hoverN; k++) {
-            let tgtIdx = hoverIndex + k;
-            if (tgtIdx < 0 || tgtIdx >= FILTERED_IMAGES.length) continue;
-
-            // Smooth bell-curve drop off scale
-            let ratio = 1 - (Math.abs(k) / (hoverN + 1));
-            let s = 1.0 + (scaleMax - 1.0) * Math.pow(ratio, 1.5);
-
-            let w_scaled = cachedW * s;
-            if (w_scaled > rect.width * 0.35) {
-              s = (rect.width * 0.35) / cachedW;
-              w_scaled = cachedW * s;
-            }
-            let h_scaled = cachedH * s;
-
-            dockItems.push({ idx: tgtIdx, k: k, s: s, w: w_scaled, h: h_scaled });
-            totalWidth += w_scaled;
-          }
-          totalWidth += Math.max(0, dockItems.length - 1) * GAP;
-
-          let centralItem = dockItems.find(it => it.k === 0);
-          if (!centralItem) return;
-
-          let leftWidth = 0;
-          for (let it of dockItems) {
-            if (it.k < 0) leftWidth += it.w + GAP;
-          }
-
-          let targetStartX = pos.x + cachedW / 2 - leftWidth - centralItem.w / 2;
-
-          if (targetStartX < 10) targetStartX = 10;
-          if (targetStartX + totalWidth > rect.width - 10) targetStartX = rect.width - totalWidth - 10;
-
-          let curX = targetStartX;
-          for (let it of dockItems) {
-            it.x = curX;
-            it.y = cyRaw + cachedH / 2 - it.h / 2; // align vertically
-
-            if (it.y < 35) it.y = 35; // Reserve space for top label
-            if (it.y + it.h > rect.height - 10) it.y = rect.height - it.h - 10;
-
-            curX += it.w + GAP;
-          }
-
-          // Sort smallest to largest so biggest shadows cast over smaller neighbors
-          dockItems.sort((a, b) => a.s - b.s);
-
-          const drawOverlayContent = (overrideCenterImg) => {
-            for (let it of dockItems) {
-              const imgObj = FILTERED_IMAGES[it.idx];
-              let bmp = null;
-              if (it.k === 0 && overrideCenterImg) {
-                bmp = overrideCenterImg;
-              } else {
-                bmp = loadedBitmaps.get(imgObj.url);
-              }
-              if (!bmp) continue;
-
-              const baseScale = rect.width / 1600;
-              oCtx.shadowColor = 'rgba(0, 0, 0, 0.85)';
-              oCtx.shadowBlur = (10 * baseScale) * it.s;
-              oCtx.shadowOffsetX = 0;
-              oCtx.shadowOffsetY = (5 * baseScale) * it.s;
-              oCtx.globalAlpha = 1.0;
-
-              oCtx.drawImage(bmp, it.x, it.y, it.w, it.h);
-
-              oCtx.shadowColor = 'transparent';
-              oCtx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-              oCtx.lineWidth = (1 * baseScale) + (it.s * 0.2);
-              oCtx.strokeRect(it.x, it.y, it.w, it.h);
-
-              if (it.k === 0) {
-                const d = new Date(imgObj.ts);
-                const mStr = String(d.getMonth() + 1).padStart(2, '0');
-                const dStr = String(d.getDate()).padStart(2, '0');
-                const hStr = String(d.getHours()).padStart(2, '0');
-                const MStr = String(d.getMinutes()).padStart(2, '0');
-                const sStr = String(d.getSeconds()).padStart(2, '0');
-                const textStr = `${mStr}/${dStr} ${hStr}:${MStr}:${sStr}`;
-
-                const baseScale = rect.width / 1600;
-                const fontSize13 = baseScale * 13;
-                oCtx.font = `bold ${fontSize13}px 'Courier New', Courier, monospace`;
-                const tW = oCtx.measureText(textStr).width;
-
-                let tx = it.x + it.w / 2 - tW / 2;
-                let ty = it.y - (28 * baseScale); // Completely float above the frame securely
-
-                oCtx.fillStyle = "rgba(0, 0, 0, 0.85)";
-                oCtx.fillRect(tx - (10 * baseScale), ty, tW + (20 * baseScale), 22 * baseScale);
-                oCtx.fillStyle = "rgba(255, 255, 255, 1)";
-                oCtx.fillText(textStr, tx, ty + (15 * baseScale));
-              }
-            }
-          };
-
-          drawOverlayContent(null);
-
-          const imgObj = FILTERED_IMAGES[hoverIndex];
-          const highResUrl = imgObj.url.replace('thumbnails-data', 'frames-data');
-          const currentHoverMatch = hoverIndex;
-          const img = new Image();
-          img.onload = () => {
-            if (hoverIndex === currentHoverMatch) {
-              oCtx.save(); oCtx.setTransform(1, 0, 0, 1, 0, 0); oCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height); oCtx.restore();
-              drawOverlayContent(img);
-            }
-          };
-          img.src = highResUrl;
-        }
-      }
+      applyHoverAt(e.clientX - rect.left, e.clientY - rect.top);
     });
 
     innerDiv.addEventListener('mouseleave', () => {
-      oCtx.save(); oCtx.setTransform(1, 0, 0, 1, 0, 0); oCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height); oCtx.restore();
-      hoverIndex = -1;
+      if (fakeCursorDragging || PAGE_COUNT === 3) return;
+      oCtx.save(); oCtx.setTransform(1,0,0,1,0,0); oCtx.clearRect(0,0,overlayCanvas.width,overlayCanvas.height); oCtx.restore();
+      hoverIndex = -1; hoverIndices = [-1,-1];
     });
 
     const inputs = [overlapSlider, maxGapSlider, maxDistSlider, startDateInput, endDateInput, hoverNSlider];
-    inputs.forEach(el => {
-      el.addEventListener('input', () => {
-        // Save to localStorage
-        localStorage.setItem('config-' + el.id, el.value);
 
-        // UI event debouncer
-        if (el.id === 'start-date' || el.id === 'end-date' || el.id === 'max-gap' || el.id === 'max-dist') {
-          recalculateDataFilters();
-        }
-        requestAnimationFrame(() => calculateAndApplyLayout());
+    if (IS_LEADER) {
+      // Leader page: write changes to localStorage (other pages will pick them up)
+      inputs.forEach(el => {
+        el.addEventListener('input', () => {
+          localStorage.setItem('config-' + el.id, el.value);
+          if (el.id === 'start-date' || el.id === 'end-date' || el.id === 'max-gap' || el.id === 'max-dist') {
+            recalculateDataFilters();
+          }
+          requestAnimationFrame(() => calculateAndApplyLayout());
+        });
       });
+    }
+
+    // All pages (including leader) listen for config changes written by the leader
+    window.addEventListener('storage', (e) => {
+      if (!e.key || !e.key.startsWith('config-')) return;
+      const id = e.key.replace('config-', '');
+      const el = document.getElementById(id);
+      if (el && e.newValue !== null) el.value = e.newValue;
+      if (id === 'start-date' || id === 'end-date' || id === 'max-gap' || id === 'max-dist') {
+        recalculateDataFilters();
+      }
+      requestAnimationFrame(() => calculateAndApplyLayout());
     });
 
-    init();
+    init().then(() => {
+      // Fake cursors only in spread mode (pgs=3)
+      if (PAGE_COUNT !== 3) return;
+
+      const dots = [
+        document.getElementById('fake-cursor'),
+        document.getElementById('fake-cursor-2'),
+      ];
+      dots.forEach(d => d.classList.add('visible'));
+
+      // Track which dot is being dragged (null = none)
+      let activeDot = null;
+
+      function randomImagePos() {
+        if (cachedLayoutPoses.length === 0) return null;
+        const idx = Math.floor(Math.random() * cachedLayoutPoses.length);
+        const pos = cachedLayoutPoses[idx];
+        return { px: pos.x + cachedW / 2, py: pos.y + cachedOffsetY + cachedH / 2 };
+      }
+
+      function placeDot(el, px, py) {
+        el.style.left = px + 'px';
+        el.style.top  = py + 'px';
+      }
+
+      // Wait for layout, then place both dots at different random positions
+      const _t = setInterval(() => {
+        if (isCanvasReady && cachedLayoutPoses.length > 0) {
+          clearInterval(_t);
+          const N = cachedLayoutPoses.length;
+          const i1 = Math.floor(N * 0.25 + Math.random() * N * 0.15);
+          const i2 = Math.floor(N * 0.60 + Math.random() * N * 0.15);
+          [i1, i2].forEach((idx, di) => {
+            const pos = cachedLayoutPoses[Math.min(idx, N-1)];
+            const px = pos.x + cachedW / 2;
+            const py = pos.y + cachedOffsetY + cachedH / 2;
+            placeDot(dots[di], px, py);
+            applyHoverAt(px, py, di);  // each dot triggers its own overlay
+          });
+        }
+      }, 120);
+
+      dots.forEach(el => {
+        el.addEventListener('mousedown', (e) => {
+          activeDot = el;
+          fakeCursorDragging = true;
+          el.classList.add('dragging');
+          e.preventDefault(); e.stopPropagation();
+        });
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!activeDot) return;
+        const r = innerDiv.getBoundingClientRect();
+        const px = Math.max(0, Math.min(r.width,  e.clientX - r.left));
+        const py = Math.max(0, Math.min(r.height, e.clientY - r.top));
+        placeDot(activeDot, px, py);
+        applyHoverAt(px, py, dots.indexOf(activeDot));  // pass which dot
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (activeDot) {
+          activeDot.classList.remove('dragging');
+          activeDot = null;
+          fakeCursorDragging = false;
+        }
+      });
+    });
   </script>
 </body>
 

@@ -9,6 +9,7 @@
 
   <meta charset="UTF-8">
   <link rel="stylesheet" href="../assets/flowchart.css">
+  <link rel="stylesheet" href="../assets/~shared.css">
   <style>
     * {
       box-sizing: border-box;
@@ -77,90 +78,8 @@
       align-items: center;
     }
 
-    /* ── Zone labels ── */
-    .zone-label {
-      position: absolute;
-      display: flex;
-      flex-direction: column;
-      gap: 0.3vw;
-    }
 
-    .zone-title {
-      font-size: 1.4vw;
-      font-weight: 700;
-      color: #111;
-    }
 
-    .zone-subtitle {
-      font-size: 1vw;
-      font-weight: 600;
-      color: #111;
-    }
-
-    .zone-desc {
-      font-size: 1vw;
-      color: #666;
-      line-height: 1.45;
-      max-width: 16vw;
-    }
-
-    .zone-desc strong {
-      color: #111;
-      font-weight: 600;
-    }
-
-    /* ── Design rationale box (top-right) ── */
-    .rationale-box {
-      position: absolute;
-      top: 2vw;
-      right: 2vw;
-      max-width: 22vw;
-      padding: 1.2vw 1.4vw;
-      border: 1.5px dashed #aaa;
-      border-radius: 1vw;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(4px);
-      z-index: 10;
-    }
-
-    .rationale-box .rationale-title {
-      font-size: 1.2vw;
-      font-weight: 700;
-      color: #555;
-      margin-bottom: 0.6vw;
-    }
-
-    .rationale-box .rationale-body {
-      font-size: 1vw;
-      color: #444;
-      line-height: 1.6;
-    }
-
-    .rationale-box .rationale-body strong {
-      color: #111;
-      font-weight: 600;
-    }
-
-    .rationale-box .rationale-body em {
-      font-style: normal;
-      color: #999;
-    }
-
-    .rationale-box .rationale-body ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .rationale-box .rationale-body li {
-      margin-bottom: 0.4vw;
-    }
-
-    .rationale-box .rationale-body li::before {
-      content: '-';
-      margin-right: 0.4vw;
-      color: #999;
-    }
 
     .fn.wide {
       max-width: 22vw;

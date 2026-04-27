@@ -63,6 +63,11 @@
       right: 2vw;
     }
 
+    /* ── Spread Mode Adjustments ── */
+    body.spread-mode .sidebar-left { left: 4vw; top: 12vw}
+    body.spread-mode .sidebar-right { right: 4vw; top: 12vw}
+    body.spread-mode #info-block { left: 4vw; bottom: 8vw; }
+
     .sidebar-title {
       font-size: 0.75vw;
       font-weight: 600;
@@ -187,7 +192,7 @@
       z-index: 60;
       display: flex;
       flex-direction: column;
-      align-items: flex-end;
+      align-items: flex-start;
       gap: 0.9vw;
     }
 
@@ -195,7 +200,7 @@
       display: flex;
       gap: 1.8vw;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: flex-start;
     }
 
     .leg-item {
@@ -257,7 +262,7 @@
     }
 
   </style>
-  <link rel="stylesheet" href="../assets/results_shared.css">
+  <link rel="stylesheet" href="../assets/~shared.css">
   <script src="theme_config.js"></script>
   <script>
     if (new URLSearchParams(window.location.search).get('clean') === '1') {
@@ -377,7 +382,15 @@
       const margin = { x: window.innerWidth * 0.04, y: window.innerHeight * 0.12 };
       const avW = window.innerWidth - margin.x * 2;
       const avH = window.innerHeight - margin.y * 2;
-      SCALE = Math.min(avW / SVG_W, avH / SVG_H) * 0.9;
+
+      const isSpread = document.body.classList.contains('spread-mode') || (window.innerWidth / window.innerHeight < 1.4);
+
+      if (isSpread) {
+        // Force width-based scaling in spread mode
+        SCALE = (avW / SVG_W) * 0.6;
+      } else {
+        SCALE = Math.min(avW / SVG_W, avH / SVG_H) * 0.9;
+      }
       const pw = SVG_W * SCALE, ph = SVG_H * SCALE;
       const wrap = document.getElementById('plan-wrap');
       wrap.style.width = pw + 'px'; wrap.style.height = ph + 'px';

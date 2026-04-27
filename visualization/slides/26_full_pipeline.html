@@ -46,10 +46,18 @@ body {
   position: absolute; top: 0; left: 0;
   width: 100vw; height: 100vh;
 }
+body.spread-mode .flow-chart {
+  transform: scale(0.9);
+  transform-origin: center center;
+}
 .flow-chart svg {
   position: absolute; top: 0; left: 0;
   width: 100%; height: 100%;
   pointer-events: none; z-index: 20;
+}
+body.spread-mode #flow-svg {
+  transform: scale(1.11111); /* 1 / 0.9 to prevent double-scaling of SVG drawn coordinates */
+  transform-origin: top left;
 }
 
 /* ── Column layout ── */

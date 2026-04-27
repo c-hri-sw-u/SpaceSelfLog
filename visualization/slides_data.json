@@ -70,19 +70,19 @@
       "section": "The Blind Spot",
       "subtitle": "Research Landscape",
       "src": "/slides/slide-files/12_research_landscape.html",
-      "script": "Existing research has focused on lifelogging or activity recognition, but rarely on how these physical observations can be integrated into the core memory of a persistent AI agent. \n\nWe are moving beyond just 'tracking' to 'integrating' physical context into the agent's cognition."
+      "script": "Recording your life and retrieving it later—that's not a new idea. What's less explored is whether that physical record can actually feed into how an agent understands you."
     },
     {
       "section": "The Blind Spot",
       "subtitle": "Research Questions",
       "src": "/slides/slide-files/13_research_questions.html",
-      "script": "My research addresses three core questions: First, what unique personalization data becomes visible through egocentric vision? Second, when does this information actually improve agent performance? And third, what are the design requirements for a memory system that can handle this continuous physical input?"
+      "script": "Three questions, three contributions. \n\nI'll walk through the system and the study that answer each one."
     },
     {
       "section": "Design Rationale",
       "subtitle": "Design Rationale",
       "src": "/slides/slide-files/14_design_rationale_cover.html",
-      "script": "Let's dive into the Design Rationale."
+      "script": "But first, let's dive into the Design Rationale."
     },
     {
       "section": "Design Rationale",
@@ -94,13 +94,13 @@
       "section": "Design Rationale",
       "subtitle": "Why OpenClaw?",
       "src": "/slides/slide-files/16_why_openclaw.html",
-      "script": "OpenClaw was selected for its 'transparent memory' architecture. By using local markdown files, it ensures that sensitive physical-world data remains under the user's control. It allows us to build a memory system that is human-readable, auditable, and entirely private."
+      "script": "Why OpenClaw specifically? Three reasons. It's already deployed at scale. It's fully open source, so I could modify the memory layer without working around black boxes. And it stores everything in plain markdown files—which makes the memory inspectable, and honestly, just easier to debug."
     },
     {
       "section": "Design Rationale",
       "subtitle": "How OpenClaw works",
       "src": "/slides/slide-files/17_how_openclaw_works.html",
-      "script": "The core of OpenClaw is its ability to synthesize discrete notes into a long-term knowledge base. Our system leverages this by feeding structured physical observations directly into this existing knowledge loop."
+      "script": "Every session, OpenClaw assembles a context window from these markdown files—your persona, your preferences, your recent logs. The LLM sees all of that before it hears a single word from you. When it needs more, it runs a memory search. When it's done, it loops back.\n\nWhat's important here: the agent maintains these files itself—it updates them whenever it decides something is worth remembering. But because they're just plain markdown, you can open them, read them, and edit them too. The memory is never a black box."
     },
     {
       "section": "System Design",

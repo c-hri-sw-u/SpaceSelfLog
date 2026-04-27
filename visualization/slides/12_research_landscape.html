@@ -145,6 +145,22 @@ body.spread-mode .plot-container {
   font-weight: 600;
 }
 
+.research-image {
+  position: absolute;
+  width: 8vw;
+  height: auto;
+  border: 0.3vw solid #fff;
+  box-shadow: 0 0.5vw 1.5vw rgba(0,0,0,0.15);
+  z-index: 10;
+  border-radius: 0.2vw;
+  transition: transform 0.3s ease;
+}
+
+.research-image:hover {
+  transform: scale(1.1) rotate(2deg);
+  z-index: 100;
+}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -180,107 +196,102 @@ body.spread-mode .plot-container {
       <div class="blind-spot-label">This Thesis</div>
       <div class="blind-spot-sub">(The Open Space)</div>
     </div>
+
+    <!-- Research Images -->
+    <img src="../assets/img/Memex.jpg" class="research-image" style="left: 24%; bottom: 20%; transform: rotate(-3deg);" alt="Memex">
+    <img src="../assets/img/Gordon Bell Mylifebits.jpeg" class="research-image" style="width: 7vw; left: 42%; bottom: -5%; transform: rotate(2deg);" alt="MyLifeBits">
+    <img src="../assets/img/Sensecam Image.jpg" class="research-image" style="left: 75%; bottom: 4%; transform: rotate(-2deg);" alt="SenseCam">
+    <img src="../assets/img/Ego4D Collage.jpg" class="research-image" style="right: 2%; bottom: 38%; transform: rotate(3deg);" alt="Ego4D">
   </div>
 </div>
 
 <script>
-  // You can manually adjust the label position of any paper by adding a `pos` attribute!
-  // Options:  "pos": "left", "pos": "right", "pos": "top", "pos": "bottom"
-  // Example:  {"title": "My Paper", "x": 0.1, "y": 0.9, "pos": "bottom"}
-  const papers = [
-    {"title": "OpenClaw (Steinberger, 2025)", "x": 0.08, "y": 0.95, "bold": true},
-    {"title": "Letta (Packer et al., 2024)", "x": 0.1, "y": 0.9},
-    {"title": "Charlie Mnemonic (GoodAI, 2024)", "x": 0.12, "y": 0.86},
-    {"title": "PAI (Miessler, 2025)", "x": 0.1, "y": 0.88},
-    {"title": "MemGPT (Packer et al., 2023)", "x": 0.08, "y": 0.8, "bold": true},
-    {"title": "Mem0 (Chhikara et al., 2025)", "x": 0.1, "y": 0.78},
-    {"title": "Memoria (Sarin et al., 2025)", "x": 0.12, "y": 0.75},
-    {"title": "Enabling Personalized Long-term Interactions (Westhäußer et al., 2025)", "x": 0.1, "y": 0.72},
-    {"title": "Toward Personalized LLM-Powered Agents (Xu et al., 2026)", "x": 0.06, "y": 0.92, "bold": true},
-    {"title": "A Survey on LLM-based Autonomous Agents (Wang et al., 2023)", "x": 0.05, "y": 0.6},
-    {"title": "Generative Agents (Park et al., 2023)", "x": 0.05, "y": 0.55},
-    {"title": "SWE-Agent (Yang et al., 2024)", "x": 0.05, "y": 0.5},
-    {"title": "Agent Laboratory (2025)", "x": 0.05, "y": 0.52},
-    {"title": "A Survey of Personalized LLMs (Liu et al., 2025)", "x": 0.08, "y": 0.84},
-    {"title": "Measuring What Makes You Unique (Qiu et al., 2025)", "x": 0.1, "y": 0.82},
-    {"title": "Personalization: A Taxonomy (Blom, 2000)", "x": 0.05, "y": 0.7, "bold": true},
-    {"title": "Ego4D (Grauman et al., 2022)", "x": 0.9, "y": 0.3, "bold": true},
-    {"title": "Ego-Exo4D (Grauman et al., 2024)", "x": 0.88, "y": 0.32},
-    {"title": "EPIC-KITCHENS (Damen et al., 2021)", "x": 0.85, "y": 0.25},
-    {"title": "First-Person Vision (Kanade & Hebert, 2012)", "x": 0.82, "y": 0.2, "pos": "right"},
-    {"title": "EgoLife (Yang et al., 2025)", "x": 0.92, "y": 0.35, "bold": true},
-    {"title": "Vinci (Pei et al., 2025)", "x": 0.9, "y": 0.38},
-    {"title": "Embodied VideoAgent (Fan et al., 2025)", "x": 0.88, "y": 0.45, "bold": true},
-    {"title": "Memex (Bush, 1945)", "x": 0.08, "y": 0.15, "bold": true},
-    {"title": "MyLifeBits (Gemmell et al., 2006)", "x": 0.22, "y": 0.1, "bold": true},
-    {"title": "SenseCam (Hodges et al., 2006)", "x": 0.75, "y": 0.12, "bold": true},
-    {"title": "A Stage-Based Model of Personal Informatics (Li et al., 2010)", "x": 0.38, "y": 0.2},
-    {"title": "Limitless (Siroker, 2024)", "x": 0.28, "y": 0.18},
-    {"title": "Bee (Zollo & Sutin, 2024)", "x": 0.3, "y": 0.15},
-    {"title": "Plaud (2024)", "x": 0.26, "y": 0.12},
-    {"title": "PHIA (Coravos et al., 2026)", "x": 0.65, "y": 0.4, "bold": true},
-    {"title": "This Thesis", "x": 0.9, "y": 0.95}
-  ];
-
-  const plot = document.getElementById('pure-plot');
-
-  papers.forEach((p, i) => {
-    // Skip thesis text since it's hardcoded as the large glow frame
-    if (p.title === "This Thesis") return;
-
-    let div = document.createElement("div");
-    div.className = "dot-wrapper";
-    // Mapped mathematically using percentages (5% to 95% to avoid hugging walls exactly)
-    div.style.left = `calc(5% + ${p.x * 90}%)`;
-    div.style.bottom = `calc(5% + ${p.y * 90}%)`;
-
-    let dot = document.createElement("div");
-    dot.className = "dot";
-
-    let text = document.createElement("div");
-    text.className = p.bold ? "paper-label bold" : "paper-label";
-    text.textContent = p.title;
+  async function init() {
+    const response = await fetch('../assets/papers.md');
+    const text = await response.text();
     
-    let xOffset = "0.8vw";
-    let yOffset = "0";
-    let transformStr = "translateY(-50%)";
-    let textAlign = "left";
+    // Simple Markdown Table Parser
+    const lines = text.split('\n');
+    const papers = lines
+      .filter(line => line.includes('|') && !line.includes('---') && line.trim().startsWith('|'))
+      .slice(1) // Skip header
+      .map(line => {
+        const cols = line.split('|').map(c => c.trim()).filter(c => c !== '');
+        const rawTitle = cols[0];
+        const x = parseFloat(cols[1]);
+        const y = parseFloat(cols[2]);
+        const bold = rawTitle.includes('**');
+        const title = rawTitle.replace(/\*\*/g, '');
+        
+        // Manual position overrides (optional: could also be added to markdown columns)
+        let pos = null;
+        if (title.includes("First-Person Vision")) pos = "right";
 
-    // Pure Automatic logic based on edges
-    if (p.x > 0.8) {
-      xOffset = "-0.8vw";
-      transformStr = "translate(-100%, -50%)";
-      textAlign = "right";
-    }
+        return { title, x, y, bold, pos };
+      });
 
-    // Manual override based on p.pos property
-    if (p.pos === "left") {
-      xOffset = "-0.8vw";  yOffset = "0";
-      transformStr = "translate(-100%, -50%)";
-      textAlign = "right";
-    } else if (p.pos === "right") {
-      xOffset = "0.8vw";   yOffset = "0";
-      transformStr = "translateY(-50%)";
-      textAlign = "left";
-    } else if (p.pos === "top") {
-      xOffset = "0";      yOffset = "-0.8vw";
-      transformStr = "translate(-50%, -100%)";
-      textAlign = "center";
-    } else if (p.pos === "bottom") {
-      xOffset = "0";      yOffset = "0.8vw";
-      transformStr = "translateX(-50%)";
-      textAlign = "center";
-    }
-    
-    text.style.left = xOffset;
-    text.style.top = yOffset; // Root anchored Y
-    text.style.transform = transformStr;
-    text.style.textAlign = textAlign;
+    const plot = document.getElementById('pure-plot');
 
-    div.appendChild(dot);
-    div.appendChild(text);
-    plot.appendChild(div);
-  });
+    papers.forEach((p, i) => {
+      // Skip thesis text since it's hardcoded as the large glow frame
+      if (p.title.includes("This Thesis")) return;
+
+      let div = document.createElement("div");
+      div.className = "dot-wrapper";
+      // Mapped mathematically using percentages (5% to 95% to avoid hugging walls exactly)
+      div.style.left = `calc(5% + ${p.x * 90}%)`;
+      div.style.bottom = `calc(5% + ${p.y * 90}%)`;
+
+      let dot = document.createElement("div");
+      dot.className = "dot";
+
+      let text = document.createElement("div");
+      text.className = p.bold ? "paper-label bold" : "paper-label";
+      text.textContent = p.title;
+      
+      let xOffset = "0.8vw";
+      let yOffset = "0";
+      let transformStr = "translateY(-50%)";
+      let textAlign = "left";
+
+      // Pure Automatic logic based on edges
+      if (p.x > 0.8) {
+        xOffset = "-0.8vw";
+        transformStr = "translate(-100%, -50%)";
+        textAlign = "right";
+      }
+
+      // Manual override based on p.pos property
+      if (p.pos === "left") {
+        xOffset = "-0.8vw";  yOffset = "0";
+        transformStr = "translate(-100%, -50%)";
+        textAlign = "right";
+      } else if (p.pos === "right") {
+        xOffset = "0.8vw";   yOffset = "0";
+        transformStr = "translateY(-50%)";
+        textAlign = "left";
+      } else if (p.pos === "top") {
+        xOffset = "0";      yOffset = "-0.8vw";
+        transformStr = "translate(-50%, -100%)";
+        textAlign = "center";
+      } else if (p.pos === "bottom") {
+        xOffset = "0";      yOffset = "0.8vw";
+        transformStr = "translateX(-50%)";
+        textAlign = "center";
+      }
+      
+      text.style.left = xOffset;
+      text.style.top = yOffset; // Root anchored Y
+      text.style.transform = transformStr;
+      text.style.textAlign = textAlign;
+
+      div.appendChild(dot);
+      div.appendChild(text);
+      plot.appendChild(div);
+    });
+  }
+
+  init().catch(err => console.error("Failed to load papers:", err));
 </script>
 </body>
 </html>

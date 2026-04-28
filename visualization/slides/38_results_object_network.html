@@ -155,16 +155,151 @@
       line-height: 1.6;
     }
 
-    /* ── Loading ─────────────────────────────────────────── */
-    #loading {
-      position: absolute;
-      inset: 0;
+    /* ── Split Layout ────────────────────────────────────── */
+    #main-container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #graph-container {
+      position: relative;
+      flex: 1 0 100%;
+      height: 100%;
+      transition: flex-basis 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+
+    body.ai-active #graph-container {
+      flex-basis: 50%;
+    }
+
+    #ai-panel {
+      flex: 0 0 0%;
+      height: 100%;
+      background: #fdfdfd;
+      border-left: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: flex-basis 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+
+    body.ai-active #ai-panel {
+      flex-basis: 50%;
+    }
+
+    /* ── AI Panel Content ────────────────────────────────── */
+    #ai-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4vw;
+      opacity: 0;
+      transition: opacity 0.5s ease 0.6s;
+    }
+
+    body.ai-active #ai-content {
+      opacity: 1;
+    }
+
+    #ai-image-wrapper {
+      width: 100%;
+      aspect-ratio: 1/1;
+      max-height: 70vh;
+      background: #fff;
+      border-radius: 1vw;
+      box-shadow: 0 1vw 3vw rgba(0,0,0,0.05);
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.1vw;
+      position: relative;
+    }
+
+    #ai-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    #ai-image.loaded {
+      opacity: 1;
+    }
+
+    /* ── Subtle AI Button ───────────────────────────────── */
+    #ai-btn {
+      pointer-events: auto;
+      background: transparent;
+      border: 1px solid var(--text-dim);
+      padding: 0.5vw 1.2vw;
+      border-radius: 0.4vw;
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.7vw;
+      font-weight: 500;
       color: var(--text-muted);
-      z-index: 20;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    #ai-btn:hover {
+      background: #f8f8f8;
+      border-color: var(--text-muted);
+      color: var(--text-main);
+    }
+
+    #ai-btn:active {
+      background: #eee;
+    }
+
+    body.ai-active #ai-btn {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* ── Processing Animation ────────────────────────────── */
+    #ai-loader {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #fdfdfd;
+      z-index: 5;
+      transition: opacity 0.5s ease;
+    }
+
+    .shimmer {
+      width: 60%;
+      height: 1vw;
+      background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 1vw;
+      margin-bottom: 1vw;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    #ai-loader p {
+      font-size: 0.9vw;
+      color: var(--text-muted);
+      margin-top: 1vw;
+      font-weight: 500;
     }
 
   </style>
@@ -185,22 +320,48 @@
 
 <body>
 
-  <div id="data-range" class="data-range"></div>
+  <div id="main-container">
+    <div id="graph-container">
+      <svg id="graph"></svg>
 
+      <div id="info-block">
+        <div style="display: flex; align-items: flex-end; gap: 3vw;">
+          <div style="display: flex; flex-direction: column; gap: 1vw;">
+            <div id="legend">
+              <div class="leg-item"><div class="leg-dot" style="background:var(--clr-tech)"></div>Screens / Tech</div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--clr-input)"></div>Input Devices</div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--clr-bev)"></div>Beverages</div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--clr-desk)"></div>Desk Objects</div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--clr-person)"></div>Personal / Social</div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--clr-misc)"></div>Other</div>
+            </div>
+            <p class="subtitle">Objects detected together in the same log entry form a link. Node size = appearance frequency.</p>
+          </div>
 
-  <svg id="graph"></svg>
-
-  <div id="info-block">
-    <div id="legend">
-      <div class="leg-item"><div class="leg-dot" style="background:var(--clr-tech)"></div>Screens / Tech</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--clr-input)"></div>Input Devices</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--clr-bev)"></div>Beverages</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--clr-desk)"></div>Desk Objects</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--clr-person)"></div>Personal / Social</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--clr-misc)"></div>Other</div>
+          <button id="ai-btn" onclick="generateAIArt()">
+            GENERATE AI VISION
+          </button>
+        </div>
+      </div>
     </div>
-    <p class="subtitle">Objects detected together in the same log entry form a link. Node size = appearance frequency. Edge weight = co-occurrence count.</p>
+
+    <div id="ai-panel">
+      
+      <div id="ai-loader" style="display:none;">
+        <div class="shimmer"></div>
+        <div class="shimmer" style="width:40%"></div>
+        <p>Distilling object relationships...</p>
+      </div>
+
+      <div id="ai-content">
+        <div id="ai-image-wrapper">
+          <img id="ai-image" src="" alt="AI Generated Objects">
+        </div>
+      </div>
+    </div>
   </div>
+
+  <div id="loading">Loading…</div>
 
   <div id="tooltip">
     <div class="tt-name"></div>
@@ -416,10 +577,41 @@
 
       // Resize
       window.addEventListener('resize', () => {
-        svg.attr('width', window.innerWidth).attr('height', window.innerHeight);
-        sim.force('center', d3.forceCenter(window.innerWidth / 2, window.innerHeight / 2));
+        const rect = document.getElementById('graph-container').getBoundingClientRect();
+        svg.attr('width', rect.width).attr('height', rect.height);
+        sim.force('center', d3.forceCenter(rect.width / 2, rect.height / 2));
         sim.alpha(0.3).restart();
       });
+
+      // AI Logic
+      window.generateAIArt = function() {
+        if (document.body.classList.contains('ai-active')) return;
+
+        document.body.classList.add('ai-active');
+        document.getElementById('ai-loader').style.display = 'flex';
+        
+        // Trigger D3 resize after transition
+        setTimeout(() => {
+          window.dispatchEvent(new Event('resize'));
+        }, 850);
+
+        // Simulate AI generation delay
+        setTimeout(() => {
+          fetch('/slides/api/generate-object-art', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+              const img = document.getElementById('ai-image');
+              img.src = data.image_url;
+              img.onload = () => {
+                document.getElementById('ai-loader').style.opacity = '0';
+                setTimeout(() => {
+                  document.getElementById('ai-loader').style.display = 'none';
+                  img.classList.add('loaded');
+                }, 500);
+              };
+            });
+        }, 5000); // 3 second fake loading
+      };
     }
   </script>
 

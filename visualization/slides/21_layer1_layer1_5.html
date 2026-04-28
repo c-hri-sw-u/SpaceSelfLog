@@ -80,14 +80,33 @@ body {
   </div>
 </div>
 
+<style>
+  .abstract-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3vw;
+    padding: 0.2vw 0.5vw;
+    border-radius: 0.4vw;
+    font-size: 0.7vw;
+    font-family: 'Roboto', sans-serif;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-left: 0.8vw;
+    vertical-align: middle;
+    letter-spacing: 0.05em;
+  }
+  .abstract-tag.collection { background: #E9F2DF; color: #6B8C3F; border: 1px solid #6B8C3F33; }
+  .abstract-tag.compress { background: #E0F2F1; color: #3E8E8A; border: 1px solid #3E8E8A33; }
+</style>
+
 <!-- Zone labels -->
 <div class="zone-label" id="l1-label" style="left: 3vw;">
-  <div class="zone-title">L1 Capture</div>
+  <div class="zone-title">L1 Capture <span class="abstract-tag collection">👁️ Collection</span> <span class="abstract-tag compress">💎 Compress</span></div>
   <div class="zone-subtitle">Decides <strong>when to capture</strong>.</div>
   <div class="zone-desc">Audio &amp; Motion triggers adjust Vision's interval. All sensors contribute tags.</div>
 </div>
 <div class="zone-label" id="l15-label" style="left: 3vw;">
-  <div class="zone-title">L1.5 Preprocess</div>
+  <div class="zone-title">L1.5 Preprocess <span class="abstract-tag compress">💎 Compress</span></div>
   <div class="zone-subtitle">Decides <strong>what to keep</strong>.</div>
   <div class="zone-desc">Scene boundary detection, filtering, importance scoring, and smart frame selection.</div>
 </div>

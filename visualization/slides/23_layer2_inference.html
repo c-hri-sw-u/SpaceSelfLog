@@ -100,6 +100,22 @@
     font-family: 'Ultra', serif !important;
     font-weight: normal !important;
   }
+  .abstract-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3vw;
+    padding: 0.2vw 0.5vw;
+    border-radius: 0.4vw;
+    font-size: 0.7vw;
+    font-family: 'Roboto', sans-serif;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-left: 0.8vw;
+    vertical-align: middle;
+    letter-spacing: 0.05em;
+  }
+  .abstract-tag.compress { background: #E0F2F1; color: #3E8E8A; border: 1px solid #3E8E8A33; }
+  .abstract-tag.integration { background: #FCE4EC; color: #A64D5C; border: 1px solid #A64D5C33; }
 </style>
 
 </head>
@@ -123,16 +139,15 @@
 
   <!-- Zone labels -->
   <div class="zone-label" id="l2-label" style="left: 3vw;">
-    <div class="zone-title">L2 Inference</div>
+    <div class="zone-title">L2 Inference <span class="abstract-tag compress">💎 Compress</span></div>
     <div class="zone-subtitle">Per-Batch Analysis</div>
     <div class="zone-desc">Receives frame batches, runs VLM analysis per batch, maintains session context, writes
       structured logs.</div>
   </div>
 
   <div class="zone-label" id="l3-label" style="left: 3vw;">
-    <div class="zone-title">L3 Memory</div>
+    <div class="zone-title">L3 Memory <span class="abstract-tag integration">🧠 Integration</span></div>
     <div class="zone-subtitle">OpenClaw Memory Pipeline</div>
-
   </div>
 
   <div class="zone-label" id="ha-label" style="right: 6vw;">

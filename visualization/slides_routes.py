@@ -704,3 +704,13 @@ def api_data_range():
         "end": dates[-1].replace('-', '.'),
         "total_hours": total_hours
     })
+
+
+@bp.post("/api/generate-object-art")
+def api_generate_object_art():
+    # In a real scenario, we might call an AI service here.
+    # For now, we return the path to the pre-generated image.
+    return jsonify({
+        "ok": True,
+        "image_url": "/slides/assets/img/generated_object_network.png"
+    })

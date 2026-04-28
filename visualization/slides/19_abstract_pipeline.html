@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Roboto', sans-serif;
+  width: 100vw; height: 100vh;
+  background: #fff;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  overflow: hidden; color: #111;
+}
+
+.title-container {
+  position: absolute;
+  top: 4vw; left: 5vw;
+  z-index: 10;
+}
+.title {
+  font-family: 'Ultra', serif;
+  font-size: 3.5vw;
+  color: #111;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.subtitle {
+  font-size: 1.2vw;
+  font-weight: 500;
+  color: #888;
+  margin-top: 0.5vw;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ── The Loop Container ── */
+.loop-wrapper {
+  position: relative;
+  width: 45vw;
+  height: 45vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  /* Centered by default */
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(0);
+}
+
+.loop-wrapper.shifted {
+  transform: translateX(-12vw);
+}
+
+/* Always shifted in spread mode */
+body.spread-mode .loop-wrapper {
+  transform: translateX(-12vw);
+}
+
+/* ── Annotation Box ── */
+.annotation-box {
+  position: absolute;
+  right: 5vw;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22vw;
+  padding: 1.8vw;
+  background: #fdfdfd;
+  border-left: 3px solid #3E8E8A;
+  box-shadow: 0 1vw 3vw rgba(0,0,0,0.04);
+  z-index: 30;
+  
+  /* Hidden by default in slides mode */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(-50%) translateX(2vw); /* Slide in from right */
+}
+
+.annotation-box.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Always visible in spread mode */
+body.spread-mode .annotation-box {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-50%) translateX(0);
+}
+
+.step-2 {
+  cursor: pointer;
+}
+
+@keyframes glow-compress {
+  0% { box-shadow: 0 0 0.5vw rgba(62, 142, 138, 0.1); }
+  50% { box-shadow: 0 0 2.5vw rgba(62, 142, 138, 0.5); border-color: rgba(62, 142, 138, 0.6); }
+  100% { box-shadow: 0 0 0.5vw rgba(62, 142, 138, 0.1); }
+}
+
+.step-2 .icon-box {
+  animation: glow-compress 2s ease-in-out infinite;
+}
+
+/* Only glow in slides mode or if not in spread mode */
+body.spread-mode .step-2 .icon-box {
+  animation: none;
+  box-shadow: 0 0.5vw 1.5vw rgba(0,0,0,0.03);
+}
+
+.anno-title {
+  font-family: 'Ultra', serif;
+  font-size: 1.4vw;
+  color: #3E8E8A;
+  margin-bottom: 1vw;
+  letter-spacing: -0.01em;
+}
+.anno-content {
+  font-size: 0.95vw;
+  color: #444;
+  line-height: 1.6;
+}
+.anno-content strong {
+  color: #111;
+  font-weight: 700;
+}
+.anno-content p {
+  margin-bottom: 0.8vw;
+}
+.anno-content ul {
+  list-style: none;
+  margin-top: 0.5vw;
+}
+.anno-content li {
+  position: relative;
+  padding-left: 1.2vw;
+  margin-bottom: 0.4vw;
+}
+.anno-content li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #3E8E8A;
+}
+
+.central-circle {
+  position: absolute;
+  width: 32vw; height: 32vw;
+  border: 1px solid #eee;
+  border-radius: 50%;
+}
+
+/* ── Steps ── */
+.step {
+  position: absolute;
+  width: 15vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 20;
+}
+
+.icon-box {
+  width: 6vw; height: 6vw;
+  border-radius: 1.5vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.5vw;
+  margin-bottom: 1vw;
+  box-shadow: 0 0.5vw 1.5vw rgba(0,0,0,0.03);
+  position: relative;
+}
+
+/* Specific Positions */
+.step-1 { top: 0; left: 50%; transform: translateX(-50%); } /* Top */
+.step-2 { top: 50%; right: 0; transform: translateY(-50%); } /* Right */
+.step-3 { bottom: 0; left: 50%; transform: translateX(-50%); } /* Bottom */
+.step-4 { top: 50%; left: 0; transform: translateY(-50%); } /* Left */
+
+/* Colors & Thematic Matching */
+.step-1 .icon-box { background: #E9F2DF; color: #6B8C3F; border: 1px solid #6B8C3F33; } /* Collection -> L1 Green */
+.step-2 .icon-box { background: #E0F2F1; color: #3E8E8A; border: 1px solid #3E8E8A33; } /* Filtering -> L1.5/L2 Teal */
+.step-3 .icon-box { background: #FCE4EC; color: #A64D5C; border: 1px solid #A64D5C33; } /* Integration -> L3 Memory Pink */
+.step-4 .icon-box { background: #F5F3F0; color: #6E5F50; border: 1px solid #6E5F5033; } /* Feedback -> L3.5 Retrieval Brown */
+
+.step-label {
+  font-family: 'Ultra', serif;
+  font-size: 1.5vw;
+  color: #111;
+  margin-bottom: 0.5vw;
+  text-transform: uppercase;
+}
+.step-desc {
+  font-size: 0.95vw;
+  color: #666;
+  line-height: 1.45;
+  padding: 0 0.5vw;
+}
+.step-desc strong {
+  display: block;
+  font-size: 0.8vw;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3vw;
+}
+
+/* ── Arrows ── */
+.arrow {
+  position: absolute;
+  width: 3vw; height: 3vw;
+  fill: none;
+  stroke: #ddd;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.arrow-1-2 { top: 18%; right: 18%; transform: rotate(45deg); }
+.arrow-2-3 { bottom: 18%; right: 18%; transform: rotate(135deg); }
+.arrow-3-4 { bottom: 18%; left: 18%; transform: rotate(225deg); }
+.arrow-4-1 { top: 18%; left: 18%; transform: rotate(315deg); }
+
+/* ── Central Text ── */
+.loop-center {
+  position: absolute;
+  text-align: center;
+  width: 12vw;
+}
+.loop-center-title {
+  font-family: 'Ultra', serif;
+  font-size: 1.4vw;
+  color: #ddd;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+</style>
+</head>
+<body>
+
+<div class="loop-wrapper">
+  <div class="central-circle"></div>
+  
+  <div class="loop-center">
+    <div class="loop-center-title">Information<br>Loop</div>
+  </div>
+
+  <!-- Step 1: Collection -->
+  <div class="step step-1">
+    <div class="icon-box">👁️</div>
+    <div class="step-label">Collection</div>
+    <div class="step-desc">
+      Adaptive sensing and edge triggering to capture first-person physical signals.
+    </div>
+  </div>
+
+  <!-- Step 2: Compress -->
+  <div class="step step-2">
+    <div class="icon-box">💎</div>
+    <div class="step-label">Compress</div>
+    <div class="step-desc">
+      Scene batching and VLM reasoning to distill structured insights from raw data.
+    </div>
+  </div>
+
+  <!-- Step 3: Integration -->
+  <div class="step step-3">
+    <div class="icon-box">🧠</div>
+    <div class="step-label">Integration</div>
+    <div class="step-desc">
+      Tiered memory storage and context injection to transform logs into agent intelligence.
+    </div>
+  </div>
+
+  <!-- Step 4: Feedback -->
+  <div class="step step-4">
+    <div class="icon-box">🔄</div>
+    <div class="step-label">Feedback</div>
+    <div class="step-desc">
+      Agent decision execution and environmental response for cognitive-based interaction.
+    </div>
+  </div>
+
+  <!-- Simple decorative arrows -->
+  <svg class="arrow arrow-1-2" viewBox="0 0 24 24"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>
+  <svg class="arrow arrow-2-3" viewBox="0 0 24 24"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>
+  <svg class="arrow arrow-3-4" viewBox="0 0 24 24"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>
+  <svg class="arrow arrow-4-1" viewBox="0 0 24 24"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>
+
+</div>
+
+<div class="annotation-box" id="compress-anno">
+  <div class="anno-title">The Core Focus: Strategic Compression</div>
+  <div class="anno-content">
+    <p><strong>Strategic Pervasiveness</strong>: Compressing is the most critical step in this project. Processing every raw frame is prohibitively expensive in power and cost—therefore, <strong>compression is pervasive</strong> throughout the entire pipeline.</p>
+    <p><strong>Compression = Understanding</strong>: To compress is to understand. It requires selection, deconstruction, and reconstruction. Since this involves inherent information loss, the system must <strong>prioritize</strong>. Much like the human brain, which filters infinite sensory inputs to retain only the most meaningful, our pipeline must identify what matters.</p>
+    <p><strong>Defining Key Events</strong>: The essence of compression is the intelligent identification of <strong>Key Events</strong> from the noise. These events are judged via two mechanisms:</p>
+    <ul>
+      <li><strong>Autonomous Reasoning</strong>: VLM/LLM-driven judgment guided by specialized system prompts.</li>
+      <li><strong>Human Feedback</strong>: Real-time insights and corrections captured during active chat sessions.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  document.querySelector('.step-2').addEventListener('click', () => {
+    document.getElementById('compress-anno').classList.toggle('visible');
+    document.querySelector('.loop-wrapper').classList.toggle('shifted');
+  });
+</script>
+
+</body>
+</html>

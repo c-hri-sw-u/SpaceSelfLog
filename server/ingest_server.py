@@ -2124,8 +2124,19 @@ def post_iteration_log():
     if missing:
         return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
 
+    # Use provided date if present, else now
+    body_date = body.get("date")
+    if body_date:
+        now = datetime.now(timezone.utc)
+        if body_date == now.strftime("%Y-%m-%d"):
+            ts = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            ts = f"{body_date}T23:59:59Z"
+    else:
+        ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
     entry = {
-        "ts":                 datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "ts":                 ts,
         "variable":           body.get("variable", "").strip(),
         "change_description": body.get("change_description", "").strip(),
         "rationale":          body.get("rationale", "").strip(),
@@ -2143,7 +2154,10 @@ def post_iteration_log():
     proj_dir = _config.get("project_dir", "")
     if proj_dir:
         md_path = Path(proj_dir).expanduser() / "design-iteration-log.md"
-        local_ts = datetime.now().strftime("%Y-%m-%d %H:%M")
+        if body_date:
+            local_ts = f"{body_date} 23:59"
+        else:
+            local_ts = datetime.now().strftime("%Y-%m-%d %H:%M")
         lines = [f"\n## {local_ts} — {entry['variable']}\n"]
         lines.append(f"**Change:** {entry['change_description']}\n\n")
         lines.append(f"**Rationale:** {entry['rationale']}\n")
@@ -2545,12 +2559,21 @@ def _read_hook_events(today_local: str) -> list[dict]:
 
 @app.get("/api/openclaw-transcript/today")
 def get_openclaw_transcript_today():
+    return _get_openclaw_transcript_for_date(datetime.now().strftime("%Y-%m-%d"))
+
+
+@app.get("/api/openclaw-transcript/<date_str>")
+def get_openclaw_transcript(date_str: str):
+    return _get_openclaw_transcript_for_date(date_str)
+
+
+def _get_openclaw_transcript_for_date(target_date: str):
     """
-    Return today's full event stream from OpenClaw session files + hook injection log.
-    Handles /reset by including both the current session file and any .reset.{today}* files.
-    Now supports multiple session keys for tracking both group chat and proactive hooks.
+    Return full event stream from OpenClaw session files + hook injection log for a specific date.
+    Handles /reset by including both the current session file and any .reset.{target_date}* files.
     """
-    today_local = datetime.now().strftime("%Y-%m-%d")
+    # We still allow yesterday's resets if target_date is today, for continuity
+    is_today = (target_date == datetime.now().strftime("%Y-%m-%d"))
     yesterday_local = (datetime.fromtimestamp(datetime.now().timestamp() - 86400)
                        .strftime("%Y-%m-%d"))
 
@@ -2572,7 +2595,6 @@ def get_openclaw_transcript_today():
                         session_files_map[session_key] = p
             # Include cron run sessions whose label matches OPENCLAW_CRON_LABELS
             if OPENCLAW_CRON_LABELS:
-                # Build set of cron job keys whose label matches
                 matching_cron_keys = set()
                 for session_key, session_info in index.items():
                     if ":cron:" not in session_key or ":run:" in session_key:
@@ -2580,7 +2602,6 @@ def get_openclaw_transcript_today():
                     label = session_info.get("label", "")
                     if label in OPENCLAW_CRON_LABELS:
                         matching_cron_keys.add(session_key)
-                # Now find all run sessions for those matching cron jobs
                 for session_key, session_info in index.items():
                     if session_key in session_files_map:
                         continue
@@ -2604,18 +2625,20 @@ def get_openclaw_transcript_today():
     reset_files: list[Path] = []
     if OPENCLAW_SESSIONS_DIR.exists():
         for f in OPENCLAW_SESSIONS_DIR.iterdir():
-            if ".reset." in f.name and (today_local in f.name or yesterday_local in f.name):
-                if f not in session_files_map.values():
-                    reset_files.append(f)
+            # Include resets for target date. If target is today, also include yesterday's for continuity.
+            if ".reset." in f.name:
+                if target_date in f.name or (is_today and yesterday_local in f.name):
+                    if f not in session_files_map.values():
+                        reset_files.append(f)
 
     all_events: list[dict] = []
     # Read events from each session, passing the session_key
     for session_key, sf in session_files_map.items():
-        all_events.extend(_read_openclaw_session_events(sf, today_local, session_key))
+        all_events.extend(_read_openclaw_session_events(sf, target_date, session_key))
     # Read reset files without session_key
     for rf in reset_files:
-        all_events.extend(_read_openclaw_session_events(rf, today_local, ""))
-    all_events.extend(_read_hook_events(today_local))
+        all_events.extend(_read_openclaw_session_events(rf, target_date, ""))
+    all_events.extend(_read_hook_events(target_date))
     all_events.sort(key=lambda e: e.get("ts", ""))
     return jsonify(all_events)
 

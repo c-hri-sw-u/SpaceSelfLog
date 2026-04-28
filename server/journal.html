@@ -741,7 +741,7 @@
   <div class="right-panel">
     <div class="right-tabs">
       <div class="right-tab active" onclick="setRightTab('history')">History</div>
-      <div class="right-tab" onclick="setRightTab('transcript')">Today's Conversation</div>
+      <div class="right-tab" onclick="setRightTab('transcript')">Transcript</div>
     </div>
 
     <!-- History tab -->
@@ -788,7 +788,14 @@ loadEntries();
 loadTranscript();
 
 // Auto-refresh transcript every 60s
-setInterval(loadTranscript, 60_000);
+setInterval(() => {
+  const date = document.getElementById('entry-date').value;
+  if (date === todayStr()) loadTranscript();
+}, 60_000);
+
+document.getElementById('entry-date').addEventListener('change', () => {
+  loadTranscript();
+});
 
 function todayStr() {
   const d = new Date();
@@ -1069,8 +1076,11 @@ function renderTranscriptMessages() {
 // ── Transcript ──
 async function loadTranscript() {
   const status = document.getElementById('transcript-status');
+  const date   = document.getElementById('entry-date').value;
+  if (!date) return;
+
   try {
-    const res  = await fetch('/api/openclaw-transcript/today');
+    const res  = await fetch('/api/openclaw-transcript/' + date);
     const msgs = await res.json();
     cachedTranscriptMessages = msgs;
 

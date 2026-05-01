@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SpaceSelfLog Plotter Poster</title>
+    <link rel="stylesheet" href="/slides/assets/~shared.css">
+    <style>
+        @page {
+            size: 36in 78in;
+            margin: 0;
+        }
+
+        body {
+            background-color: #000;
+            margin: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        #poster-wrapper {
+            transform-origin: center center;
+            transition: transform 0.1s ease-out;
+            display: flex;
+            align-items: flex-end;
+            gap: 2in;
+        }
+
+        .poster-container {
+            width: 36in;
+            height: 78in;
+            margin: 0;
+            padding: 1in;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            color: #111;
+            position: relative;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.1);
+
+            display: flex;
+            flex-direction: column;
+            gap: 0.5in;
+        }
+
+        /* 比例参照物样式 */
+        .reference-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2in;
+            margin-bottom: 2in;
+        }
+
+        .ref-human {
+            width: 18in;
+            height: 68in;
+            border: 0.1in solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.5in;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .ref-paper {
+            width: 8.5in;
+            height: 11in;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #111;
+            font-size: 1.2in;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        /* 打印模式覆盖 */
+        @media print {
+            body {
+                background-color: transparent !important;
+                display: block !important;
+                width: auto !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            #poster-wrapper {
+                transform: none !important;
+                display: block !important;
+            }
+
+            .poster-container {
+                box-shadow: none !important;
+                margin: 0;
+                border: none;
+                padding: 0.5in;
+            }
+
+            .reference-group {
+                display: none !important;
+            }
+        }
+
+        /* ========================================================= */
+        /* 内部区块排版 */
+        /* ========================================================= */
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            pointer-events: none;
+            /* 取消了任何可能会破坏 iframe 内容的滤镜或放大 */
+        }
+
+        /* Header */
+        .poster-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.25in;
+            height: 4in;
+            flex-shrink: 0;
+            padding-left: 1in;
+            padding-top: 1in;
+        }
+
+        .header-text h1 {
+            font-family: 'Ultra', serif;
+            font-size: 1.2in;
+            line-height: 1.1;
+            margin-bottom: 0.2in;
+            max-width: 25in;
+        }
+
+        .header-text p {
+            font-size: 0.4in;
+            color: #555;
+            font-family: 'Helvetica Neue', sans-serif;
+        }
+
+        .header-logo {
+            position: absolute;
+            top: 0in;
+            right: 0in;
+            width: 35%;
+            /* 相对大小 */
+            height: auto;
+            object-fit: contain;
+            z-index: 10;
+        }
+
+        /* Decorative Illustrations */
+        .deco-claw {
+            position: absolute;
+            top: 20in;
+            left: -1.5in;
+            width: 24%;
+            height: auto;
+            object-fit: contain;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        .deco-taming {
+            position: absolute;
+            left: 5in;
+            top: 41in;
+            width: 25%;
+            height: auto;
+            object-fit: contain;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        /* Section 1: Intro & Pipeline */
+        .poster-sec-1 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1in;
+            height: 9in;
+            flex-shrink: 0;
+        }
+
+
+
+        /* Section 3: Results */
+        .poster-sec-3 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: 1fr 1fr;
+            gap: 0.5in;
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        .span-2 {
+            grid-column: span 2;
+        }
+
+        .span-1 {
+            grid-column: span 1;
+        }
+
+        .results-panel {
+            border: 0.02in solid #ccc;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        /* Pipelines */
+        .poster-sec-pipe-1 {
+            height: 14in;
+            width: 70%;
+            align-self: center;
+            flex-shrink: 0;
+        }
+
+        .poster-sec-pipe-2 {
+            height: 20in;
+            flex-shrink: 0;
+        }
+
+        /* Footer */
+        .poster-footer {
+            padding-top: 0.25in;
+            height: 6.5in;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="poster-wrapper">
+
+        <div class="reference-group">
+            <div class="ref-paper">📄<br>US Letter<br>8.5" × 11"</div>
+            <div class="ref-human">🧍<br>Average Human<br>~ 5'8" (68")</div>
+        </div>
+
+        <div class="poster-container">
+
+            <!-- 绝对定位的装饰插图 -->
+            <img src="/slides/assets/img/claw_transparent.png" class="deco-claw">
+            <img src="/slides/assets/img/lobster_taming_llm.png" class="deco-taming">
+
+            <!-- 头部 -->
+            <div class="poster-header">
+                <div class="header-text">
+                    <h1>Physical-World Observation<br>for Personal AI Agent Personalization</h1>
+                    <p>Combining Egocentric Sensing with Transparent Agent Memory.</p>
+                </div>
+                <img src="/slides/assets/img/cyber_lobster_transparent.png" class="header-logo">
+            </div>
+
+            <!-- 第一部分：背景与架构 -->
+            <div class="poster-sec-1">
+                <div class="results-panel"><iframe src="/slides/slide-files/13_research_questions.html"></iframe></div>
+                <div class="results-panel"><iframe src="/slides/slide-files/19_abstract_pipeline.html"></iframe></div>
+            </div>
+
+            <!-- 额外 Pipeline 区域：占全宽 -->
+            <div class="results-panel poster-sec-pipe-1">
+                <iframe src="/slides/slide-files/20_system_pipeline.html"></iframe>
+            </div>
+            <div class="results-panel poster-sec-pipe-2">
+                <iframe src="/slides/slide-files/27_full_pipeline.html"></iframe>
+            </div>
+
+            <!-- 第三部分：分析图表 -->
+            <div class="poster-sec-3">
+                <div class="results-panel span-2"><iframe src="/slides/slide-files/40_results_floorplan.html"></iframe>
+                </div>
+                <div class="results-panel span-2"><iframe src="/slides/slide-files/41_results_fusion_map.html"></iframe>
+                </div>
+
+                <div class="results-panel span-2"><iframe
+                        src="/slides/slide-files/37_results_activity_rhythm.html"></iframe></div>
+                <div class="results-panel span-1"><iframe src="/slides/slide-files/39_results_sankey.html"></iframe>
+                </div>
+                <div class="results-panel span-1"><iframe
+                        src="/slides/slide-files/38_results_object_network.html"></iframe></div>
+            </div>
+
+            <!-- 底部：总结 -->
+            <div class="poster-footer">
+                <iframe src="/slides/slide-files/42_what_agent_learned.html?mode=poster"></iframe>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function fitToScreen() {
+            const wrapper = document.getElementById('poster-wrapper');
+            const totalWidth = wrapper.offsetWidth;
+            const totalHeight = wrapper.offsetHeight;
+            const vWidth = window.innerWidth - 40;
+            const vHeight = window.innerHeight - 40;
+            const scale = Math.min(vWidth / totalWidth, vHeight / totalHeight);
+            wrapper.style.transform = `scale(${scale})`;
+        }
+        window.addEventListener('resize', fitToScreen);
+        window.addEventListener('DOMContentLoaded', () => {
+            fitToScreen();
+
+            // 安全的 CSS 注入，去除了破坏布局的 zoom: 2.0
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(ifr => {
+                ifr.onload = () => {
+                    try {
+                        const doc = ifr.contentDocument;
+                        if (!doc) return;
+                        const style = doc.createElement('style');
+                        style.textContent = `
+                            body, html { background: transparent !important; }
+                            .slide-container, .wrapper { background: transparent !important; }
+                        `;
+                        doc.head.appendChild(style);
+                    } catch (e) {
+                        console.warn("Iframe CSS injection failed:", e);
+                    }
+                };
+            });
+        });
+    </script>
+</body>
+
+</html>
+</body>
+
+</html>

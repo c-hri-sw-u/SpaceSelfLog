@@ -267,6 +267,8 @@
     const PAGE_COUNT  = parseInt(_urlParams.get('pgs') ?? '1', 10);  // total pages
     const IS_PAGED    = PAGE_COUNT > 1;
     const IS_LEADER   = !IS_PAGED || PAGE_INDEX === 0;  // only pg=0 shows the controls
+    const THEME_LIGHT = _urlParams.get('theme') === 'light';
+    const FAST_MODE   = _urlParams.get('fast') === '1';
 
     // Hide controls panel on follower pages
     if (!IS_LEADER) {
@@ -412,6 +414,11 @@
     const _CACHE_KEY = 'photowall_all_images_v1';
 
     async function init() {
+      // 延迟加载后续页面，防止多个 iframe 同时霸占 CPU 导致浏览器假死
+      if (IS_PAGED && PAGE_INDEX > 0) {
+        await new Promise(r => setTimeout(r, PAGE_INDEX * 2000));
+      }
+
       try {
         resizeCanvas();
 
@@ -480,17 +487,23 @@
             const idx = currentIndex++;
             const imgObj = PAGE_IMAGES[idx];
             try {
-              const bmp = await loadThumbnail(imgObj.url, 64);
-              loadedBitmaps.set(imgObj.url, bmp);
+              if (FAST_MODE) {
+                loadedBitmaps.set(imgObj.url, "DUMMY");
+                loadedColors.set(imgObj.url, { r: 128, g: 128, b: 128 });
+                // Add a tiny artificial delay to avoid blocking main thread completely
+                if (idx % 100 === 0) await new Promise(r => setTimeout(r, 0));
+              } else {
+                const bmp = await loadThumbnail(imgObj.url, 64);
+                loadedBitmaps.set(imgObj.url, bmp);
 
-              // Extract average color of right-most edge for gap filling
-              const tmpCanvas = document.createElement('canvas');
-              tmpCanvas.width = 1; tmpCanvas.height = 1;
-              const tCtx = tmpCanvas.getContext('2d', { willReadFrequently: true });
-              tCtx.drawImage(bmp, bmp.width - 1, 0, 1, bmp.height, 0, 0, 1, 1);
-              const data = tCtx.getImageData(0, 0, 1, 1).data;
-              loadedColors.set(imgObj.url, { r: data[0], g: data[1], b: data[2] });
-
+                // Extract average color of right-most edge for gap filling
+                const tmpCanvas = document.createElement('canvas');
+                tmpCanvas.width = 1; tmpCanvas.height = 1;
+                const tCtx = tmpCanvas.getContext('2d', { willReadFrequently: true });
+                tCtx.drawImage(bmp, bmp.width - 1, 0, 1, bmp.height, 0, 0, 1, 1);
+                const data = tCtx.getImageData(0, 0, 1, 1).data;
+                loadedColors.set(imgObj.url, { r: data[0], g: data[1], b: data[2] });
+              }
             } catch (e) { }
 
             loaded++;
@@ -605,7 +618,7 @@
 
       const N = FILTERED_IMAGES.length;
 
-      ctx.fillStyle = '#111';
+      ctx.fillStyle = THEME_LIGHT ? '#ffffff' : '#111';
       ctx.fillRect(0, 0, W, rect.height);
 
       if (N === 0) return;
@@ -663,7 +676,14 @@
         const pos = layout.poses[i];
 
         ctx.globalAlpha = 0.5;
-        ctx.drawImage(bmp, pos.x, pos.y + offsetY, w, h);
+        if (FAST_MODE) {
+          ctx.fillStyle = THEME_LIGHT ? 'rgba(200, 200, 200, 0.5)' : 'rgba(80, 80, 80, 0.5)';
+          ctx.fillRect(pos.x, pos.y + offsetY, w, h);
+          ctx.strokeStyle = THEME_LIGHT ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+          ctx.strokeRect(pos.x, pos.y + offsetY, w, h);
+        } else {
+          ctx.drawImage(bmp, pos.x, pos.y + offsetY, w, h);
+        }
 
         ctx.globalAlpha = 1.0;
         renderInnerShadow(pos.x, pos.y + offsetY, w, h);
@@ -690,11 +710,11 @@
           const tWidth = ctx.measureText(textStr).width;
 
           // Draw text background backing for readability across gaps
-          ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+          ctx.fillStyle = THEME_LIGHT ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.7)";
           ctx.fillRect(pos.x, textY - (9 * baseScale), tWidth + (6 * baseScale), 12 * baseScale);
 
           // Draw text
-          ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+          ctx.fillStyle = THEME_LIGHT ? "rgba(0, 0, 0, 0.95)" : "rgba(255, 255, 255, 0.95)";
           ctx.fillText(textStr, pos.x + (3 * baseScale), textY + (1 * baseScale));
 
           // Revert opacity for next image draws
@@ -710,7 +730,7 @@
         const fs = baseScale * 11;
         ctx.font = `500 ${fs}px 'Roboto', sans-serif`;
         ctx.globalAlpha = 0.45;
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = THEME_LIGHT ? '#000000' : '#ffffff';
         ctx.textAlign = 'right';
         ctx.fillText(label, W - baseScale * 12, rect.height - baseScale * 10);
         ctx.textAlign = 'left';
@@ -795,8 +815,10 @@
             const ts = `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
             oCtx.font=`bold ${bs*13}px 'Courier New',monospace`;
             const tW=oCtx.measureText(ts).width, tx=it.x+it.w/2-tW/2, ty=it.y-28*bs;
-            oCtx.fillStyle='rgba(0,0,0,0.85)'; oCtx.fillRect(tx-10*bs,ty,tW+20*bs,22*bs);
-            oCtx.fillStyle='rgba(255,255,255,1)'; oCtx.fillText(ts,tx,ty+15*bs);
+            oCtx.fillStyle = THEME_LIGHT ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)'; 
+            oCtx.fillRect(tx-10*bs,ty,tW+20*bs,22*bs);
+            oCtx.fillStyle = THEME_LIGHT ? 'rgba(0,0,0,1)' : 'rgba(255,255,255,1)'; 
+            oCtx.fillText(ts,tx,ty+15*bs);
           }
         }
       }
@@ -860,8 +882,8 @@
     });
 
     init().then(() => {
-      // Fake cursors only in spread mode (pgs=3)
-      if (PAGE_COUNT !== 3) return;
+      // Fake cursors in spread mode (pgs>=2)
+      if (PAGE_COUNT < 2) return;
 
       const dots = [
         document.getElementById('fake-cursor'),

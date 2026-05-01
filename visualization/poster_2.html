@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SpaceSelfLog Poster 2 - Timeline Wall</title>
+<link rel="stylesheet" href="/slides/assets/~shared.css">
+<style>
+@page {
+    size: 36in 78in;
+    margin: 0;
+}
+
+body {
+    background-color: #000;
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+#poster-wrapper {
+    transform-origin: center center;
+    transition: transform 0.1s ease-out;
+    display: flex;
+    align-items: flex-end;
+    gap: 2in;
+}
+
+.poster-container {
+    width: 36in;
+    height: 78in;
+    margin: 0;
+    padding: 1in;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    color: #111;
+    position: relative;
+    box-shadow: 0 0 50px rgba(255, 255, 255, 0.1);
+    
+    display: flex;
+    flex-direction: column;
+    gap: 0.5in;
+}
+
+/* 打印模式覆盖 */
+@media print {
+    body { background-color: transparent !important; display: block !important; width: auto !important; height: auto !important; overflow: visible !important; }
+    #poster-wrapper { transform: none !important; display: block !important; }
+    .poster-container { box-shadow: none !important; margin: 0; border: none; padding: 0.5in; }
+}
+
+iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    pointer-events: none;
+}
+
+.header-logo {
+    position: absolute;
+    top: 0in;
+    right: 0in;
+    width: 35%;
+    height: auto;
+    object-fit: contain;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* PhotoWall Section */
+.poster-sec-wall {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    height: 76in;
+    margin: 0 -1in;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+</style>
+</head>
+<body>
+    <div id="poster-wrapper">
+        <div class="poster-container">
+            <!-- 绝对定位的插图 -->
+            <img src="/slides/assets/img/lobster_results.png" class="header-logo">
+
+            <!-- 超大比例照片墙：合并为一个无缝的全尺寸画幅，以保证上下行距绝对连贯 -->
+            <div class="poster-sec-wall">
+                <iframe src="/slides/slide-files/36_results_photowall.html?pgs=1&theme=light&fast=1"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function fitToScreen() {
+            const wrapper = document.getElementById('poster-wrapper');
+            const totalWidth = wrapper.offsetWidth;
+            const totalHeight = wrapper.offsetHeight;
+            const vWidth = window.innerWidth - 40;
+            const vHeight = window.innerHeight - 40;
+            const scale = Math.min(vWidth / totalWidth, vHeight / totalHeight);
+            wrapper.style.transform = `scale(${scale})`;
+        }
+        window.addEventListener('resize', fitToScreen);
+        window.addEventListener('DOMContentLoaded', () => {
+            fitToScreen();
+            
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(ifr => {
+                ifr.onload = () => {
+                    try {
+                        const doc = ifr.contentDocument;
+                        if (!doc) return;
+                        const style = doc.createElement('style');
+                        style.textContent = `
+                            body, html { background: transparent !important; }
+                            .slide-container, .wrapper { background: transparent !important; }
+                        `;
+                        doc.head.appendChild(style);
+                    } catch(e) {
+                        console.warn("Iframe CSS injection failed:", e);
+                    }
+                };
+            });
+        });
+    </script>
+</body>
+</html>

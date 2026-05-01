@@ -164,6 +164,48 @@ body.spread-mode .agent-card {
   flex: auto;
   scroll-snap-align: none;
 }
+
+/* ── Poster Mode Adjustments ── */
+body.poster-mode h1,
+body.poster-mode .subtitle,
+body.poster-mode .source-pill {
+  display: none;
+}
+body.poster-mode .cards-container {
+  gap: 1vw;
+}
+body.poster-mode .agent-card {
+  flex: 0 0 12.75vw; /* Exactly 50% of original width */
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5vw;
+  padding: 1.1vw 0.9vw;
+  box-shadow: 0 0.5vw 1.5vw rgba(0,0,0,0.15);
+}
+body.poster-mode .card-header {
+  font-size: 0.4vw;
+  margin-bottom: 0.6vw;
+  gap: 0.25vw;
+}
+body.poster-mode .card-header::before {
+  width: 0.3vw;
+  height: 0.3vw;
+}
+body.poster-mode .quote-text {
+  font-size: 0.7vw;
+}
+body.poster-mode .quote-meta {
+  margin-top: 1.25vw;
+  gap: 0.4vw;
+}
+body.poster-mode .meta-badge {
+  padding: 0.15vw 0.4vw;
+  font-size: 0.42vw;
+  border-radius: 0.1vw;
+}
+body.poster-mode .meta-obs {
+  font-size: 0.45vw;
+}
+
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
 <style>
@@ -244,5 +286,10 @@ body.spread-mode .agent-card {
   </div>
 </div>
 
+<script>
+  if (new URLSearchParams(window.location.search).get('mode') === 'poster') {
+    document.body.classList.add('poster-mode');
+  }
+</script>
 </body>
 </html>

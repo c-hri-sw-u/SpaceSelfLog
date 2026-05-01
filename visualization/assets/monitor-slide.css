@@ -85,3 +85,14 @@ img {
 .dot.blue   { background: #42A5F5; }
 .dot.orange { background: #FF9800; }
 .dot.purple { background: #6366f1; }
+
+/* ── Spread Mode Adjustments ── */
+body.spread-mode {
+  padding: 3vh 4vw;
+}
+
+body.spread-mode .item-label {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+}

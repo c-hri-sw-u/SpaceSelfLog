@@ -7,19 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
 <meta charset="UTF-8">
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Roboto', sans-serif;
-  width: 100vw;
-  height: 100vh;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #111;
-}
-</style>
+<link rel="stylesheet" href="../assets/monitor-slide.css">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,6 +21,40 @@ body {
 
 </head>
 <body>
+
+<!-- Left: Iteration Form (Inputs) -->
+<div class="panel panel-left">
+  <div class="panel-title">Iteration Form — Inputs</div>
+
+  <div class="group-title">Core Variables</div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">Component Changed</span><span class="item-desc">Categorized pipeline variable selection</span></div>
+  <div class="item"><div class="dot orange"></div><span class="item-label">Custom Variable</span><span class="item-desc">Flexibility for unlisted parameters</span></div>
+
+  <div class="group-title">Narrative Context</div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">Change Description</span><span class="item-desc">Exact values and logic altered</span></div>
+  <div class="item"><div class="dot blue"></div><span class="item-label">Rationale</span><span class="item-desc">Problem addressed and hypothesis</span></div>
+
+  <div class="group-title">Behavioral Shift</div>
+  <div class="item"><div class="dot green"></div><span class="item-label">Before Output</span><span class="item-desc">Prior system behavior</span></div>
+  <div class="item"><div class="dot green"></div><span class="item-label">After Output</span><span class="item-desc">Expected or observed outcome</span></div>
+</div>
+
+<!-- Center: Screenshot -->
+<img src="../assets/img/iteration-log.png" alt="Iteration Log Interface">
+
+<!-- Right: Context & History -->
+<div class="panel">
+  <div class="panel-title">Context & History</div>
+
+  <div class="group-title">Historical Reference</div>
+  <div class="item"><div class="dot purple"></div><span class="item-label">Entry History</span><span class="item-desc">Scrollable archive of past modifications</span></div>
+  <div class="item"><div class="dot purple"></div><span class="item-label">Before / After Traces</span><span class="item-desc">Longitudinal tracking of behavior shifts</span></div>
+
+  <div class="group-title">Component Tracking</div>
+  <div class="item"><div class="dot green"></div><span class="item-label">Timing & Intervals</span><span class="item-desc">Ramp ratio and batch windows</span></div>
+  <div class="item"><div class="dot green"></div><span class="item-label">Frame Selection</span><span class="item-desc">SSIM thresholds and importance weights</span></div>
+  <div class="item"><div class="dot green"></div><span class="item-label">Prompt Engineering</span><span class="item-desc">Insight and pattern prompt wording</span></div>
+</div>
 
 </body>
 </html>

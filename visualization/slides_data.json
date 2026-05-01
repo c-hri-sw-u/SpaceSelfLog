@@ -314,6 +314,18 @@
       "subtitle": "Integrated Spatial Activity Map",
       "src": "/slides/slide-files/41_results_fusion_map.html",
       "script": "This final map fuses movement with meaning — not just where I was, but what I was doing there, and how often.\n\nWhat I find compelling about this image is what it would mean for someone who designs spaces. An architect or an interior designer doesn't just need to know how many square meters you have — they need to know how you actually inhabit a space. And right now, the only way to get that information is to ask you, and trust that you remember.\n\nImagine instead: they interview your agent. Yes, your agent. The system that has been quietly watching how you live for weeks, tracking where you focus, where you rest, where you feel at home.\n\nThat conversation — between a designer and an AI that genuinely knows its user — is closer than it sounds. And it's one of the futures this research is pointing toward."
+    },
+    {
+      "section": "Results",
+      "subtitle": "What the Agent Learned About Me",
+      "src": "/slides/slide-files/42_what_agent_learned.html",
+      "script": "So what does all this data actually become? This is how the agent translates raw physical observations into language and understanding.\n\nIt doesn't just record coordinates or count objects. It notices that my beverage choices perfectly index my cognitive states. It recognizes my late-night kitchen looping not as random movement, but as a decompression ritual. It sees that I rely on a persistent paper-digital bridge during deep focus.\n\nThis is the moment the data becomes deeply personal. It's not about making you read a log file — it's about the profound feeling of being genuinely seen and understood by the system that works for you."
+    },
+    {
+      "section": "Discussion",
+      "subtitle": "Answering the Research Questions",
+      "src": "/slides/slide-files/43_discussion_rqs.html",
+      "script": "Having built the system and worn it for weeks, we return to the core research questions. What did we actually learn?\n\nFirst, regarding visibility: The physical perspective captures the 'in-between' moments—hesitation, wandering, unconscious habits—that digital logs simply cannot. However, I learned that a rolling memory system is only good for surface-level statistics. True insights require a dedicated reflection module, otherwise the VLM will simply over-interpret still objects.\n\nSecond, regarding personalization: The system peaks when it infers unrecorded gaps or offers proactive care, like reminding me to eat. The biggest noise isn't privacy, it's VLM hallucinations. And we learned that proactive agents must have 'interaction memory', or else their care quickly becomes repetitive spam.\n\nFinally, for design requirements: Manual review is impossible. You have to capture everything and filter automatically. Because the system relies heavily on mid-tier summaries, you must design a traceable path back to raw logs. And lastly, a physical kill switch is mandatory—not for the wearer, but to protect the social boundaries of others."
     }
   ]
 }

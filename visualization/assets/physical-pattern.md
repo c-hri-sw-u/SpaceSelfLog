@@ -38,7 +38,7 @@
 
 ## Sensory & Sustenance Patterns
 - **Late-night diet progression reinforced:** Muffin → rice/burger → ramen → structured meals → fries → baking snacks → hospital meal assembly — observed 37 of 38 late days.
-- **Beverage rotation synced to workload:** Espresso (design/app pivot) → soda/orange cream (deep focus) → tea (log review) → latte (medical imaging) — observed 40 of 44 late sessions.
+- **Beverage rotation synced to workload:** Espresso (design/app pivot) → soda/orange cream (deep focus) → tea (log review) → latte (image browsing) — observed 40 of 44 late sessions.
 - **Smart snacking stream validated:** CRT-adjacent bento → kitchen-island bento → three-monitor desk bento with hydroponic bottles — observed 42 of 44 late cycles.
 - **Late-night kitchen looping consolidated:** Desk ↔ kitchen ↔ snacking ↔ beverage ↔ return — observed 41 of 44 late cycles.
 - **Caffeine-creativity coupling intact:** Latte before design/app pivot; macro pad + numeric keypad during modeling/finance — observed 25 of 27 recent cases.

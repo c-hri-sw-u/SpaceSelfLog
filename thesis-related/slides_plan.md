@@ -7,41 +7,52 @@
 ## Results 收尾
 
 ### 42 — What the Agent Learned About Me（pattern 节选卡片）
-**内容：** 从 `physicalpattern.md` 中挑选 2-3 条最有代入感、最出乎意料的 pattern，放大展示（类似引用卡片格式）。全文放 appendix，slides 只展示精华。
-**示例（待确认实际内容）：**
-- *"Deep work sessions consistently begin 20–40 minutes after waking, before any social interaction."*
-- *"Kitchen activity spikes correlate with transitions out of focused work — likely used as a decompression ritual."*
+**内容：** 从 `physical-pattern.md` 中挑选了 6 条最有代入感的 pattern，放大展示为可水平滚动的 Agent Insight 卡片组。
+**实际提取内容（已完成 `42_what_agent_learned.html`，保留原话）：**
+- *"Beverage rotation synced to workload..."* (Sensory Pattern)
+- *"Late-night kitchen looping consolidated..."* (Spatial Logistics)
+- *"Paper-digital bridge sustained..."* (Workflow Bridging)
+- *"Persistent delayed sleep-wake cycle..."* (Rhythm Dynamics)
+- *"Desk periphery expansion..."* (Workspace Expansion)
+- *"Analog-digital harmonization daily..."* (Analog-Digital Harmonization)
 
 **目的：** 让观众感受到"agent 真的把物理观察转化成了对人的理解"——不是让人读文件，而是让人有"被看见"的感觉。
-**⚠️ 待做：** 需要你从实际 `physicalpattern.md` 里挑选最有力的 2-3 条
 **衔接：** 从 41 的空间地图过渡到"这些空间数据最终变成了什么样的语言洞察"
-
 
 ---
 
 ## Discussion
 
-### 43 — Discussion（回应三个研究问题）
-**内容：** 对应 Slide 13 的三个 RQ，每个用一两句话给出答案
+### 43 — Discussion: Answering the Research Questions
+**内容：** 基于两周自我民族志体验，对最初的三个 RQ 给出提炼后的学术回答：
 
-- **RQ1**：通过两周观察，哪些物理信息变得可见，而这些是数字痕迹无法捕捉的？
-  → *空间使用模式（哪个房间对应哪种活动）、物品共现习惯（特定工作组合）、行为节律（即使在感觉混乱的日子里，作息仍高度一致）、以及从未进入日历的时刻——沙发上的思考时间、厨房里的减压转换。*
+- **RQ1: 可见性与盲区 (Visibility & Blind Spots)**
+  → *发现：* 物理视角捕捉到了被忽略的“中间态”（犹豫、发呆、任务切换）和潜意识习惯（如进入状态后被遗忘的咖啡）。
+  → *反思：* 简单的“滚动式记忆”只能做统计，且 VLM 极易对画面中的静止物品“过度解释”。要获得真正的洞见，系统必须具备复杂的反思推演模块（Reflection Module），而非单纯的数据堆叠。
 
-- **RQ2**：在哪些情境下物理信息改善了个性化，什么情况下引入了噪声？
-  → *改善最明显的是：情境感知型建议（agent 知道你在深度工作中，不会主动打扰）、空间召回（你在哪里放了某样东西）、以及基于习惯节律的预期行为。噪声主要来自 VLM 对场景的误判，以及与数字数据重叠造成的冗余（如日历已有的会议信息）。*
-  → **⚠️ 需要你从 journal 补充一个具体的改善案例和一个噪声/失败案例**
+- **RQ2: 个性化改善与噪音 (Improvement vs. Noise)**
+  → *改善：* 当 Agent 结合历史习惯成功跨越“记录盲区”（例如猜出未记录的时间是在攀岩），并在适当的时机表达关心（提醒吃饭）时，个性化达到了顶峰。
+  → *噪音/边界：* 最大的噪音来自 VLM 的严重“幻觉”（如错误识别物品并编造离谱的行动总结）。在主动交互（Proactive）上，Agent 必须具备“交互记忆”，否则重复的关怀会瞬间变成扰人的轰炸。
 
-- **RQ3**：整合过程中涌现了哪些设计要求？
-  → *五项核心要求：① 自适应采集（而非固定频率）控制数据量；② 分层记忆结构匹配不同时间粒度；③ 连续性机制（前一批次输出注入下一批次）维持语义连贯；④ 人工可编辑性用于纠错；⑤ 边缘-云端分离保障隐私与效率。*
+- **RQ3: 涌现的架构设计法则 (Design Requirements)**
+  → *发现：* 涌现出三大法则：① **宁烂勿缺与自动过滤**：面对海量视觉数据，人工审核不切实际，必须依赖后期的自动化理解与人在回路（HITL）反馈；② **记忆的可追溯性 (Traceability)**：系统高度依赖位于中间层的 Insights，但必须设计从 Insights 追溯回原始 Logs 的路径以供纠错；③ **物理隐私开关与第三方保护**：对自己无感，但出于对他人隐私的保护（如视频会议），必须保留物理的阻断机制（如摘除或硬件开关）。
 
-**目的：** 把 Results 的数据和最初的研究问题对接起来，这是委员会最关心的部分
+**目的：** 把真实的自身体验转化为学术贡献，用深刻的洞察（包括对系统缺陷的坦诚）直接回应答辩委员会的期待。
 
+---
 
+### 44 — Moments of Connection & Disconnection (Case Study)
+**内容：** 从日记中提取的两个极致案例，具象化说明系统的上限与下限：
 
-### 44 — A Moment That Worked / A Moment That Failed（定性发现）
-**内容：** 从两周 journal 各取一个最有代表性的例子
-- ✅ 一次 agent 因为物理观察而给出了更好回应的真实时刻
-- ❌ 一次它完全误判或忽略了物理情境的时刻
+- ✅ **A Moment of Connection (高光时刻)**
+  *场景*：系统中间有一段空白没有记录。
+  *Agent 的反应*：它没有宕机，而是结合了过去的对话上下文和我的行为模式，主动猜出：“你是不是出去攀岩了？” 并且它会观察到我下午吃饭时间总是很晚，从而主动提醒我按时吃饭。
+  *意义*：这是 Agent 从“旁观日记本”向“具备同理心的伙伴”跨越的瞬间。
+
+- ❌ **A Moment of Disconnection (翻车时刻)**
+  *场景*：日常的工作画面。
+  *Agent 的反应*：VLM 通过画面中的一些杂乱物品或屏幕反光，强行进行“过度解读”，极其自信地总结我在进行“清理冰箱线圈 (refrigerator coil cleaning)”这种完全离谱的操作。
+  *意义*：展示了当前多模态大模型的通病——它们倾向于给无意义的物理存在强加意义。
 
 **目的：** 真实案例比任何图表都有说服力；失败案例展示研究诚实性，对学术听众尤为重要
 
@@ -84,7 +95,7 @@
 
 ## 开放问题（待讨论）
 
-1. **Slide 42**：`physicalpattern.md` 内容是否适合直接展示？需要节选还是全文？
+1. ~~**Slide 42**：`physicalpattern.md` 内容是否适合直接展示？需要节选还是全文？~~ **已解决：采用节选改写为"Agent Insight 卡片"形式，以突出对"人"的理解。**
 2. **Slide 43**：三个 RQ 的答案，你希望逐一回应，还是归纳成 2-3 个更高层的发现？
 3. **Slide 44**：你有没有想好用哪个具体的成功/失败案例？有没有对话截图？
 4. **总时长**：目前已有幻灯片估计约 22 分钟，后续 6 张大概再加 5-6 分钟，合计 ~28 分钟，是否在范围内？

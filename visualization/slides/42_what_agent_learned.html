@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Roboto', sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 8vw;
+  color: #111;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 3.4vw;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5vw;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0 0.2vw;
+  color: #111;
+}
+
+.subtitle {
+  font-size: 1.3vw;
+  color: #666;
+  margin-bottom: 4vw;
+  max-width: 60vw;
+  line-height: 1.5;
+}
+
+/* Horizontal Quote Cards Layout */
+.cards-container {
+  display: flex;
+  gap: 2vw;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 1vw 1vw 3vw 1vw;
+  margin-left: -1vw; /* Keep first card aligned with text */
+  margin-right: -1vw;
+  /* Hide scrollbar */
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
+}
+.cards-container::-webkit-scrollbar {
+  display: none;
+}
+
+.agent-card {
+  flex: 0 0 25.5vw; /* Precisely sized to fit 3 cards in the ~84vw available width */
+  scroll-snap-align: start;
+  background: #fdfdfd;
+  border: 1px solid #f0f0f0;
+  border-radius: 1vw; /* Fully rounded rectangle */
+  padding: 2.2vw 1.8vw;
+  box-shadow: 0 0.8vw 2vw rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+}
+
+.agent-card:hover {
+  transform: translateY(-0.8vw);
+  box-shadow: 0 1.5vw 3.5vw rgba(0,0,0,0.08);
+}
+
+.card-header {
+  font-size: 0.8vw;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #111; /* Darker to act as an accent without a heavy border */
+  margin-bottom: 1.2vw;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.5vw;
+}
+.card-header::before {
+  content: '';
+  display: inline-block;
+  width: 0.6vw;
+  height: 0.6vw;
+  background: #ffe94d;
+  border-radius: 50%;
+}
+
+.quote-text {
+  font-size: 1.4vw; /* Slightly scaled to fit within smaller cards */
+  font-weight: 400;
+  color: #222;
+  line-height: 1.45;
+  font-style: italic;
+  flex-grow: 1;
+}
+
+.quote-meta {
+  margin-top: 2.5vw;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8vw;
+}
+
+.meta-badge {
+  background: #ffe94d;
+  color: #111;
+  font-weight: 700;
+  padding: 0.3vw 0.8vw;
+  font-size: 0.85vw;
+  border-radius: 0.2vw;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.meta-obs {
+  font-size: 0.9vw;
+  color: #888;
+}
+
+.source-pill {
+  display: inline-flex;
+  align-items: center;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  color: #555;
+  font-size: 0.85vw;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  padding: 0.3vw 0.7vw;
+  border-radius: 0.3vw;
+  margin-top: 0.8vw;
+  margin-bottom: 3.5vw;
+}
+.source-pill::before {
+  content: '📄';
+  margin-right: 0.5vw;
+  font-size: 0.9vw;
+}
+
+/* ── Spread Mode Adjustments ── */
+body.spread-mode .cards-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2vw;
+  overflow-x: visible;
+  padding: 0;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+body.spread-mode .agent-card {
+  flex: auto;
+  scroll-snap-align: none;
+}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+<style>
+  .title, .title-main, .title-sub, h1, h2, .intro-text {
+    font-family: 'Ultra', serif !important;
+    font-weight: normal !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="slide-content">
+  <h1>What the Agent <span class="highlight">Learned</span> About Me</h1>
+  <p class="subtitle" style="margin-bottom: 0;">Extracting language-based understanding from continuous spatial and physical patterns.</p>
+  <div class="source-pill">Source: memory/physical-pattern.md</div>
+
+  <div class="cards-container">
+    <!-- Card 1 -->
+    <div class="agent-card">
+      <div class="card-header">Agent Insight</div>
+      <div class="quote-text">"Beverage rotation synced to workload: Espresso (design/app pivot) → soda/orange cream (deep focus) → tea (log review) → latte (image browsing)."</div>
+      <div class="quote-meta">
+        <span class="meta-badge">Sensory Pattern</span>
+        <span class="meta-obs">Observed in 40 of 44 late sessions</span>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="agent-card">
+      <div class="card-header">Agent Insight</div>
+      <div class="quote-text">"Late-night kitchen looping consolidated: Desk ↔ kitchen ↔ snacking ↔ beverage ↔ return."</div>
+      <div class="quote-meta">
+        <span class="meta-badge">Spatial Logistics</span>
+        <span class="meta-obs">Observed in 41 of 44 late cycles</span>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="agent-card">
+      <div class="card-header">Agent Insight</div>
+      <div class="quote-text">"Paper-digital bridge sustained: Printed maps clipped to desk, sticky-note archiving, OCR/scan placement, colored sticky pads, hospital meal tray protocols."</div>
+      <div class="quote-meta">
+        <span class="meta-badge">Workflow Bridging</span>
+        <span class="meta-obs">Observed in 49 of 53 recent workdays</span>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="agent-card">
+      <div class="card-header">Agent Insight</div>
+      <div class="quote-text">"Persistent delayed sleep-wake cycle: Rest ~01:00–01:30, wake ~11:20."</div>
+      <div class="quote-meta">
+        <span class="meta-badge">Rhythm Dynamics</span>
+        <span class="meta-obs">Observed 57 of 58 days</span>
+      </div>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="agent-card">
+      <div class="card-header">Agent Insight</div>
+      <div class="quote-text">"Desk periphery expansion: Dual-laptop desk → reclined bedroom → kitchen → hybrid studio integration."</div>
+      <div class="quote-meta">
+        <span class="meta-badge">Workspace Expansion</span>
+        <span class="meta-obs">Observed 22 of 23 late nights</span>
+      </div>
+    </div>
+
+    <!-- Card 6 -->
+    <div class="agent-card">
+      <div class="card-header">Agent Insight</div>
+      <div class="quote-text">"Analog-digital harmonization daily: Green notebook present during snacking; sticky-note task markers on refrigerator; dual-laptop editing of Physical-World Observation document."</div>
+      <div class="quote-meta">
+        <span class="meta-badge">Analog-Digital Harmonization</span>
+        <span class="meta-obs">Observed in 46 of 46 recent evenings</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

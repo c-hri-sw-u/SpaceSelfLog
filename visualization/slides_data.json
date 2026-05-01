@@ -4,13 +4,13 @@
       "section": "cover",
       "src": "/slides/slide-files/01_cover.html",
       "subtitle": "",
-      "script": "Good morning, everyone. My name is Chris Wu, and today I’m presenting my thesis: 'Physical-World Observation for Personal AI Agent Personalization.' [Pause] \n\nBefore we dive into the details, I want you to imagine a scenario. Imagine you have a personal biographer who knows everything about you—your schedule, your emails, and your preferences. \n\nBut there’s a catch: this biographer has never actually met you. Despite their immense intelligence, they still feel like a stranger. \n\nThat’s because they understand you only through your digital traces; they’ve never actually witnessed your world. They know you bought a book, but they didn't see you place it on a high shelf where it’s remained untouched. They know you have a meeting, but they don't see the intensity of your focus as you prepare for it. \n\nThis is the state of AI agent personalization today. My research aims to bridge this gap—exploring how we can enable agents to understand us physically, situatedly, and holistically."
+      "script": "Good morning, everyone. My name is Chris Wu, and today I’m presenting my thesis: 'Physical-World Observation for Personal AI Agent Personalization.' [Pause] \n\nBefore we dive into the details, I want you to imagine a scenario. Imagine you have a personal biographer who knows everything about you — your schedule, your emails, and your preferences. \n\nBut there’s a catch: this biographer has never actually met you. Despite their immense intelligence, they still feel like a stranger. \n\nThat’s because they understand you only through your digital traces; they’ve never actually witnessed your world. They know you bought a book, but they didn't see you place it on a high shelf where it’s remained untouched. They know you have a meeting, but they don't see the intensity of your focus as you prepare for it. \n\nThis is the state of AI agent personalization today. My research aims to bridge this gap—exploring how we can enable agents to understand us physically, situatedly, and holistically."
     },
     {
       "section": "Intro",
       "subtitle": "The Claw",
       "src": "/slides/slide-files/02_the_claw.html",
-      "script": "I call this 'The Claw.' It represents the defining shift in the AI landscape: the transition from assistants that merely talk, to agents that actually act. 'The Claw' is the symbol of digital agency—the ability for a system to reach out and manipulate your computer, navigating your files, executing code, and managing your workspace autonomously."
+      "script": ""
     },
     {
       "section": "Intro",

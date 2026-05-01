@@ -1081,6 +1081,7 @@ async function loadTranscript() {
 
   try {
     const res  = await fetch('/api/openclaw-transcript/' + date);
+    if (!res.ok) throw new Error(`HTTP error ${res.status}: ${res.statusText}`);
     const msgs = await res.json();
     cachedTranscriptMessages = msgs;
 

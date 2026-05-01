@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Roboto', sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 8vw;
+  color: #111;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 3.4vw;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5vw;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0 0.2vw;
+  color: #111;
+}
+
+.subtitle {
+  font-size: 1.3vw;
+  color: #666;
+  margin-bottom: 3vw;
+  max-width: 60vw;
+  line-height: 1.5;
+}
+
+.cases-container {
+  display: flex;
+  gap: 4vw;
+  align-items: stretch;
+}
+
+.case-card {
+  flex: 1;
+  background: #fcfcfc;
+  border: 1px solid #eaeaea;
+  border-radius: 1vw;
+  padding: 3vw;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1vw 2.5vw rgba(0,0,0,0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.case-header {
+  display: flex;
+  align-items: center;
+  gap: 1vw;
+  margin-bottom: 2.5vw;
+}
+
+.case-icon {
+  font-size: 2.5vw;
+}
+
+.case-title {
+  font-family: 'Ultra', serif;
+  font-size: 2vw;
+  color: #111;
+  font-weight: normal;
+}
+
+.field {
+  margin-bottom: 2vw;
+}
+
+.field:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  display: block;
+  font-size: 0.8vw;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #888;
+  margin-bottom: 0.6vw;
+}
+
+.field p {
+  font-size: 1.3vw;
+  line-height: 1.5;
+  color: #333;
+}
+
+.field p i {
+  display: block;
+  margin-top: 0.5vw;
+  font-size: 1.4vw;
+  color: #111;
+  border-left: 0.3vw solid #ddd;
+  padding-left: 1vw;
+  font-weight: 500;
+}
+
+.significance {
+  margin-top: auto;
+  padding-top: 2vw;
+  border-top: 1px dashed #ddd;
+}
+
+.significance p {
+  font-weight: 500;
+}
+
+/* ── Spread Mode Adjustments ── */
+body.spread-mode {
+  padding: 0 6vw;
+}
+body.spread-mode .cases-container {
+  gap: 6vw;
+}
+body.spread-mode .case-card {
+  padding: 4vw;
+}
+body.spread-mode .case-title {
+  font-size: 2.5vw;
+}
+body.spread-mode .field p {
+  font-size: 1.5vw;
+}
+body.spread-mode .label {
+  font-size: 1vw;
+}
+
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+<style>
+  .title, .title-main, .title-sub, h1, h2, .intro-text {
+    font-family: 'Ultra', serif !important;
+    font-weight: normal !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="slide-content">
+  <h1>Moments of <span class="highlight">Connection</span> & Disconnection</h1>
+  <p class="subtitle">Extracting two defining case studies from the two-week autoethnography.</p>
+
+  <div class="cases-container">
+    
+    <!-- Success Case -->
+    <div class="case-card success">
+      <div class="case-header">
+        <span class="case-icon">🤝</span>
+        <h2 class="case-title">A Moment of Connection</h2>
+      </div>
+      
+      <div class="field">
+        <span class="label">The Scenario</span>
+        <p>A prolonged gap in the physical recording logs during the afternoon.</p>
+      </div>
+      
+      <div class="field">
+        <span class="label">Agent's Reaction</span>
+        <p>Instead of failing or outputting empty data, the agent cross-referenced past dialogue and spatial habits, proactively asking:
+        <i>"Did you go rock climbing?"</i></p>
+      </div>
+
+      <div class="field significance">
+        <span class="label">Significance</span>
+        <p>This marked the exact threshold where the system transitioned from a passive bystander diary into an empathetic, context-aware companion.</p>
+      </div>
+    </div>
+
+    <!-- Failure Case -->
+    <div class="case-card failure">
+      <div class="case-header">
+        <span class="case-icon">👻</span>
+        <h2 class="case-title">A Moment of Disconnection</h2>
+      </div>
+      
+      <div class="field">
+        <span class="label">The Scenario</span>
+        <p>A standard, cluttered daily working environment at the desk.</p>
+      </div>
+      
+      <div class="field">
+        <span class="label">Agent's Reaction</span>
+        <p>The Vision-Language Model (VLM) fixated on random background objects and screen glare, confidently concluding:
+        <i>"You are cleaning the refrigerator coils."</i></p>
+      </div>
+
+      <div class="field significance">
+        <span class="label">Significance</span>
+        <p>A stark reminder of the "over-interpretation" flaw in current VLMs: the tendency to forcibly impose deep meaning onto meaningless physical clutter.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

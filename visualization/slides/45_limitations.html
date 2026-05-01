@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Roboto', sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 8vw;
+  color: #111;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 3.4vw;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5vw;
+}
+
+.highlight {
+  background: #ffe94d;
+  padding: 0 0.2vw;
+  color: #111;
+}
+
+.subtitle {
+  font-size: 1.3vw;
+  color: #666;
+  margin-bottom: 4vw;
+  max-width: 60vw;
+  line-height: 1.5;
+}
+
+.limits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vw;
+  width: 100%;
+}
+
+.limit-row {
+  display: flex;
+  align-items: center;
+  padding: 1.5vw 0;
+  border-bottom: 1px solid #eaeaea;
+  gap: 3vw;
+}
+
+.limit-row:first-child {
+  border-top: 1px solid #eaeaea;
+}
+
+.limit-num {
+  font-family: 'Ultra', serif;
+  font-size: 2.5vw;
+  color: #ccc;
+  min-width: 4vw;
+}
+
+.limit-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4vw;
+}
+
+.limit-title {
+  font-size: 1.8vw;
+  font-weight: 600;
+  color: #111;
+  letter-spacing: -0.01em;
+}
+
+.limit-desc {
+  font-size: 1.2vw;
+  color: #777;
+  font-weight: 400;
+}
+
+/* ── Spread Mode Adjustments ── */
+body.spread-mode {
+  padding: 0 6vw;
+}
+body.spread-mode .limit-row {
+  padding: 2vw 0;
+}
+body.spread-mode .limit-num {
+  font-size: 3.5vw;
+}
+body.spread-mode .limit-title {
+  font-size: 2.2vw;
+}
+body.spread-mode .limit-desc {
+  font-size: 1.5vw;
+}
+
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+<style>
+  .title, .title-main, .title-sub, h1, h2, .intro-text {
+    font-family: 'Ultra', serif !important;
+    font-weight: normal !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="slide-content">
+  <h1>System <span class="highlight">Limitations</span></h1>
+  <p class="subtitle">Bottlenecks identified through the two-week autoethnographic deployment.</p>
+
+  <div class="limits-list">
+    
+    <div class="limit-row">
+      <div class="limit-num">01</div>
+      <div class="limit-text">
+        <div class="limit-title">Form Factor & The Hawthorne Effect</div>
+        <div class="limit-desc">Head-mounting induced constant awareness; chest-mounting mitigated this, but hardware presence remains a barrier.</div>
+      </div>
+    </div>
+
+    <div class="limit-row">
+      <div class="limit-num">02</div>
+      <div class="limit-text">
+        <div class="limit-title">Third-Party Social Boundaries</div>
+        <div class="limit-desc">Personal privacy is unproblematic, but filming others (e.g., video calls) creates severe social friction requiring manual intervention.</div>
+      </div>
+    </div>
+
+    <div class="limit-row">
+      <div class="limit-num">03</div>
+      <div class="limit-text">
+        <div class="limit-title">The Traceability Problem</div>
+        <div class="limit-desc">Rolling memory compression inevitably destroys raw details. Tracing a high-level insight back to its origin is currently impossible.</div>
+      </div>
+    </div>
+
+    <div class="limit-row">
+      <div class="limit-num">04</div>
+      <div class="limit-text">
+        <div class="limit-title">VLM Over-Interpretation</div>
+        <div class="limit-desc">Current vision models struggle with passive objects, forcibly imposing profound narratives onto meaningless physical clutter.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -473,6 +473,10 @@ _slides_spec = _ilu.spec_from_file_location("slides_routes", Path(__file__).pare
 _slides_mod  = _ilu.module_from_spec(_slides_spec); _slides_spec.loader.exec_module(_slides_mod)
 app.register_blueprint(_slides_mod.bp, url_prefix="/slides")
 
+_poster_spec = _ilu.spec_from_file_location("poster_routes", Path(__file__).parent.parent / "visualization" / "poster_routes.py")
+_poster_mod  = _ilu.module_from_spec(_poster_spec); _poster_spec.loader.exec_module(_poster_mod)
+app.register_blueprint(_poster_mod.bp, url_prefix="/poster")
+
 
 @app.get("/")
 def monitor():

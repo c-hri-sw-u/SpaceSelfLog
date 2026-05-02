@@ -131,6 +131,26 @@ async def main():
             else:
                 print("WARNING: photowall _slideReady not all true, proceeding...")
 
+            # 等待 hi-res 放大图片加载完成
+            print("Waiting for hi-res zoom images to load...")
+            await page.wait_for_timeout(10000)  # 等待 applyHoverAt 触发加载
+            pw_frames = [f for f in page.frames
+                         if "photowall" in f.url and "fast=0" in f.url]
+            for fr in pw_frames:
+                try:
+                    await fr.evaluate("""async () => {
+                        // 等所有 hiResImages 加完
+                        for (let i = 0; i < 30; i++) {
+                            const allLoaded = hiResImages.every(img => img !== null);
+                            if (allLoaded) break;
+                            await new Promise(r => setTimeout(r, 1000));
+                        }
+                        if (typeof renderAllOverlays === 'function') renderAllOverlays();
+                    }""")
+                except Exception as e:
+                    print(f"  WARNING: hi-res poll failed: {e}")
+            await page.wait_for_timeout(2000)
+
         # 2. 冻结动画 + 清理视觉元素
         print("Freezing animations & cleaning visuals...")
         await page.evaluate("""

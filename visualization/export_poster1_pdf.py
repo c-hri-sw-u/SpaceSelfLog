@@ -84,7 +84,7 @@ async def main():
         pdf_path = Path(output_path).with_suffix(".pdf")
         print(f"Converting to PDF → {pdf_path} ...")
         Image.MAX_IMAGE_PIXELS = None
-        img = Image.open(output_path)
+        img = Image.open(output_path).convert('RGB')
         img.save(str(pdf_path), resolution=DPI)
 
         print("Export successful!")

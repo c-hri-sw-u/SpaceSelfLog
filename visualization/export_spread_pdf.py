@@ -31,6 +31,23 @@ async def main():
         print("Waiting 5 seconds for charts to settle...")
         await page.wait_for_timeout(5000)
 
+        # 轮询所有 iframe，等待每个内部的 _slideReady === true
+        # 动态 slide 会设 window._slideReady = false 再变 true
+        # 静态 slide 不设这个变量 (undefined)，视为已就绪
+        print("Polling iframes for readiness signals...")
+        await page.wait_for_function("""
+            () => {
+                const iframes = document.querySelectorAll('.spread-page iframe');
+                if (iframes.length === 0) return true;
+                return Array.from(iframes).every(f => {
+                    try {
+                        const w = f.contentWindow;
+                        return typeof w._slideReady === 'undefined' || w._slideReady === true;
+                    } catch(e) { return false; }
+                });
+            }
+        """, timeout=30000)
+
         output_path = "spreads_export.pdf"
         print(f"Exporting PDF to {output_path} ...")
         

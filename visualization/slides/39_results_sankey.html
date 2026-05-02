@@ -214,13 +214,14 @@
       render(_sankeyData);
     });
 
+    window._slideReady = false;
     fetch('/slides/api/sankey')
       .then(r => r.json())
       .then(data => {
         _sankeyData = data;
         document.getElementById('loading').style.display = 'none';
         function tryRender() {
-          if (window.innerWidth > 0) { render(data); }
+          if (window.innerWidth > 0) { render(data); window._slideReady = true; }
           else { requestAnimationFrame(tryRender); }
         }
         requestAnimationFrame(tryRender);

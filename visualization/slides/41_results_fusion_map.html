@@ -405,13 +405,14 @@
       return SCALE;
     }
 
+    window._slideReady = false;
     fetch('/slides/api/spatial-activity')
       .then(r => r.json())
       .then(res => {
         DATA = res;
         document.getElementById('loading').style.display = 'none';
         function tryRender() {
-          if (window.innerWidth > 0) { init(); }
+          if (window.innerWidth > 0) { init(); window._slideReady = true; }
           else { requestAnimationFrame(tryRender); }
         }
         requestAnimationFrame(tryRender);

@@ -346,13 +346,14 @@
 
     window.addEventListener('resize', drawCharts);
 
+    window._slideReady = false;
     fetch('/slides/api/activity-rhythm')
       .then(res => res.json())
       .then(data => {
         renderHeatmap(data);
         _slotStats = computeSlotStats(data);
         function tryRender() {
-          if (window.innerWidth > 0) { drawCharts(); }
+          if (window.innerWidth > 0) { drawCharts(); window._slideReady = true; }
           else { requestAnimationFrame(tryRender); }
         }
         requestAnimationFrame(tryRender);

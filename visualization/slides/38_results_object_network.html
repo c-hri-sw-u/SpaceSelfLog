@@ -457,7 +457,10 @@
         .then(data => {
           const img = document.getElementById('ai-image');
           img.src = data.image_url;
-          img.onload = () => { img.classList.add('loaded'); };
+          img.onload = () => {
+            img.classList.add('loaded');
+            window._slideReady = true;
+          };
         });
     };
     // Check immediately in case class is already there
@@ -502,7 +505,8 @@
         .force('center', d3.forceCenter(W / 2, H / 2).strength(0.07))
         .force('collide', d3.forceCollide().radius(d => R(d.freq) + W * 0.012))
         .alphaDecay(0.014)
-        .velocityDecay(0.4);
+        .velocityDecay(0.4)
+        .on('end', () => { window._slideReady = true; });
 
       // Links — flat hairlines with colour hint from same-cluster pairs
       const linkSel = svg.append('g')

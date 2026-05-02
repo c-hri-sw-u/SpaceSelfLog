@@ -399,12 +399,13 @@
     let SCALE = layoutPlan();
 
     // ── Data Load ─────────────────────────────────────────────────
+    window._slideReady = false;
     fetch('/slides/api/spatial-activity')
       .then(r => r.json())
       .then(data => {
         document.getElementById('loading').style.display = 'none';
         function tryRender() {
-          if (window.innerWidth > 0) { initViz(data); }
+          if (window.innerWidth > 0) { initViz(data); window._slideReady = true; }
           else { requestAnimationFrame(tryRender); }
         }
         requestAnimationFrame(tryRender);

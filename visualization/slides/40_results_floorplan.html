@@ -516,14 +516,14 @@
         const nameEl = document.createElement('div');
         nameEl.className = 'r-name';
         nameEl.textContent = cfg.label;
-        nameEl.style.fontSize = `${Math.max(8, SCALE * 7.5)}px`;
+        nameEl.style.fontSize = `${Math.max(5, SCALE * 7.5 * (document.body.classList.contains('spread-mode') ? 0.65 : 1))}px`;
         nameEl.style.color = cfg.total > 0 ? '#111111' : '#bbbbbb';
         div.appendChild(nameEl);
         if (cfg.total > 0) {
           const cntEl = document.createElement('div');
           cntEl.className = 'r-count';
           cntEl.textContent = `${cfg.total} entries`;
-          cntEl.style.fontSize = `${Math.max(6, SCALE * 5.5)}px`;
+          cntEl.style.fontSize = `${Math.max(4, SCALE * 5.5 * (document.body.classList.contains('spread-mode') ? 0.65 : 1))}px`;
           div.appendChild(cntEl);
         }
         container.appendChild(div);
@@ -548,7 +548,7 @@
         for (let i = 0; i < mv.weight * 2; i++) {
           particles.push({
             sx, sy, tx, ty, mx, my, t: Math.random(),
-            speed: 0.003 + Math.random() * 0.002, r: 1.8 + Math.random() * 1.2, color: ACTIVITY_THEME[mv.activity] || '#4b5563'
+            speed: 0.003 + Math.random() * 0.002, r: (1.8 + Math.random() * 1.2) * (document.body.classList.contains('spread-mode') ? 0.65 : 1), color: ACTIVITY_THEME[mv.activity] || '#4b5563'
           });
         }
       });
@@ -561,7 +561,7 @@
           ctx.beginPath();
           ctx.moveTo(src.center.x * SCALE, src.center.y * SCALE);
           ctx.quadraticCurveTo((src.center.x + tgt.center.x) / 2 * SCALE + (tgt.center.y - src.center.y) * SCALE * 0.18, (src.center.y + tgt.center.y) / 2 * SCALE - (tgt.center.x - src.center.x) * SCALE * 0.18, tgt.center.x * SCALE, tgt.center.y * SCALE);
-          ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.lineWidth = mv.weight * 0.5; ctx.setLineDash([4, 8]); ctx.stroke(); ctx.setLineDash([]);
+          ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.lineWidth = mv.weight * 0.5 * (document.body.classList.contains('spread-mode') ? 0.65 : 1); ctx.setLineDash([4, 8]); ctx.stroke(); ctx.setLineDash([]);
         });
       }
 

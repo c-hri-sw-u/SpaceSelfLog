@@ -359,7 +359,7 @@
             len,
             t:     Math.random(),          // current progress [0,1]
             speed: 0.0015 + Math.random() * 0.001,
-            r:     1.5 + Math.random() * 2,
+            r:     (1.5 + Math.random() * 2) * (document.body.classList.contains('spread-mode') ? 0.65 : 1),
             srcColor: nodeColor(lk.source),
             tgtColor: nodeColor(lk.target),
           });

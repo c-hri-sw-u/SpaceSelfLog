@@ -98,16 +98,46 @@ async def main():
         if not ready:
             print(f"WARNING: Canvas not ready after {timeout_ms/1000:.0f}s, proceeding anyway...")
 
-        # 在 iframe 内手动放置 6 个 hi-res 放大圆点（绕过 PAGE_COUNT < 2 的限制）
+        # 在 iframe 内手动放置 8 个 hi-res 放大圆点（绕过 PAGE_COUNT < 2 的限制）
         print("Placing hi-res zoom dots in iframe...")
         try:
             frame = next((f for f in page.frames if "photowall" in f.url), None)
             if frame:
-                # 逐个触发 hi-res 加载，每次间隔等待
+                # 先 patch renderAllOverlays 支持 8 个 dock（原版硬编码 di < 2）
+                await frame.evaluate("""() => {
+                    renderAllOverlays = function() {
+                        const rect = innerDiv.getBoundingClientRect();
+                        const bs = rect.width / 1600;
+                        oCtx.save(); oCtx.setTransform(1,0,0,1,0,0); oCtx.clearRect(0,0,overlayCanvas.width,overlayCanvas.height); oCtx.restore();
+                        for (let di = 0; di < 8; di++) {
+                            const imgIdx = hoverIndices[di];
+                            if (imgIdx === -1) continue;
+                            for (const it of buildDock(imgIdx, rect)) {
+                                const imgObj = FILTERED_IMAGES[it.idx];
+                                const bmp = (it.k === 0 && hiResImages[di]) ? hiResImages[di] : loadedBitmaps.get(imgObj.url);
+                                if (!bmp) continue;
+                                oCtx.shadowColor='rgba(0,0,0,0.85)'; oCtx.shadowBlur=10*bs*it.s; oCtx.shadowOffsetX=0; oCtx.shadowOffsetY=5*bs*it.s; oCtx.globalAlpha=1.0;
+                                oCtx.drawImage(bmp, it.x, it.y, it.w, it.h);
+                                oCtx.shadowColor='transparent'; oCtx.strokeStyle='rgba(255,255,255,0.9)'; oCtx.lineWidth=bs+it.s*0.2;
+                                oCtx.strokeRect(it.x, it.y, it.w, it.h);
+                                if (it.k === 0) {
+                                    const d = new Date(imgObj.ts);
+                                    const ts = `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+                                    oCtx.font=`bold ${bs*13}px 'Courier New',monospace`;
+                                    const tW=oCtx.measureText(ts).width, tx=it.x+it.w/2-tW/2, ty=it.y-28*bs;
+                                    oCtx.fillStyle = THEME_LIGHT ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)';
+                                    oCtx.fillRect(tx-10*bs,ty,tW+20*bs,22*bs);
+                                    oCtx.fillStyle = THEME_LIGHT ? 'rgba(0,0,0,1)' : 'rgba(255,255,255,1)';
+                                    oCtx.fillText(ts,tx,ty+15*bs);
+                                }
+                            }
+                        }
+                    };
+                }""")
+                # 逐个触发 hi-res 加载
                 await frame.evaluate("""async () => {
                     if (typeof cachedLayoutPoses === 'undefined' || cachedLayoutPoses.length === 0) return;
                     const N = cachedLayoutPoses.length;
-                    // 8 个点，均匀分布在图片墙的不同高度位置
                     const indices = [
                         Math.floor(N * 0.05 + Math.random() * N * 0.04),
                         Math.floor(N * 0.16 + Math.random() * N * 0.04),
@@ -118,14 +148,12 @@ async def main():
                         Math.floor(N * 0.73 + Math.random() * N * 0.04),
                         Math.floor(N * 0.88 + Math.random() * N * 0.04),
                     ];
-                    // 扩展 hiResImages 和 hoverIndices 数组以支持 8 个点
                     while (hiResImages.length < 8) { hiResImages.push(null); hoverIndices.push(-1); }
                     for (let di = 0; di < 8; di++) {
                         const pos = cachedLayoutPoses[Math.min(indices[di], N-1)];
                         const px = pos.x + cachedW / 2;
                         const py = pos.y + cachedOffsetY + cachedH / 2;
                         applyHoverAt(px, py, di);
-                        // 等待 hi-res 图片加载
                         await new Promise(r => setTimeout(r, 2000));
                     }
                 }""")

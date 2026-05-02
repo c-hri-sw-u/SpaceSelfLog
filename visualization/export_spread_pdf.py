@@ -19,41 +19,6 @@ async def main():
         )
         page = await context.new_page()
 
-        # ── 在所有 iframe 加载之前注入 Canvas 缩放覆盖 ──
-        # add_init_script 会在每个 frame（含 iframe）的 JS 执行之前运行
-        print(f"Injecting canvas scale ({FIXED_PX_SCALE}) via init script...")
-        await page.add_init_script("""
-            const S = %s;
-
-            // 粒子 / 点的半径
-            const origArc = CanvasRenderingContext2D.prototype.arc;
-            CanvasRenderingContext2D.prototype.arc = function(x, y, r, s, e, ccw) {
-                origArc.call(this, x, y, r * S, s, e, ccw);
-            };
-
-            // 描边宽度
-            const lwDesc = Object.getOwnPropertyDescriptor(
-                CanvasRenderingContext2D.prototype, 'lineWidth');
-            Object.defineProperty(CanvasRenderingContext2D.prototype, 'lineWidth', {
-                set(v) { lwDesc.set.call(this, v * S); },
-                get() { return lwDesc.get.call(this); }
-            });
-
-            // Canvas 字号（房间标签等）
-            const fontDesc = Object.getOwnPropertyDescriptor(
-                CanvasRenderingContext2D.prototype, 'font');
-            Object.defineProperty(CanvasRenderingContext2D.prototype, 'font', {
-                set(v) {
-                    const scaled = v.replace(
-                        /(%s)d+(?:\\.%sd+)?px/g,
-                        function(_, n) { return (parseFloat(n) * S) + 'px'; }
-                    );
-                    fontDesc.set.call(this, scaled);
-                },
-                get() { return fontDesc.get.call(this); }
-            });
-        """ % (FIXED_PX_SCALE, '\\', '\\'))
-
         # 1. 加载并渲染 Spread 模式
         print(f"Navigating to {URL} ...")
         await page.goto(URL, wait_until="networkidle")

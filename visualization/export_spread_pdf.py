@@ -141,11 +141,17 @@ async def main():
                 """(idx) => document.querySelectorAll('.spread-page:not(.empty) iframe')[idx]""",
                 pw_info['index']
             )
-            frame = iframe_handle.content_frame()
+            cf = iframe_handle.content_frame()
+            # Some Playwright versions return a coroutine, others return Frame directly
+            if asyncio.iscoroutine(cf):
+                frame = await cf
+            else:
+                frame = cf
 
             if frame is None:
-                # Fallback: wait and try URL matching
-                print("    content_frame() returned None, falling back to URL match...")
+                # Fallback: wait for frame to appear by URL
+                print("    content_frame() returned None, waiting for frame...")
+                frame = None
                 for _ in range(30):
                     await page.wait_for_timeout(1000)
                     for f in page.frames:

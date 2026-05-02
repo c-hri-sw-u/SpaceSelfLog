@@ -46,7 +46,7 @@ async def main():
         while pw_elapsed < 600:  # 最多等 10 分钟
             await page.wait_for_timeout(5000)
             pw_elapsed += 5
-            pw_frames = [f for f in page.frames if f != page.mainFrame]
+            pw_frames = [f for f in page.frames if f != page.main_frame]
             if PHOTOWALL_ONLY:
                 pw_frames = [f for f in pw_frames if "photowall" in f.url]
             all_ready = True

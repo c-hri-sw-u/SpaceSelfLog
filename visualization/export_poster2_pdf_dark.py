@@ -26,12 +26,12 @@ async def main():
         except Exception:
             print("Network idle timeout, continuing anyway...")
 
-        # 将 iframe 的 fast=1 改为 fast=0，启用真实图片加载
-        print("Switching iframe to real image mode (fast=0)...")
+        # 将 iframe 的 fast=1→fast=0 且 theme=light→theme=dark，启用真实图片 + 暗色主题
+        print("Switching iframe to dark theme + real image mode (fast=0, theme=dark)...")
         await page.evaluate("""
             const iframe = document.querySelector('iframe');
             if (iframe) {
-                iframe.src = iframe.src.replace('fast=1', 'fast=0');
+                iframe.src = iframe.src.replace('fast=1', 'fast=0').replace('theme=light', 'theme=dark');
             }
         """)
 
@@ -136,7 +136,7 @@ async def main():
                         await new Promise(r => setTimeout(r, 2000));
                     }
                 }""")
-                # 放完点后 patch renderAllOverlays（白色标注文字 + 白色阴影，适配黑背景）
+                # 放完点后 patch renderAllOverlays 支持 12 个 dock
                 await frame.evaluate("""() => {
                     const DOCK_COUNT = hoverIndices.length;
                     renderAllOverlays = function() {
@@ -150,7 +150,7 @@ async def main():
                                 const imgObj = FILTERED_IMAGES[it.idx];
                                 const bmp = (it.k === 0 && hiResImages[di]) ? hiResImages[di] : loadedBitmaps.get(imgObj.url);
                                 if (!bmp) continue;
-                                oCtx.shadowColor='rgba(255,255,255,0.6)'; oCtx.shadowBlur=10*bs*it.s; oCtx.shadowOffsetX=0; oCtx.shadowOffsetY=5*bs*it.s; oCtx.globalAlpha=1.0;
+                                oCtx.shadowColor='rgba(0,0,0,0.85)'; oCtx.shadowBlur=10*bs*it.s; oCtx.shadowOffsetX=0; oCtx.shadowOffsetY=5*bs*it.s; oCtx.globalAlpha=1.0;
                                 oCtx.drawImage(bmp, it.x, it.y, it.w, it.h);
                                 oCtx.shadowColor='transparent'; oCtx.strokeStyle='rgba(255,255,255,0.9)'; oCtx.lineWidth=bs+it.s*0.2;
                                 oCtx.strokeRect(it.x, it.y, it.w, it.h);
@@ -159,9 +159,9 @@ async def main():
                                     const ts = `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
                                     oCtx.font=`bold ${bs*13}px 'Courier New',monospace`;
                                     const tW=oCtx.measureText(ts).width, tx=it.x+it.w/2-tW/2, ty=it.y-28*bs;
-                                    oCtx.fillStyle = 'rgba(0,0,0,0.85)';
+                                    oCtx.fillStyle = THEME_LIGHT ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)';
                                     oCtx.fillRect(tx-10*bs,ty,tW+20*bs,22*bs);
-                                    oCtx.fillStyle = 'rgba(255,255,255,1)';
+                                    oCtx.fillStyle = THEME_LIGHT ? 'rgba(0,0,0,1)' : 'rgba(255,255,255,1)';
                                     oCtx.fillText(ts,tx,ty+15*bs);
                                 }
                             }

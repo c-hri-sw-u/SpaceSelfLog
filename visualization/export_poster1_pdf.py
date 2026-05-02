@@ -10,7 +10,7 @@ URL = "http://localhost:8000/poster/1"
 # 96 DPI 对大幅面海报（观看距离 >1m）完全足够
 VIEWPORT_W = 3456   # 36 * 96
 VIEWPORT_H = 7488   # 78 * 96
-SCALE      = 1
+SCALE      = 2    # 2x 渲染，输出 6912×14976px (= 192 DPI at 36×78in)
 
 async def main():
     print("Launching browser...")

@@ -67,7 +67,7 @@ async def main():
             # 等 iframe 重新加载
             await page.wait_for_timeout(5000)
 
-            # 轮询 photowall 加载进度
+            # 用 Playwright frames API 轮询（绕过 contentDocument 跨域问题）
             pw_timeout = 600  # 最多等 10 分钟
             pw_elapsed = 0
             pw_ready = False
@@ -75,51 +75,61 @@ async def main():
                 await page.wait_for_timeout(5000)
                 pw_elapsed += 5
                 try:
-                    result = await page.evaluate("""
-                        let done = 0, totalLoaded = 0, totalImages = 0;
-                        document.querySelectorAll('.spread-page iframe').forEach(f => {
-                            if (!f.src || !f.src.includes('photowall')) return;
-                            try {
-                                const doc = f.contentDocument;
-                                const overlay = doc.getElementById('loading-overlay');
-                                const hidden = overlay
+                    pw_frames = [f for f in page.frames
+                                 if "photowall" in f.url and "fast=0" in f.url]
+                    done = 0
+                    total_loaded = 0
+                    total_images = 0
+                    for fr in pw_frames:
+                        try:
+                            r = await fr.evaluate("""() => {
+                                const loaded = parseInt(document.getElementById('progress-count')?.innerText) || 0;
+                                const total  = parseInt(document.getElementById('total-count')?.innerText) || 0;
+                                const overlay = document.getElementById('loading-overlay');
+                                const ready = overlay
                                     ? (overlay.style.display === 'none' || overlay.style.opacity === '0')
                                     : false;
-                                if (hidden) done++;
-                                const l = parseInt(doc.getElementById('progress-count')?.innerText) || 0;
-                                const t = parseInt(doc.getElementById('total-count')?.innerText) || 0;
-                                totalLoaded += l;
-                                totalImages += t;
-                            } catch(e) {}
-                        });
-                        return {done, totalLoaded, totalImages};
-                    """)
-                    d, tl, ti = result['done'], result['totalLoaded'], result['totalImages']
-                    pct = f" ({tl}/{ti})" if ti > 0 else ""
-                    print(f"  Photowall: {d}/{pw_count} pages done{pct} ({pw_elapsed}s)")
-                    if d >= pw_count:
+                                return { ready, loaded, total };
+                            }""")
+                            if r['ready']:
+                                done += 1
+                            total_loaded += r['loaded']
+                            total_images += r['total']
+                        except Exception:
+                            pass
+                    pct = f" ({total_loaded}/{total_images})" if total_images > 0 else ""
+                    print(f"  Photowall: {done}/{len(pw_frames)} pages done{pct} ({pw_elapsed}s)")
+                    if done >= len(pw_frames) and len(pw_frames) > 0:
                         pw_ready = True
                         break
-                except Exception:
-                    print(f"  Photowall: polling error ({pw_elapsed}s)")
+                except Exception as e:
+                    print(f"  Photowall: polling error ({pw_elapsed}s) {e}")
 
             if not pw_ready:
                 print(f"WARNING: Photowall not ready after {pw_timeout}s, proceeding...")
 
-            # 重新轮询 _slideReady（含重载后的 photowall）
-            print("Re-polling all iframes for readiness...")
-            await page.wait_for_function("""
-                () => {
-                    const iframes = document.querySelectorAll('.spread-page iframe');
-                    if (iframes.length === 0) return true;
-                    return Array.from(iframes).every(f => {
-                        try {
-                            const w = f.contentWindow;
-                            return typeof w._slideReady === 'undefined' || w._slideReady === true;
-                        } catch(e) { return false; }
-                    });
-                }
-            """, timeout=60000)
+            # 重新轮询 photowall _slideReady（通过 Playwright frames）
+            print("Re-polling photowall iframes for _slideReady...")
+            pw_elapsed2 = 0
+            while pw_elapsed2 < 120:
+                await page.wait_for_timeout(5000)
+                pw_elapsed2 += 5
+                pw_frames = [f for f in page.frames
+                             if "photowall" in f.url and "fast=0" in f.url]
+                all_ready = True
+                for fr in pw_frames:
+                    try:
+                        r = await fr.evaluate("() => typeof window._slideReady === 'undefined' || window._slideReady === true")
+                        if not r:
+                            all_ready = False
+                    except Exception:
+                        all_ready = False
+                if all_ready:
+                    print(f"  All photowall iframes ready ({pw_elapsed2}s)")
+                    break
+                print(f"  ... waiting for _slideReady ({pw_elapsed2}s)")
+            else:
+                print("WARNING: photowall _slideReady not all true, proceeding...")
 
         # 2. 冻结动画 + 清理视觉元素
         print("Freezing animations & cleaning visuals...")

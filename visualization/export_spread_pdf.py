@@ -131,52 +131,79 @@ async def main():
             else:
                 print("WARNING: photowall _slideReady not all true, proceeding...")
 
-            # 等待 dots 放置 + 手动触发 hi-res 加载
+            # 等待 dots 放置 + 手动触发 overlay 渲染
             print("Waiting for dots to be placed and hi-res overlays to render...")
             await page.wait_for_timeout(5000)  # 等待 setInterval 放置 dots
             pw_frames = [f for f in page.frames
                          if "photowall" in f.url and "fast=0" in f.url]
             for fr in pw_frames:
                 try:
-                    state = await fr.evaluate("""async () => {
-                        // 检查状态
-                        const state = {
+                    state = await fr.evaluate("""() => {
+                        return {
                             isCanvasReady: typeof isCanvasReady !== 'undefined' ? isCanvasReady : 'undef',
                             hoverIndices: typeof hoverIndices !== 'undefined' ? JSON.stringify(hoverIndices) : 'undef',
                             hiResImages: typeof hiResImages !== 'undefined' ? hiResImages.map(x => x !== null) : 'undef',
                             layoutPoses: typeof cachedLayoutPoses !== 'undefined' ? cachedLayoutPoses.length : 'undef',
                             loadedBitmaps: typeof loadedBitmaps !== 'undefined' ? loadedBitmaps.size : 'undef',
+                            filteredImages: typeof FILTERED_IMAGES !== 'undefined' ? FILTERED_IMAGES.length : 'undef',
                             pageCount: typeof PAGE_COUNT !== 'undefined' ? PAGE_COUNT : 'undef',
                         };
-                        return state;
                     }""")
                     print(f"  Frame state: {state}")
 
-                    # 如果 hoverIndices 都是 -1，手动放置 dots
+                    # 手动加载 hi-res 并渲染 overlay
                     await fr.evaluate("""async () => {
                         if (!isCanvasReady || cachedLayoutPoses.length === 0) return;
-
-                        // 确保 hoverIndices 已扩展到 2 个
                         while (hiResImages.length < 2) { hiResImages.push(null); hoverIndices.push(-1); }
 
-                        // 如果 dots 还没放置，手动放置
-                        if (hoverIndices[0] === -1) {
-                            const N = cachedLayoutPoses.length;
-                            const i1 = Math.floor(N * 0.25 + Math.random() * N * 0.15);
-                            const i2 = Math.floor(N * 0.60 + Math.random() * N * 0.15);
-                            const pos1 = cachedLayoutPoses[Math.min(i1, N-1)];
-                            const pos2 = cachedLayoutPoses[Math.min(i2, N-1)];
-                            applyHoverAt(pos1.x + cachedW/2, pos1.y + cachedOffsetY + cachedH/2, 0);
-                            applyHoverAt(pos2.x + cachedW/2, pos2.y + cachedOffsetY + cachedH/2, 1);
+                        // 确认 hoverIndices 指向有效图片
+                        for (let di = 0; di < 2; di++) {
+                            const idx = hoverIndices[di];
+                            if (idx === -1 || idx >= FILTERED_IMAGES.length) continue;
+                            const url = FILTERED_IMAGES[idx].url;
+                            // 检查 loadedBitmaps 是否有这张图
+                            if (!loadedBitmaps.has(url)) {
+                                console.warn('Missing bitmap for index', idx, url);
+                            }
                         }
 
-                        // 等 hiResImages 加完
-                        for (let i = 0; i < 30; i++) {
-                            if (hiResImages.every(img => img !== null)) break;
-                            await new Promise(r => setTimeout(r, 1000));
+                        // 手动加载 hi-res 图片（中心放大图）
+                        const loadPromises = [];
+                        for (let di = 0; di < 2; di++) {
+                            const idx = hoverIndices[di];
+                            if (idx === -1 || hiResImages[di]) continue;
+                            const img = new Image();
+                            const p = new Promise((resolve) => {
+                                img.onload = () => {
+                                    if (hoverIndices[di] === idx) {
+                                        hiResImages[di] = img;
+                                    }
+                                    resolve();
+                                };
+                                img.onerror = () => {
+                                    console.warn('hi-res load failed for index', idx);
+                                    resolve();
+                                };
+                            });
+                            img.src = FILTERED_IMAGES[idx].url.replace('thumbnails-data','frames-data');
+                            loadPromises.push(p);
                         }
+                        await Promise.all(loadPromises);
                         renderAllOverlays();
                     }""")
+                    # 检查 overlay 是否有内容
+                    check = await fr.evaluate("""() => {
+                        const oc = document.getElementById('overlay');
+                        if (!oc) return 'no overlay canvas';
+                        const ctx = oc.getContext('2d');
+                        const data = ctx.getImageData(0, 0, oc.width, oc.height).data;
+                        let nonZero = 0;
+                        for (let i = 3; i < data.length; i += 4) {
+                            if (data[i] > 0) nonZero++;
+                        }
+                        return {canvasW: oc.width, canvasH: oc.height, nonZeroPixels: nonZero, hiResLoaded: hiResImages.map(x => x !== null)};
+                    }""")
+                    print(f"  Overlay check: {check}")
                 except Exception as e:
                     print(f"  WARNING: hi-res overlay failed: {e}")
             await page.wait_for_timeout(3000)

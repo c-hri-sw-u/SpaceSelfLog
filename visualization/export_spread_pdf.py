@@ -37,6 +37,27 @@ async def main():
         # 为了保留深色背景和原本的视觉效果
         await page.emulate_media(media="screen")
 
+        # 暂停所有动画，冻结为静帧
+        await page.evaluate("""
+            const freezeAnimations = (doc) => {
+                if (!doc) return;
+                const style = doc.createElement('style');
+                style.innerHTML = `
+                    *, *::before, *::after {
+                        animation-play-state: paused !important;
+                        transition: none !important;
+                    }
+                `;
+                doc.head.appendChild(style);
+                doc.getAnimations().forEach(a => a.pause());
+            };
+
+            freezeAnimations(document);
+            document.querySelectorAll('iframe').forEach(iframe => {
+                try { freezeAnimations(iframe.contentDocument); } catch(e) {}
+            });
+        """)
+
         # 将页面结构修改为单页垂直排列，去除红色的中间参考线
         await page.evaluate("""
             // 隐藏工具栏和侧边栏

@@ -80,7 +80,8 @@ async def main():
                     const total  = parseInt(document.getElementById('total-count')?.innerText) || 0;
                     const overlay = document.getElementById('loading-overlay');
                     const overlayHidden = overlay ? (overlay.style.display === 'none' || overlay.style.opacity === '0') : false;
-                    return { ready: overlayHidden && loaded >= total && total > 0, loaded, total };
+                    // progress-count 每 15 张更新一次，最后一批可能差几十张；overlay 隐藏是真正的完成信号
+                    return { ready: overlayHidden, loaded, total };
                 }""")
                 ready = result['ready']
                 loaded = result['loaded']

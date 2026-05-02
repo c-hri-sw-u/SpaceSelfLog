@@ -70,21 +70,21 @@ async def main():
         print(f"poster-container rect: {rect}")
 
         DPI = 192
-        output_path = "poster1_export.png"
+        output_path = "poster1_export.jpg"
         print(f"Taking {rect['width']:.0f}x{rect['height']:.0f}px screenshot (2x scale) → {output_path}")
         print(f"(= {DPI} DPI at 36×78in)")
 
         await page.screenshot(
             path=output_path,
-            type="png",
+            type="jpeg",
+            quality=95,
             clip=rect
         )
 
-        # 将 PNG 包装成单页 PDF，告知 Pillow 正确的 DPI
         pdf_path = Path(output_path).with_suffix(".pdf")
         print(f"Converting to PDF → {pdf_path} ...")
         Image.MAX_IMAGE_PIXELS = None
-        img = Image.open(output_path).convert('RGB')
+        img = Image.open(output_path)
         img.save(str(pdf_path), resolution=DPI)
 
         print("Export successful!")

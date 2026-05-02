@@ -91,7 +91,71 @@ async def main():
             });
         """)
 
-        # 3. 逐页截图
+        # 3. 按比例缩放 Canvas 中的固定 px 元素（粒子、描边、字号）
+        #    spread-page ~800px，但粒子/描边是固定 px 不随 viewport 缩放，
+        #    需要乘以 iframeWidth / parentWidth 使之与 vw 元素比例一致
+        FIXED_PX_SCALE = 0.65
+        print(f"Injecting fixed-px scale ({FIXED_PX_SCALE}) into iframes...")
+        await page.evaluate("""
+            const S = %s;
+            document.querySelectorAll('.spread-page iframe').forEach(iframe => {
+                try {
+                    const win = iframe.contentWindow;
+                    const proto = win.CanvasRenderingContext2D.prototype;
+
+                    // 粒子 / 点的半径
+                    const origArc = proto.arc;
+                    proto.arc = function(x, y, r, s, e, ccw) {
+                        origArc.call(this, x, y, r * S, s, e, ccw);
+                    };
+
+                    // 描边宽度
+                    const lwDesc = Object.getOwnPropertyDescriptor(proto, 'lineWidth');
+                    Object.defineProperty(proto, 'lineWidth', {
+                        set(v) { lwDesc.set.call(this, v * S); },
+                        get() { return lwDesc.get.call(this); }
+                    });
+
+                    // Canvas 字号（房间标签等）
+                    const fontDesc = Object.getOwnPropertyDescriptor(proto, 'font');
+                    Object.defineProperty(proto, 'font', {
+                        set(v) {
+                            const scaled = v.replace(
+                                /(\\d+(?:\\.\\d+)?)px/g,
+                                (_, n) => (parseFloat(n) * S) + 'px'
+                            );
+                            fontDesc.set.call(this, scaled);
+                        },
+                        get() { return fontDesc.get.call(this); }
+                    });
+
+                    // 清空画布，触发重绘
+                    iframe.contentDocument.querySelectorAll('canvas').forEach(c => {
+                        c.getContext('2d').clearRect(0, 0, c.width, c.height);
+                    });
+                    win.dispatchEvent(new Event('resize'));
+                } catch(e) { console.error(e); }
+            });
+        """ % FIXED_PX_SCALE)
+
+        print("Waiting for canvases to re-render...")
+        await page.wait_for_timeout(3000)
+
+        # SVG 装饰性描边（donut 间隔线等，不碰 sankey 数据宽度）
+        await page.evaluate("""
+            const S = %s;
+            document.querySelectorAll('.spread-page iframe').forEach(iframe => {
+                try {
+                    iframe.contentDocument.querySelectorAll('[stroke-width]').forEach(el => {
+                        const w = parseFloat(el.getAttribute('stroke-width'));
+                        if (w && w < 5)
+                            el.setAttribute('stroke-width', (w * S).toFixed(2));
+                    });
+                } catch(e) {}
+            });
+        """ % FIXED_PX_SCALE)
+
+        # 4. 逐页截图
         print("Capturing pages...")
         spread_pages = await page.query_selector_all('.spread-page:not(.empty)')
         screenshots = []  # list of (bytes, is_wide)

@@ -95,26 +95,45 @@ async def main():
                         stuck_frames.append(fr)
 
                 if ready_frame and stuck_frames:
-                    print(f"  Injecting data from ready frame into {len(stuck_frames)} stuck frames...")
+                    print(f"  Injecting data into {len(stuck_frames)} stuck frames...")
                     try:
                         images_json = await ready_frame.evaluate("() => JSON.stringify(ALL_IMAGES)")
                         for sf in stuck_frames:
                             try:
-                                # 注入 ALL_IMAGES 并重跑 init
+                                # 注入 ALL_IMAGES 并直接调 init（init 会检测 ALL_IMAGES 已有数据，跳过 fetch）
                                 await sf.evaluate("""async (imgJson) => {
                                     ALL_IMAGES = JSON.parse(imgJson);
-                                    // 清除错误状态
+                                    // 重置 loading overlay
                                     const overlay = document.getElementById('loading-overlay');
-                                    if (overlay) { overlay.style.display = ''; overlay.style.opacity = '1'; }
-                                    // 重跑 init 的核心逻辑
+                                    overlay.style.display = ''; overlay.style.opacity = '1';
+                                    overlay.innerHTML = '';
+                                    isCanvasReady = false;
+                                    window._slideReady = false;
+                                    loadedBitmaps.clear();
+                                    loadedColors.clear();
+                                    FILTERED_IMAGES = [];
+                                    // 重新 init（ALL_IMAGES 已有数据，会跳过 fetch）
                                     init();
                                 }""", images_json)
                             except Exception as e:
                                 print(f"    inject failed: {e}")
-                        # 等注入的 frames 加载完
-                        await page.wait_for_timeout(15000)
+                        # 轮询注入的 frames
+                        inject_elapsed = 0
+                        while inject_elapsed < 120:
+                            await page.wait_for_timeout(5000)
+                            inject_elapsed += 5
+                            inject_ready = 0
+                            for sf in stuck_frames:
+                                try:
+                                    r = await sf.evaluate("() => window._slideReady === true")
+                                    if r: inject_ready += 1
+                                except Exception:
+                                    pass
+                            print(f"    injected: {inject_ready}/{len(stuck_frames)} ready ({inject_elapsed}s)")
+                            if inject_ready >= len(stuck_frames):
+                                break
                     except Exception as e:
-                        print(f"  data extraction failed: {e}")
+                        print(f"  data injection failed: {e}")
                 break
         else:
             print("WARNING: Not all iframes ready after 600s, proceeding...")

@@ -499,7 +499,8 @@
 
         // ── Concurrent worker pool — only loads THIS PAGE's thumbnails ──
         let loaded = 0, currentIndex = 0;
-        const workers = Array(60).fill(0).map(async () => {
+        const WORKER_COUNT = IS_PAGED ? 10 : 60;  // 减少并发避免多 iframe 连接池耗尽
+        const workers = Array(WORKER_COUNT).fill(0).map(async () => {
           while (currentIndex < N) {
             const idx = currentIndex++;
             const imgObj = PAGE_IMAGES[idx];

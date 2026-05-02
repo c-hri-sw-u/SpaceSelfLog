@@ -51,11 +51,11 @@ async def main():
                 if frame is None:
                     print(f"  ... iframe not found yet ({elapsed/1000:.0f}s)")
                     continue
-                result = await frame.evaluate("""
+                result = await frame.evaluate("""() => {
                     const loaded = parseInt(document.getElementById('progress-count')?.innerText) || 0;
                     const total  = parseInt(document.getElementById('total-count')?.innerText) || 0;
                     return { ready: typeof isCanvasReady !== 'undefined' && isCanvasReady === true, loaded, total };
-                """)
+                }""")
                 ready = result['ready']
                 loaded = result['loaded']
                 total = result['total']

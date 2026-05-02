@@ -7,7 +7,7 @@ URL = "http://localhost:8000/poster/2"
 
 VIEWPORT_W = 3456   # 36 * 96
 VIEWPORT_H = 7488   # 78 * 96
-SCALE      = 1
+SCALE      = 2    # 2x 渲染，输出 6912×14976px (= 192 DPI at 36×78in)
 
 async def main():
     print("Launching browser...")
@@ -208,15 +208,14 @@ async def main():
         )
         print(f"poster-container rect: {rect}")
 
-        DPI = 96
-        output_path = "poster2_export.jpg"
-        print(f"Taking {rect['width']:.0f}x{rect['height']:.0f}px screenshot → {output_path}")
+        DPI = 192
+        output_path = "poster2_export.png"
+        print(f"Taking {rect['width']:.0f}x{rect['height']:.0f}px screenshot (2x scale) → {output_path}")
         print(f"(= {DPI} DPI at 36×78in)")
 
         await page.screenshot(
             path=output_path,
-            type="jpeg",
-            quality=95,
+            type="png",
             clip=rect
         )
 

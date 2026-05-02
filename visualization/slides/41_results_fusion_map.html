@@ -410,7 +410,11 @@
       .then(res => {
         DATA = res;
         document.getElementById('loading').style.display = 'none';
-        init();
+        function tryRender() {
+          if (window.innerWidth > 0) { init(); }
+          else { requestAnimationFrame(tryRender); }
+        }
+        requestAnimationFrame(tryRender);
       });
 
 

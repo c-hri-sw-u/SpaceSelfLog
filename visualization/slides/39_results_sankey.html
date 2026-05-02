@@ -204,11 +204,26 @@
     }
 
     // ── Fetch & render ────────────────────────────────────────────
+    let _sankeyData = null;
+    let _animFrameId = null;
+
+    window.addEventListener('resize', () => {
+      if (!_sankeyData) return;
+      if (_animFrameId) { cancelAnimationFrame(_animFrameId); _animFrameId = null; }
+      d3.select('#sankey').selectAll('*').remove();
+      render(_sankeyData);
+    });
+
     fetch('/slides/api/sankey')
       .then(r => r.json())
       .then(data => {
+        _sankeyData = data;
         document.getElementById('loading').style.display = 'none';
-        render(data);
+        function tryRender() {
+          if (window.innerWidth > 0) { render(data); }
+          else { requestAnimationFrame(tryRender); }
+        }
+        requestAnimationFrame(tryRender);
       })
       .catch(err => {
         document.getElementById('loading').textContent = 'Failed to load data.';
@@ -369,7 +384,7 @@
           ctx.fillStyle = clr;
           ctx.fill();
         });
-        requestAnimationFrame(animate);
+        _animFrameId = requestAnimationFrame(animate);
       }
       animate();
     }

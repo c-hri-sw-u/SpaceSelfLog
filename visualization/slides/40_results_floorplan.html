@@ -403,7 +403,11 @@
       .then(r => r.json())
       .then(data => {
         document.getElementById('loading').style.display = 'none';
-        initViz(data);
+        function tryRender() {
+          if (window.innerWidth > 0) { initViz(data); }
+          else { requestAnimationFrame(tryRender); }
+        }
+        requestAnimationFrame(tryRender);
       });
 
 

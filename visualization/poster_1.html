@@ -210,7 +210,6 @@
         }
 
         .results-panel {
-            border: 0.02in solid #ccc;
             background: #fff;
             overflow: hidden;
         }
@@ -283,10 +282,10 @@
 
                 <div class="results-panel span-2"><iframe
                         src="/slides/slide-files/37_results_activity_rhythm.html"></iframe></div>
-                <div class="results-panel span-1"><iframe src="/slides/slide-files/39_results_sankey.html"></iframe>
+                <div class="results-panel span-1"><iframe src="/slides/slide-files/39_results_sankey_poster.html"></iframe>
                 </div>
                 <div class="results-panel span-1"><iframe
-                        src="/slides/slide-files/38_results_object_network.html"></iframe></div>
+                        src="/slides/slide-files/38_results_object_network_poster.html"></iframe></div>
             </div>
 
             <!-- 底部：总结 -->
@@ -311,7 +310,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             fitToScreen();
 
-            // 安全的 CSS 注入，去除了破坏布局的 zoom: 2.0
+            // 安全的 CSS 注入
             const iframes = document.querySelectorAll('iframe');
             iframes.forEach(ifr => {
                 ifr.onload = () => {

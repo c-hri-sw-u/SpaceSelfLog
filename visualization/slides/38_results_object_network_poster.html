@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <meta charset="UTF-8">
+  <title>Object Co-occurrence Network</title>
+  <style>
+    :root {
+      --bg:          #ffffff;
+      --text-main:   #111111;
+      --text-muted:  #888888;
+      --text-dim:    #cccccc;
+      --border:      #eeeeee;
+      --accent:      #ffe94d;
+
+      --clr-tech:    #3b82f6;
+      --clr-input:   #10b981;
+      --clr-bev:     #f97316;
+      --clr-desk:    #8b5cf6;
+      --clr-person:  #ec4899;
+      --clr-misc:    #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg);
+      font-family: 'Roboto', sans-serif;
+      color: var(--text-main);
+    }
+
+    #header {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      padding: 1.8vw 6vw 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    #header h1 {
+      font-size: 6vw;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      color: var(--text-main);
+    }
+
+    #header h1 .hl {
+      background: var(--accent);
+      color: #111;
+      padding: 0 0.25vw;
+    }
+
+    #header p {
+      font-size: 2.1vw;
+      color: var(--text-muted);
+      margin-top: 0.4vw;
+      max-width: 55vw;
+      line-height: 1.45;
+    }
+
+    #graph {
+      position: absolute;
+      inset: 0;
+    }
+
+    #info-block {
+      position: absolute;
+      bottom: 2vw;
+      left: 6vw;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 1vw;
+    }
+
+    body.spread-mode #header { padding-left: 9vw; }
+    body.spread-mode #info-block { left: 4vw; bottom: 8vw; }
+
+    #legend {
+      display: flex;
+      gap: 2.2vw;
+    }
+
+    .subtitle {
+      font-size: 1.8vw;
+      color: var(--text-muted);
+      max-width: 55vw;
+      line-height: 1.5;
+    }
+
+    .leg-item {
+      display: flex;
+      align-items: center;
+      gap: 0.45vw;
+      font-size: 1.5vw;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    .leg-dot {
+      width: 0.6vw;
+      height: 0.6vw;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    #tooltip {
+      position: absolute;
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 0.35vw;
+      padding: 0.8vw 1.1vw;
+      min-width: 13vw;
+      box-shadow: 0 0.5vw 1.5vw rgba(0,0,0,0.07);
+    }
+
+    #tooltip .tt-name {
+      font-size: 2vw;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.25vw;
+    }
+
+    #tooltip .tt-freq {
+      font-size: 1.5vw;
+      color: var(--text-muted);
+    }
+
+    #tooltip .tt-edge {
+      font-size: 1.5vw;
+      color: var(--text-muted);
+      margin-top: 0.5vw;
+      border-top: 1px solid var(--border);
+      padding-top: 0.45vw;
+      line-height: 1.6;
+    }
+
+    #main-container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #graph-container {
+      position: relative;
+      flex: 1 0 100%;
+      height: 100%;
+      transition: flex-basis 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+
+    body.ai-active #graph-container {
+      flex-basis: 50%;
+    }
+
+    #ai-panel {
+      flex: 0 0 0%;
+      height: 100%;
+      background: #fdfdfd;
+      border-left: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: flex-basis 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+
+    body.ai-active #ai-panel {
+      flex-basis: 50%;
+    }
+
+    #ai-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4vw;
+      opacity: 0;
+      transition: opacity 0.5s ease 0.6s;
+    }
+
+    body.ai-active #ai-content {
+      opacity: 1;
+    }
+
+    #ai-image-wrapper {
+      width: 100%;
+      aspect-ratio: 1/1;
+      max-height: 70vh;
+      background: #fff;
+      border-radius: 1vw;
+      box-shadow: 0 1vw 3vw rgba(0,0,0,0.05);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    #ai-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    #ai-image.loaded {
+      opacity: 1;
+    }
+
+    #ai-btn {
+      pointer-events: auto;
+      background: transparent;
+      border: 1px solid var(--text-dim);
+      padding: 0.5vw 1.2vw;
+      border-radius: 0.4vw;
+      font-family: 'Roboto', sans-serif;
+      font-size: 1.4vw;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    #ai-btn:hover {
+      background: #f8f8f8;
+      border-color: var(--text-muted);
+      color: var(--text-main);
+    }
+
+    #ai-btn:active {
+      background: #eee;
+    }
+
+    body.ai-active #ai-btn {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    #ai-loader {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #fdfdfd;
+      z-index: 5;
+      transition: opacity 0.5s ease;
+    }
+
+    .shimmer {
+      width: 60%;
+      height: 1vw;
+      background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 1vw;
+      margin-bottom: 1vw;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    #ai-loader p {
+      font-size: 1.8vw;
+      color: var(--text-muted);
+      margin-top: 1vw;
+      font-weight: 500;
+    }
+
+  </style>
+  <link rel="stylesheet" href="../assets/~shared.css">
+  <script src="theme_config.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&display=swap" rel="stylesheet">
+<style>
+  .title, .title-main, .title-sub, h1, h2, .intro-text {
+    font-family: 'Ultra', serif !important;
+    font-weight: normal !important;
+  }
+</style>
+
+</head>
+
+<body>
+
+  <div id="main-container">
+    <div id="graph-container">
+      <svg id="graph"></svg>
+
+      <div id="info-block">
+        <div style="display: flex; align-items: flex-end; gap: 3vw;">
+          <div style="display: flex; flex-direction: column; gap: 1vw;">
+            <div id="legend">
+              <div class="leg-item"><div class="leg-dot" style="background:var(--clr-tech)"></div>Screens / Tech</div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--clr-input)"></div>Input Devices</div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--clr-bev)"></div>Beverages</div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--clr-desk)"></div>Desk Objects</div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--clr-person)"></div>Personal / Social</div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--clr-misc)"></div>Other</div>
+            </div>
+            <p class="subtitle">Objects detected together in the same log entry form a link. Node size = appearance frequency.</p>
+          </div>
+
+          <button id="ai-btn" onclick="generateAIArt()">
+            GENERATE AI VISION
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="ai-panel">
+
+      <div id="ai-loader" style="display:none;">
+        <div class="shimmer"></div>
+        <div class="shimmer" style="width:40%"></div>
+        <p>Distilling object relationships...</p>
+      </div>
+
+      <div id="ai-content">
+        <div id="ai-image-wrapper">
+          <img id="ai-image" src="" alt="AI Generated Objects">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="loading">Loading…</div>
+
+  <div id="tooltip">
+    <div class="tt-name"></div>
+    <div class="tt-freq"></div>
+    <div class="tt-edge"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+
+  <script>
+    const CLUSTER = {
+      'Laptop':              'tech',
+      'Monitor':             'tech',
+      'Dual Monitors':       'tech',
+      'Mac Mini':            'tech',
+      'Terminal / Code':     'tech',
+      'Smartphone':          'tech',
+      'iPad':                'tech',
+      'Mechanical Keyboard': 'input',
+      'Keyboard':            'input',
+      'Mouse':               'input',
+      'Headphones':          'input',
+      'Coca-Cola Zero':      'bev',
+      'Red Bull':            'bev',
+      'Coffee / Tea':        'bev',
+      'Starbucks':           'bev',
+      'Yogurt (Yoplait)':    'bev',
+      'Water Bottle':        'bev',
+      'Sports Drink':        'bev',
+      'Fanta':               'bev',
+      'Desk Lamp':           'desk',
+      'Sticky Notes':        'desk',
+      'Papers / Docs':       'desk',
+      'Notebook':            'desk',
+      'Wall Map':            'desk',
+      'Desk Figurines':      'desk',
+      'Rubber Duck':         'desk',
+      'Office Chair':        'desk',
+      'Whiteboard':          'desk',
+      'Books':               'desk',
+      'Dog':                 'person',
+      'Cat':                 'person',
+      'Racing Simulator':    'person',
+      'Board Games':         'person',
+    };
+
+    const CSS = getComputedStyle(document.documentElement);
+    const PALETTE = {
+      tech:   CSS.getPropertyValue('--clr-tech').trim(),
+      bev:    CSS.getPropertyValue('--clr-bev').trim(),
+      desk:   CSS.getPropertyValue('--clr-desk').trim(),
+      input:  CSS.getPropertyValue('--clr-input').trim(),
+      person: CSS.getPropertyValue('--clr-person').trim(),
+      misc:   CSS.getPropertyValue('--clr-misc').trim(),
+    };
+
+    function nodeColor(id) {
+      return PALETTE[CLUSTER[id] || 'misc'];
+    }
+
+    fetch('/slides/api/object-cooccurrence')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('loading').style.display = 'none';
+        renderGraph(data);
+      })
+      .catch(err => {
+        document.getElementById('loading').textContent = 'Failed to load data.';
+        console.error(err);
+      });
+
+    function renderGraph({ nodes, links }) {
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+
+      const svg = d3.select('#graph')
+        .attr('width', W)
+        .attr('height', H);
+
+      const freqExtent = d3.extent(nodes, d => d.freq);
+      const R = d3.scaleSqrt()
+        .domain(freqExtent)
+        .range([W * 0.009, W * 0.028]);
+
+      const edgeExtent = d3.extent(links, d => d.value);
+      const strokeW = d3.scaleLinear().domain(edgeExtent).range([1.2, 8]);
+      const strokeA = d3.scaleLinear().domain(edgeExtent).range([0.15, 0.6]);
+
+      const sim = d3.forceSimulation(nodes)
+        .force('link', d3.forceLink(links).id(d => d.id)
+          .distance(d => {
+            const t = (d.value - edgeExtent[0]) / (edgeExtent[1] - edgeExtent[0] || 1);
+            return W * (0.22 - t * 0.08);
+          })
+          .strength(0.2))
+        .force('charge', d3.forceManyBody().strength(-W * 0.07))
+        .force('center', d3.forceCenter(W / 2, H / 2).strength(0.05))
+        .force('collide', d3.forceCollide().radius(d => R(d.freq) + W * 0.025))
+        .alphaDecay(0.014)
+        .velocityDecay(0.4);
+
+      const linkSel = svg.append('g')
+        .selectAll('line')
+        .data(links)
+        .join('line')
+          .attr('stroke', d => {
+            const sc = nodeColor(d.source.id || d.source);
+            const tc = nodeColor(d.target.id || d.target);
+            return sc === tc ? sc : '#777777';
+          })
+          .attr('stroke-width', d => strokeW(d.value))
+          .attr('stroke-opacity', d => strokeA(d.value))
+          .attr('stroke-linecap', 'round');
+
+      const nodeG = svg.append('g')
+        .selectAll('g')
+        .data(nodes)
+        .join('g')
+          .style('cursor', 'grab')
+          .call(d3.drag()
+            .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.25).restart(); d.fx = d.x; d.fy = d.y; })
+            .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
+            .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+
+      nodeG.append('circle')
+        .attr('r', d => R(d.freq))
+        .attr('fill', d => {
+          const c = d3.color(nodeColor(d.id));
+          c.opacity = 0.18;
+          return c.formatRgb();
+        })
+        .attr('stroke', d => nodeColor(d.id))
+        .attr('stroke-width', 1.5);
+
+      const freqQ2 = d3.quantile(nodes.map(n => n.freq).sort(d3.ascending), 0.4);
+      nodeG.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', d => R(d.freq) + W * 0.011)
+        .attr('font-size', d => {
+          const base  = W * 0.012;
+          const boost = (d.freq / freqExtent[1]) * W * 0.008;
+          return `${(base + boost).toFixed(1)}px`;
+        })
+        .attr('font-weight', d => d.freq >= freqQ2 ? '600' : '400')
+        .attr('fill', d => d.freq >= freqQ2 ? nodeColor(d.id) : '#aaaaaa')
+        .attr('letter-spacing', '0.01em')
+        .text(d => d.id)
+        .style('pointer-events', 'none');
+
+      const tooltip = document.getElementById('tooltip');
+      const ttName  = tooltip.querySelector('.tt-name');
+      const ttFreq  = tooltip.querySelector('.tt-freq');
+      const ttEdge  = tooltip.querySelector('.tt-edge');
+
+      const adj = {};
+      links.forEach(l => {
+        const s = l.source.id || l.source;
+        const t = l.target.id || l.target;
+        (adj[s] ||= []).push({ peer: t, value: l.value });
+        (adj[t] ||= []).push({ peer: s, value: l.value });
+      });
+
+      nodeG
+        .on('mouseenter', (evt, d) => {
+          const peers = (adj[d.id] || []).sort((a,b) => b.value - a.value).slice(0, 5);
+          ttName.textContent = d.id;
+          ttFreq.textContent = `Appears in ${d.freq} log entries`;
+          ttEdge.innerHTML = peers.length
+            ? `<span style="color:#bbb;font-size:1.4vw;text-transform:uppercase;letter-spacing:.05em">Frequently with</span><br>` +
+              peers.map(p =>
+                `<span style="color:#333">${p.peer}</span> <span style="color:#ccc">×${p.value}</span>`
+              ).join('<br>')
+            : '';
+          tooltip.style.opacity = '1';
+        })
+        .on('mousemove', evt => {
+          tooltip.style.left = `${evt.clientX + 16}px`;
+          tooltip.style.top  = `${evt.clientY - 16}px`;
+        })
+        .on('mouseleave', () => { tooltip.style.opacity = '0'; });
+
+      sim.on('tick', () => {
+        linkSel
+          .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+
+        nodeG.attr('transform', d =>
+          `translate(${
+            Math.max(R(d.freq), Math.min(W - R(d.freq), d.x))
+          },${
+            Math.max(R(d.freq), Math.min(H - R(d.freq), d.y))
+          })`
+        );
+      });
+
+      window.addEventListener('resize', () => {
+        const rect = document.getElementById('graph-container').getBoundingClientRect();
+        svg.attr('width', rect.width).attr('height', rect.height);
+        sim.force('center', d3.forceCenter(rect.width / 2, rect.height / 2));
+        sim.alpha(0.3).restart();
+      });
+
+      window.generateAIArt = function() {
+        if (document.body.classList.contains('ai-active')) return;
+        document.body.classList.add('ai-active');
+        document.getElementById('ai-loader').style.display = 'flex';
+        setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 850);
+        setTimeout(() => {
+          fetch('/slides/api/generate-object-art', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+              const img = document.getElementById('ai-image');
+              img.src = data.image_url;
+              img.onload = () => {
+                document.getElementById('ai-loader').style.opacity = '0';
+                setTimeout(() => {
+                  document.getElementById('ai-loader').style.display = 'none';
+                  img.classList.add('loaded');
+                }, 500);
+              };
+            });
+        }, 5000);
+      };
+    }
+  </script>
+
+</body>
+</html>

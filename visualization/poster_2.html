@@ -60,26 +60,32 @@ iframe {
     pointer-events: none;
 }
 
-.header-logo {
-    position: absolute;
-    top: 0in;
-    right: 0in;
-    width: 35%;
-    height: auto;
-    object-fit: contain;
-    z-index: 10;
-    pointer-events: none;
-}
 
 /* PhotoWall Section */
 .poster-sec-wall {
     display: flex;
     flex-direction: column;
     gap: 0;
-    height: 76in;
+    height: 61.5in;
     margin: 0 -1in;
     background: #fff;
     flex-shrink: 0;
+}
+
+/* Manga Section */
+.poster-sec-manga {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5in;
+    height: 14in;
+    flex-shrink: 0;
+}
+.poster-sec-manga img {
+    flex: 1;
+    height: 100%;
+    object-fit: cover;
+    border: 0.05in solid #111;
+    background: #fff;
 }
 
 </style>
@@ -87,12 +93,16 @@ iframe {
 <body>
     <div id="poster-wrapper">
         <div class="poster-container">
-            <!-- 绝对定位的插图 -->
-            <img src="/slides/assets/img/lobster_results.png" class="header-logo">
-
             <!-- 超大比例照片墙：合并为一个无缝的全尺寸画幅，以保证上下行距绝对连贯 -->
             <div class="poster-sec-wall">
                 <iframe src="/slides/slide-files/36_results_photowall.html?pgs=1&theme=light&fast=1"></iframe>
+            </div>
+
+            <!-- 底部漫画区域 -->
+            <div class="poster-sec-manga">
+                <img src="/slides/assets/img/manga/1.png">
+                <img src="/slides/assets/img/manga/2.png">
+                <img src="/slides/assets/img/manga/3.png">
             </div>
         </div>
     </div>

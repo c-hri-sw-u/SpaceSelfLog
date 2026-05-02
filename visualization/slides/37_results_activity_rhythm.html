@@ -336,13 +336,26 @@
       "Fitness & Well-being": { cls: "type-fitness", hex: ACTIVITY_THEME["Fitness & Well-being"] }
     };
 
+    let _slotStats = null;
+
+    function drawCharts() {
+      if (!_slotStats) return;
+      drawLineChart(_slotStats);
+      drawAreaChart(_slotStats);
+    }
+
+    window.addEventListener('resize', drawCharts);
+
     fetch('/slides/api/activity-rhythm')
       .then(res => res.json())
       .then(data => {
         renderHeatmap(data);
-        const slotStats = computeSlotStats(data);
-        drawLineChart(slotStats);
-        drawAreaChart(slotStats);
+        _slotStats = computeSlotStats(data);
+        function tryRender() {
+          if (window.innerWidth > 0) { drawCharts(); }
+          else { requestAnimationFrame(tryRender); }
+        }
+        requestAnimationFrame(tryRender);
       })
       .catch(err => console.error("Error fetching data:", err));
 

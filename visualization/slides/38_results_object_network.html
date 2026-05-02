@@ -430,7 +430,11 @@
       .then(r => r.json())
       .then(data => {
         document.getElementById('loading').style.display = 'none';
-        renderGraph(data);
+        function tryRender() {
+          if (window.innerWidth > 0) { renderGraph(data); }
+          else { requestAnimationFrame(tryRender); }
+        }
+        requestAnimationFrame(tryRender);
       })
       .catch(err => {
         document.getElementById('loading').textContent = 'Failed to load data.';

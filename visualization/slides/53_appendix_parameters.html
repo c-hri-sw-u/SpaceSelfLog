@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  color: #111111;
+  padding: 4vw 6vw;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.slide-container {
+  width: 100%;
+  max-height: 100%;
+}
+h1 {
+  font-size: 2.5vw;
+  font-weight: 700;
+  margin-bottom: 1.5vw;
+  color: #000000;
+  border-bottom: 2px solid #eaeaea;
+  padding-bottom: 0.5vw;
+}
+.content-columns {
+  column-count: 2;
+  column-gap: 4vw;
+}
+h2 {
+  font-size: 1vw;
+  font-weight: 700;
+  margin-top: 1.2vw;
+  margin-bottom: 0.5vw;
+  color: #222;
+  break-inside: avoid;
+}
+h2:first-child { margin-top: 0; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1vw;
+  break-inside: avoid;
+  font-size: 0.75vw;
+}
+th, td {
+  text-align: left;
+  padding: 0.4vw;
+  border-bottom: 1px solid #eee;
+}
+th {
+  font-weight: 600;
+  color: #555;
+  background: #fafafa;
+}
+td {
+  color: #222;
+}
+code {
+  font-family: 'Fira Code', monospace;
+  background: #f0f0f0;
+  padding: 0.1vw 0.3vw;
+  border-radius: 3px;
+  font-size: 0.7vw;
+}
+.loading {
+  font-size: 0.8vw;
+  color: #666;
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+  <div class="slide-container">
+    <h1>System Parameters</h1>
+    <div class="content-columns">
+      
+      <!-- Static iOS Parameters -->
+      <h2>Frame Capture (iOS)</h2>
+      <table>
+        <tr><th>Parameter</th><th>Active Value</th></tr>
+        <tr><td><code>captureMinInterval</code></td><td>2</td></tr>
+        <tr><td><code>captureMaxInterval</code></td><td>12</td></tr>
+        <tr><td><code>rampRatio</code></td><td>1.6</td></tr>
+      </table>
+
+      <h2>Trigger / IMU (iOS)</h2>
+      <table>
+        <tr><th>Parameter</th><th>Active Value</th></tr>
+        <tr><td><code>sustainedMotionThreshold</code></td><td>2</td></tr>
+        <tr><td><code>varianceHighThreshold</code></td><td>0.01</td></tr>
+        <tr><td><code>varianceLowThreshold</code></td><td>0.006</td></tr>
+      </table>
+
+      <h2>Audio / VAD (iOS)</h2>
+      <table>
+        <tr><th>Parameter</th><th>Active Value</th></tr>
+        <tr><td><code>vadSensitivity</code></td><td>High</td></tr>
+        <tr><td><code>transcriptionEnabled</code></td><td>true</td></tr>
+      </table>
+
+      <h2>Batch Boundary (iOS)</h2>
+      <table>
+        <tr><th>Parameter</th><th>Active Value</th></tr>
+        <tr><td><code>ssimThreshold</code></td><td>0.5</td></tr>
+        <tr><td><code>firstBatchWindow</code></td><td>60</td></tr>
+        <tr><td><code>batchMaxWindow</code></td><td>600</td></tr>
+      </table>
+
+      <h2>Frame Selection (iOS)</h2>
+      <table>
+        <tr><th>Parameter</th><th>Active Value</th></tr>
+        <tr><td><code>ssimDedupThreshold</code></td><td>0.75</td></tr>
+        <tr><td><code>kDensityPerMin</code></td><td>1</td></tr>
+        <tr><td><code>kMin</code></td><td>2</td></tr>
+        <tr><td><code>kMax</code></td><td>12</td></tr>
+        <tr><td><code>scoreThreshold</code></td><td>0.5</td></tr>
+      </table>
+
+      <!-- Dynamic Server Parameters -->
+      <h2>Server Analysis (Live Config)</h2>
+      <div id="liveParamsContainer">
+        <div class="loading">Fetching live config from /api/config...</div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    fetch('/api/config')
+      .then(r => r.json())
+      .then(config => {
+        const container = document.getElementById('liveParamsContainer');
+        container.innerHTML = '';
+        
+        const table = document.createElement('table');
+        const thead = document.createElement('thead');
+        thead.innerHTML = '<tr><th>Parameter Key</th><th>Current Live Value</th></tr>';
+        table.appendChild(thead);
+        
+        const tbody = document.createElement('tbody');
+        const ignoredKeys = ['prompt', 'incremental_prompt', 'consolidation_prompt', 'pattern_prompt', 'timeline_prompt'];
+        
+        Object.keys(config).sort().forEach(key => {
+          if (ignoredKeys.includes(key) || key.endsWith('_masked')) return;
+          
+          const tr = document.createElement('tr');
+          
+          const tdKey = document.createElement('td');
+          const codeKey = document.createElement('code');
+          codeKey.textContent = key;
+          tdKey.appendChild(codeKey);
+          
+          const tdVal = document.createElement('td');
+          let val = config[key];
+          
+          if (key.includes('api_key') || key.includes('token') || key.includes('password')) {
+            val = config[key + '_masked'] || '********';
+          }
+          
+          tdVal.textContent = (val === "" || val === null) ? "(empty)" : val;
+          
+          tr.appendChild(tdKey);
+          tr.appendChild(tdVal);
+          tbody.appendChild(tr);
+        });
+        
+        table.appendChild(tbody);
+        container.appendChild(table);
+      })
+      .catch(err => {
+        document.getElementById('liveParamsContainer').innerHTML = `<div class="loading" style="color:red">Failed to load live config: ${err}</div>`;
+      });
+  </script>
+</body>
+</html>

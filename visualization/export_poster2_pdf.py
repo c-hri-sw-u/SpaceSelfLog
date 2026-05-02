@@ -45,18 +45,22 @@ async def main():
             await page.wait_for_timeout(poll_interval_ms)
             elapsed += poll_interval_ms
             try:
-                result = await page.evaluate("""
-                    const iframe = document.querySelector('iframe');
-                    if (!iframe || !iframe.contentWindow) return { ready: false, loaded: 0, total: 0 };
-                    const win = iframe.contentWindow;
-                    const loaded = parseInt(win.document.getElementById('progress-count')?.innerText) || 0;
-                    const total  = parseInt(win.document.getElementById('total-count')?.innerText) || 0;
-                    return { ready: win.isCanvasReady === true, loaded, total };
+                # 通过 URL 匹配找到 iframe 对应的 Frame 对象
+                frame = page.frame(name="photowall-iframe") or \
+                        next((f for f in page.frames if "photowall" in f.url), None)
+                if frame is None:
+                    print(f"  ... iframe not found yet ({elapsed/1000:.0f}s)")
+                    continue
+                result = await frame.evaluate("""
+                    const loaded = parseInt(document.getElementById('progress-count')?.innerText) || 0;
+                    const total  = parseInt(document.getElementById('total-count')?.innerText) || 0;
+                    return { ready: typeof isCanvasReady !== 'undefined' && isCanvasReady === true, loaded, total };
                 """)
                 ready = result['ready']
                 loaded = result['loaded']
                 total = result['total']
-            except Exception:
+            except Exception as e:
+                print(f"  [poll error: {e}]")
                 ready, loaded, total = False, 0, 0
             if ready:
                 print(f"Canvas ready after ~{elapsed/1000:.0f}s!")

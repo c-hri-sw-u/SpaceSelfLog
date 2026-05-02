@@ -1,5 +1,6 @@
 import asyncio
 import io
+import sys
 from playwright.async_api import async_playwright
 from PIL import Image
 
@@ -7,8 +8,11 @@ URL = "http://localhost:8000/slides/"
 DPI = 300
 FIXED_PX_SCALE = 0.65  # 粒子/描边/字号缩放因子
 
+# Usage: uv run export_spread_pdf.py [--photowall]
+PHOTOWALL_ONLY = "--photowall" in sys.argv
+
 async def main():
-    output_path = "spreads_export.pdf"
+    output_path = "photowall_export.pdf" if PHOTOWALL_ONLY else "spreads_export.pdf"
 
     print("Launching browser...")
     async with async_playwright() as p:
@@ -34,179 +38,75 @@ async def main():
         print("Waiting for charts to settle...")
         await page.wait_for_timeout(5000)
 
-        print("Polling iframes for readiness (excluding photowall)...")
-        await page.wait_for_function("""
-            () => {
-                const iframes = document.querySelectorAll('.spread-page iframe');
-                if (iframes.length === 0) return true;
-                return Array.from(iframes).every(f => {
-                    // photowall will be polled separately after switching to fast=0
-                    if (f.src && f.src.includes('photowall')) return true;
-                    try {
-                        const w = f.contentWindow;
-                        return typeof w._slideReady === 'undefined' || w._slideReady === true;
-                    } catch(e) { return false; }
-                });
-            }
-        """, timeout=60000)
-
-        # ── 1.5 切换 photowall 为真实图片模式 ──
-        pw_count = await page.evaluate("""
-            let count = 0;
-            document.querySelectorAll('.spread-page iframe').forEach(f => {
-                if (f.src && f.src.includes('photowall')) {
-                    f.src = f.src.replace(/fast=[^&]*/, 'fast=0')
-                              + (f.src.includes('fast=') ? '' : '&fast=0');
-                    count++;
-                }
-            });
-            count;
-        """)
-        if pw_count > 0:
-            print(f"Switching {pw_count} photowall iframes to real-image mode...")
-            # 等 iframe 重新加载
+        # 1.5 轮询所有 iframe（含 photowall）的 _slideReady
+        print("Polling iframes for readiness...")
+        if PHOTOWALL_ONLY:
+            print("  (photowall-only mode: skipping non-photowall iframes)")
+        pw_elapsed = 0
+        while pw_elapsed < 600:  # 最多等 10 分钟
             await page.wait_for_timeout(5000)
-
-            # 用 Playwright frames API 轮询（绕过 contentDocument 跨域问题）
-            pw_timeout = 600  # 最多等 10 分钟
-            pw_elapsed = 0
-            pw_ready = False
-            while pw_elapsed < pw_timeout:
-                await page.wait_for_timeout(5000)
-                pw_elapsed += 5
-                try:
-                    pw_frames = [f for f in page.frames
-                                 if "photowall" in f.url and "fast=0" in f.url]
-                    done = 0
-                    total_loaded = 0
-                    total_images = 0
-                    for fr in pw_frames:
-                        try:
-                            r = await fr.evaluate("""() => {
-                                const loaded = parseInt(document.getElementById('progress-count')?.innerText) || 0;
-                                const total  = parseInt(document.getElementById('total-count')?.innerText) || 0;
-                                const overlay = document.getElementById('loading-overlay');
-                                const ready = overlay
-                                    ? (overlay.style.display === 'none' || overlay.style.opacity === '0')
-                                    : false;
-                                return { ready, loaded, total };
-                            }""")
-                            if r['ready']:
-                                done += 1
-                            total_loaded += r['loaded']
-                            total_images += r['total']
-                        except Exception:
-                            pass
-                    pct = f" ({total_loaded}/{total_images})" if total_images > 0 else ""
-                    print(f"  Photowall: {done}/{len(pw_frames)} pages done{pct} ({pw_elapsed}s)")
-                    if done >= len(pw_frames) and len(pw_frames) > 0:
-                        pw_ready = True
-                        break
-                except Exception as e:
-                    print(f"  Photowall: polling error ({pw_elapsed}s) {e}")
-
-            if not pw_ready:
-                print(f"WARNING: Photowall not ready after {pw_timeout}s, proceeding...")
-
-            # 重新轮询 photowall _slideReady（通过 Playwright frames）
-            print("Re-polling photowall iframes for _slideReady...")
-            pw_elapsed2 = 0
-            while pw_elapsed2 < 120:
-                await page.wait_for_timeout(5000)
-                pw_elapsed2 += 5
-                pw_frames = [f for f in page.frames
-                             if "photowall" in f.url and "fast=0" in f.url]
-                all_ready = True
-                for fr in pw_frames:
-                    try:
-                        r = await fr.evaluate("() => typeof window._slideReady === 'undefined' || window._slideReady === true")
-                        if not r:
-                            all_ready = False
-                    except Exception:
-                        all_ready = False
-                if all_ready:
-                    print(f"  All photowall iframes ready ({pw_elapsed2}s)")
-                    break
-                print(f"  ... waiting for _slideReady ({pw_elapsed2}s)")
-            else:
-                print("WARNING: photowall _slideReady not all true, proceeding...")
-
-            # 等待 dots 放置 + 手动触发 overlay 渲染
-            print("Waiting for dots to be placed and hi-res overlays to render...")
-            await page.wait_for_timeout(5000)  # 等待 setInterval 放置 dots
-            pw_frames = [f for f in page.frames
-                         if "photowall" in f.url and "fast=0" in f.url]
+            pw_elapsed += 5
+            pw_frames = [f for f in page.frames if f != page.mainFrame]
+            if PHOTOWALL_ONLY:
+                pw_frames = [f for f in pw_frames if "photowall" in f.url]
+            all_ready = True
             for fr in pw_frames:
                 try:
-                    state = await fr.evaluate("""() => {
-                        return {
-                            isCanvasReady: typeof isCanvasReady !== 'undefined' ? isCanvasReady : 'undef',
-                            hoverIndices: typeof hoverIndices !== 'undefined' ? JSON.stringify(hoverIndices) : 'undef',
-                            hiResImages: typeof hiResImages !== 'undefined' ? hiResImages.map(x => x !== null) : 'undef',
-                            layoutPoses: typeof cachedLayoutPoses !== 'undefined' ? cachedLayoutPoses.length : 'undef',
-                            loadedBitmaps: typeof loadedBitmaps !== 'undefined' ? loadedBitmaps.size : 'undef',
-                            filteredImages: typeof FILTERED_IMAGES !== 'undefined' ? FILTERED_IMAGES.length : 'undef',
-                            pageCount: typeof PAGE_COUNT !== 'undefined' ? PAGE_COUNT : 'undef',
-                        };
-                    }""")
-                    print(f"  Frame state: {state}")
+                    r = await fr.evaluate(
+                        "() => typeof window._slideReady === 'undefined' || window._slideReady === true",
+                        timeout=5000
+                    )
+                    if not r:
+                        all_ready = False
+                        break
+                except Exception:
+                    all_ready = False
+                    break
+            if all_ready:
+                print(f"  All iframes ready ({pw_elapsed}s)")
+                break
+            # 打印进度
+            pw_done = 0
+            for fr in pw_frames:
+                try:
+                    r = await fr.evaluate(
+                        "() => typeof window._slideReady === 'undefined' || window._slideReady === true"
+                    )
+                    if r: pw_done += 1
+                except Exception:
+                    pass
+            print(f"  ... {pw_done}/{len(pw_frames)} ready ({pw_elapsed}s)")
+        else:
+            print("WARNING: Not all iframes ready after 600s, proceeding...")
 
-                    # 手动加载 hi-res 并渲染 overlay
-                    await fr.evaluate("""async () => {
-                        if (!isCanvasReady || cachedLayoutPoses.length === 0) return;
-                        while (hiResImages.length < 2) { hiResImages.push(null); hoverIndices.push(-1); }
-
-                        // 确认 hoverIndices 指向有效图片
-                        for (let di = 0; di < 2; di++) {
-                            const idx = hoverIndices[di];
-                            if (idx === -1 || idx >= FILTERED_IMAGES.length) continue;
-                            const url = FILTERED_IMAGES[idx].url;
-                            // 检查 loadedBitmaps 是否有这张图
-                            if (!loadedBitmaps.has(url)) {
-                                console.warn('Missing bitmap for index', idx, url);
-                            }
-                        }
-
-                        // 手动加载 hi-res 图片（中心放大图）
-                        const loadPromises = [];
-                        for (let di = 0; di < 2; di++) {
-                            const idx = hoverIndices[di];
-                            if (idx === -1 || hiResImages[di]) continue;
-                            const img = new Image();
-                            const p = new Promise((resolve) => {
-                                img.onload = () => {
-                                    if (hoverIndices[di] === idx) {
-                                        hiResImages[di] = img;
-                                    }
-                                    resolve();
-                                };
-                                img.onerror = () => {
-                                    console.warn('hi-res load failed for index', idx);
-                                    resolve();
-                                };
-                            });
-                            img.src = FILTERED_IMAGES[idx].url.replace('thumbnails-data','frames-data');
-                            loadPromises.push(p);
-                        }
-                        await Promise.all(loadPromises);
-                        renderAllOverlays();
-                    }""")
-                    # 检查 overlay 是否有内容
-                    check = await fr.evaluate("""() => {
-                        const oc = document.getElementById('overlay');
-                        if (!oc) return 'no overlay canvas';
-                        const ctx = oc.getContext('2d');
-                        const data = ctx.getImageData(0, 0, oc.width, oc.height).data;
-                        let nonZero = 0;
-                        for (let i = 3; i < data.length; i += 4) {
-                            if (data[i] > 0) nonZero++;
-                        }
-                        return {canvasW: oc.width, canvasH: oc.height, nonZeroPixels: nonZero, hiResLoaded: hiResImages.map(x => x !== null)};
-                    }""")
-                    print(f"  Overlay check: {check}")
-                except Exception as e:
-                    print(f"  WARNING: hi-res overlay failed: {e}")
-            await page.wait_for_timeout(3000)
+        # 1.6 等 photowall overlay dots + hi-res 放大图
+        print("Waiting for photowall overlays to render...")
+        await page.wait_for_timeout(5000)
+        pw_frames = [f for f in page.frames if "photowall" in f.url]
+        for fr in pw_frames:
+            try:
+                await fr.evaluate("""async () => {
+                    if (!isCanvasReady || cachedLayoutPoses.length === 0) return;
+                    while (hiResImages.length < 2) { hiResImages.push(null); hoverIndices.push(-1); }
+                    // 手动加载 hi-res 图片
+                    const loadPromises = [];
+                    for (let di = 0; di < 2; di++) {
+                        const idx = hoverIndices[di];
+                        if (idx === -1 || hiResImages[di]) continue;
+                        const img = new Image();
+                        const p = new Promise((resolve) => {
+                            img.onload = () => { if (hoverIndices[di] === idx) hiResImages[di] = img; resolve(); };
+                            img.onerror = () => resolve();
+                        });
+                        img.src = FILTERED_IMAGES[idx].url.replace('thumbnails-data','frames-data');
+                        loadPromises.push(p);
+                    }
+                    await Promise.all(loadPromises);
+                    renderAllOverlays();
+                }""")
+            except Exception as e:
+                print(f"  WARNING: overlay render failed: {e}")
+        await page.wait_for_timeout(3000)
 
         # 2. 冻结动画 + 清理视觉元素
         print("Freezing animations & cleaning visuals...")
@@ -264,6 +164,17 @@ async def main():
         # 3. 逐页截图
         print("Capturing pages...")
         spread_pages = await page.query_selector_all('.spread-page:not(.empty)')
+        if PHOTOWALL_ONLY:
+            # 只保留 photowall 页面
+            filtered = []
+            for sp in spread_pages:
+                iframe = await sp.query_selector('iframe')
+                if iframe:
+                    src = await iframe.evaluate("el => el.src")
+                    if "photowall" in src:
+                        filtered.append(sp)
+            print(f"  Filtered to {len(filtered)} photowall pages (from {len(spread_pages)} total)")
+            spread_pages = filtered
         screenshots = []
 
         for i, sp in enumerate(spread_pages):

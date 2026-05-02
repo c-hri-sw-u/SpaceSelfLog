@@ -268,7 +268,7 @@
     const IS_PAGED    = PAGE_COUNT > 1;
     const IS_LEADER   = !IS_PAGED || PAGE_INDEX === 0;  // only pg=0 shows the controls
     const THEME_LIGHT = _urlParams.get('theme') === 'light';
-    const FAST_MODE   = _urlParams.get('fast') !== '0';  // default ON; add ?fast=0 to load real photos
+    const FAST_MODE   = false;  // always load real photos
     const HALF        = _urlParams.get('half');  // 'left' or 'right': render 2× wide, clip to one half
 
     if (HALF) {

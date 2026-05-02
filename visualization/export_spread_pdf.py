@@ -281,6 +281,8 @@ async def main():
             try:
                 await fr.evaluate("""() => {
                     window.removeEventListener('resize', resizeCanvas);
+                    // Hide yellow dots
+                    document.querySelectorAll('.fake-cursor-dot').forEach(d => d.classList.remove('visible'));
                 }""")
             except Exception:
                 pass

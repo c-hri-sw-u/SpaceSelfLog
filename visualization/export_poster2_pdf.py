@@ -98,18 +98,18 @@ async def main():
         if not ready:
             print(f"WARNING: Canvas not ready after {timeout_ms/1000:.0f}s, proceeding anyway...")
 
-        # 在 iframe 内手动放置 8 个 hi-res 放大圆点（绕过 PAGE_COUNT < 2 的限制）
+        # 在 iframe 内手动放置 12 个 hi-res 放大圆点（绕过 PAGE_COUNT < 2 的限制）
         print("Placing hi-res zoom dots in iframe...")
         try:
             frame = next((f for f in page.frames if "photowall" in f.url), None)
             if frame:
-                # 先 patch renderAllOverlays 支持 8 个 dock（原版硬编码 di < 2）
+                # 先 patch renderAllOverlays 支持 12 个 dock（原版硬编码 di < 2）
                 await frame.evaluate("""() => {
                     renderAllOverlays = function() {
                         const rect = innerDiv.getBoundingClientRect();
                         const bs = rect.width / 1600;
                         oCtx.save(); oCtx.setTransform(1,0,0,1,0,0); oCtx.clearRect(0,0,overlayCanvas.width,overlayCanvas.height); oCtx.restore();
-                        for (let di = 0; di < 8; di++) {
+                        for (let di = 0; di < 12; di++) {
                             const imgIdx = hoverIndices[di];
                             if (imgIdx === -1) continue;
                             for (const it of buildDock(imgIdx, rect)) {
@@ -134,23 +134,33 @@ async def main():
                         }
                     };
                 }""")
-                # 逐个触发 hi-res 加载
+                # 从图片墙中随机选 4 个高度层，每层放 2 个点（共 12 个）
                 await frame.evaluate("""async () => {
                     if (typeof cachedLayoutPoses === 'undefined' || cachedLayoutPoses.length === 0) return;
                     const N = cachedLayoutPoses.length;
-                    const indices = [
-                        Math.floor(N * 0.05 + Math.random() * N * 0.04),
-                        Math.floor(N * 0.16 + Math.random() * N * 0.04),
-                        Math.floor(N * 0.27 + Math.random() * N * 0.04),
-                        Math.floor(N * 0.38 + Math.random() * N * 0.04),
-                        Math.floor(N * 0.49 + Math.random() * N * 0.04),
-                        Math.floor(N * 0.60 + Math.random() * N * 0.04),
-                        Math.floor(N * 0.73 + Math.random() * N * 0.04),
-                        Math.floor(N * 0.88 + Math.random() * N * 0.04),
-                    ];
-                    while (hiResImages.length < 8) { hiResImages.push(null); hoverIndices.push(-1); }
-                    for (let di = 0; di < 8; di++) {
-                        const pos = cachedLayoutPoses[Math.min(indices[di], N-1)];
+                    // 按 Y 坐标分桶，随机选 4 个桶，每桶 2 个点
+                    const rows = {};
+                    const rowH = cachedH * 4;
+                    cachedLayoutPoses.forEach((p, i) => {
+                        const row = Math.floor((p.y + cachedOffsetY) / rowH);
+                        if (!rows[row]) rows[row] = [];
+                        rows[row].push(i);
+                    });
+                    const allRows = Object.keys(rows).map(Number).sort((a,b) => a - b);
+                    // 随机选 4 行
+                    const shuffled = allRows.sort(() => Math.random() - 0.5);
+                    const picked = shuffled.slice(0, 4);
+                    const indices = [];
+                    for (const r of picked) {
+                        const pool = rows[r];
+                        const i1 = Math.floor(Math.random() * pool.length);
+                        let i2 = Math.floor(Math.random() * pool.length);
+                        while (i2 === i1 && pool.length > 1) i2 = Math.floor(Math.random() * pool.length);
+                        indices.push(pool[i1], pool[i2]);
+                    }
+                    while (hiResImages.length < 12) { hiResImages.push(null); hoverIndices.push(-1); }
+                    for (let di = 0; di < 12; di++) {
+                        const pos = cachedLayoutPoses[indices[di]];
                         const px = pos.x + cachedW / 2;
                         const py = pos.y + cachedOffsetY + cachedH / 2;
                         applyHoverAt(px, py, di);

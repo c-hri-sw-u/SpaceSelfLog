@@ -67,10 +67,13 @@ async def main():
                         pw_done += 1
                     else:
                         all_ready = False
+                        tag = fr.url.split('?')[0].split('/').pop()
+                        print(f"    NOT ready: {tag} | loaded={r['loaded']}/{r['total']} overlayHidden={r['overlayHidden']}")
                     total_loaded += r.get('loaded', 0)
                     total_images += r.get('total', 0)
-                except Exception:
+                except Exception as e:
                     all_ready = False
+                    print(f"    NOT ready: {fr.url[:80]}... (error: {e})")
             pct = f" ({total_loaded}/{total_images})" if total_images > 0 else ""
             print(f"  ... {pw_done}/{len(pw_frames)} ready{pct} ({pw_elapsed}s)")
             if all_ready:

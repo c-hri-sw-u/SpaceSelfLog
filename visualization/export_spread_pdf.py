@@ -34,19 +34,21 @@ async def main():
         print("Waiting for charts to settle...")
         await page.wait_for_timeout(5000)
 
-        print("Polling iframes for readiness...")
+        print("Polling iframes for readiness (excluding photowall)...")
         await page.wait_for_function("""
             () => {
                 const iframes = document.querySelectorAll('.spread-page iframe');
                 if (iframes.length === 0) return true;
                 return Array.from(iframes).every(f => {
+                    // photowall will be polled separately after switching to fast=0
+                    if (f.src && f.src.includes('photowall')) return true;
                     try {
                         const w = f.contentWindow;
                         return typeof w._slideReady === 'undefined' || w._slideReady === true;
                     } catch(e) { return false; }
                 });
             }
-        """, timeout=30000)
+        """, timeout=60000)
 
         # ── 1.5 切换 photowall 为真实图片模式 ──
         pw_count = await page.evaluate("""

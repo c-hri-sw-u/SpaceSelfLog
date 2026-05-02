@@ -103,9 +103,45 @@ async def main():
         try:
             frame = next((f for f in page.frames if "photowall" in f.url), None)
             if frame:
-                # 先 patch renderAllOverlays 支持 N 个 dock（原版硬编码 di < 2）
+                # 先放 12 个点，扩展 hoverIndices/hiResImages
+                await frame.evaluate("""async () => {
+                    if (typeof cachedLayoutPoses === 'undefined' || cachedLayoutPoses.length === 0) return;
+                    const N = cachedLayoutPoses.length;
+                    // 8 行，均匀分布
+                    const bases = [
+                        Math.floor(N * 0.05 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.16 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.27 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.38 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.49 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.60 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.73 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.88 + Math.random() * N * 0.04),
+                    ];
+                    // 从这 8 行中随机挑 4 行，每行再加 1 个（选附近的另一张图）
+                    const extra = [0,1,2,3,4,5,6,7].sort(() => Math.random() - 0.5).slice(0, 4);
+                    const indices = [...bases];
+                    for (const row of extra) {
+                        const center = bases[row];
+                        const lo = Math.max(0, center - 50);
+                        const hi = Math.min(N - 1, center + 50);
+                        let candidate;
+                        do { candidate = lo + Math.floor(Math.random() * (hi - lo + 1)); }
+                        while (candidate === center && (hi - lo) > 0);
+                        indices.push(candidate);
+                    }
+                    while (hiResImages.length < indices.length) { hiResImages.push(null); hoverIndices.push(-1); }
+                    for (let di = 0; di < indices.length; di++) {
+                        const pos = cachedLayoutPoses[indices[di]];
+                        const px = pos.x + cachedW / 2;
+                        const py = pos.y + cachedOffsetY + cachedH / 2;
+                        applyHoverAt(px, py, di);
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+                }""")
+                # 放完点后 patch renderAllOverlays（此时 hoverIndices 已扩展到 12）
                 await frame.evaluate("""() => {
-                    const DOCK_COUNT = hoverIndices.length || 12;
+                    const DOCK_COUNT = hoverIndices.length;
                     renderAllOverlays = function() {
                         const rect = innerDiv.getBoundingClientRect();
                         const bs = rect.width / 1600;
@@ -134,43 +170,6 @@ async def main():
                             }
                         }
                     };
-                }""")
-                # 8 行各 1 个 + 从中随机挑 4 行各加 1 个 = 12 个点
-                await frame.evaluate("""async () => {
-                    if (typeof cachedLayoutPoses === 'undefined' || cachedLayoutPoses.length === 0) return;
-                    const N = cachedLayoutPoses.length;
-                    // 8 行，均匀分布
-                    const bases = [
-                        Math.floor(N * 0.05 + Math.random() * N * 0.04),
-                        Math.floor(N * 0.16 + Math.random() * N * 0.04),
-                        Math.floor(N * 0.27 + Math.random() * N * 0.04),
-                        Math.floor(N * 0.38 + Math.random() * N * 0.04),
-                        Math.floor(N * 0.49 + Math.random() * N * 0.04),
-                        Math.floor(N * 0.60 + Math.random() * N * 0.04),
-                        Math.floor(N * 0.73 + Math.random() * N * 0.04),
-                        Math.floor(N * 0.88 + Math.random() * N * 0.04),
-                    ];
-                    // 从这 8 行中随机挑 4 行，每行再加 1 个（选附近的另一张图）
-                    const extra = [0,1,2,3,4,5,6,7].sort(() => Math.random() - 0.5).slice(0, 4);
-                    const indices = [...bases];
-                    for (const row of extra) {
-                        const center = bases[row];
-                        // 在中心附近 ±50 张中随机选一张不同的
-                        const lo = Math.max(0, center - 50);
-                        const hi = Math.min(N - 1, center + 50);
-                        let candidate;
-                        do { candidate = lo + Math.floor(Math.random() * (hi - lo + 1)); }
-                        while (candidate === center && (hi - lo) > 0);
-                        indices.push(candidate);
-                    }
-                    while (hiResImages.length < indices.length) { hiResImages.push(null); hoverIndices.push(-1); }
-                    for (let di = 0; di < indices.length; di++) {
-                        const pos = cachedLayoutPoses[indices[di]];
-                        const px = pos.x + cachedW / 2;
-                        const py = pos.y + cachedOffsetY + cachedH / 2;
-                        applyHoverAt(px, py, di);
-                        await new Promise(r => setTimeout(r, 2000));
-                    }
                 }""")
                 print("Waiting for hi-res images to finish loading...")
                 await page.wait_for_timeout(15_000)

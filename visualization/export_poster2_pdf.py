@@ -45,17 +45,24 @@ async def main():
             await page.wait_for_timeout(poll_interval_ms)
             elapsed += poll_interval_ms
             try:
-                ready = await page.evaluate("""
+                result = await page.evaluate("""
                     const iframe = document.querySelector('iframe');
-                    if (!iframe || !iframe.contentWindow) return false;
-                    return iframe.contentWindow.isCanvasReady === true;
+                    if (!iframe || !iframe.contentWindow) return { ready: false, loaded: 0, total: 0 };
+                    const win = iframe.contentWindow;
+                    const loaded = parseInt(win.document.getElementById('progress-count')?.innerText) || 0;
+                    const total  = parseInt(win.document.getElementById('total-count')?.innerText) || 0;
+                    return { ready: win.isCanvasReady === true, loaded, total };
                 """)
+                ready = result['ready']
+                loaded = result['loaded']
+                total = result['total']
             except Exception:
-                ready = False
+                ready, loaded, total = False, 0, 0
             if ready:
                 print(f"Canvas ready after ~{elapsed/1000:.0f}s!")
                 break
-            print(f"  ... still loading ({elapsed/1000:.0f}s)")
+            pct = f" ({loaded}/{total})" if total > 0 else ""
+            print(f"  ... loading{pct} ({elapsed/1000:.0f}s)")
 
         if not ready:
             print(f"WARNING: Canvas not ready after {timeout_ms/1000:.0f}s, proceeding anyway...")

@@ -437,9 +437,18 @@
         }
 
         if (ALL_IMAGES.length === 0) {
-          const res = await fetch('/slides/api/frames');
-          const data = await res.json();
-          ALL_IMAGES = data.images || [];
+          // Retry fetch up to 5 times (connection pool may be busy)
+          for (let attempt = 0; attempt < 5; attempt++) {
+            try {
+              const res = await fetch('/slides/api/frames');
+              const data = await res.json();
+              ALL_IMAGES = data.images || [];
+              if (ALL_IMAGES.length > 0) break;
+            } catch(e) {
+              if (attempt < 4) await new Promise(r => setTimeout(r, 3000));
+              else throw e;
+            }
+          }
           // Cache for same-session re-navigation
           try { sessionStorage.setItem(_CACHE_KEY, JSON.stringify(ALL_IMAGES)); } catch(e) {}
         }

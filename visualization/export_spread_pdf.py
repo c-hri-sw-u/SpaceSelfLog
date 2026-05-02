@@ -292,8 +292,33 @@ async def main():
                 await fr.evaluate("""async () => {
                     if (typeof cachedLayoutPoses === 'undefined' || cachedLayoutPoses.length === 0) return;
                     const N = cachedLayoutPoses.length;
-                    const i1 = Math.floor(N * 0.2 + Math.random() * N * 0.1);
-                    const i2 = Math.floor(N * 0.6 + Math.random() * N * 0.15);
+                    const W = innerDiv.getBoundingClientRect().width;
+                    const H = innerDiv.getBoundingClientRect().height;
+                    // Pick indices whose positions are away from edges and center seam
+                    // Safe zone: x in [15%, 42%] or [58%, 85%] of W, y in [20%, 80%] of H
+                    const safeCandidates = [];
+                    for (let i = 0; i < N; i++) {
+                        const pos = cachedLayoutPoses[i];
+                        const px = pos.x + cachedW / 2;
+                        const py = pos.y + cachedOffsetY + cachedH / 2;
+                        const xRatio = px / W;
+                        const yRatio = py / H;
+                        const xSafe = (xRatio >= 0.15 && xRatio <= 0.42) || (xRatio >= 0.58 && xRatio <= 0.85);
+                        const ySafe = yRatio >= 0.2 && yRatio <= 0.8;
+                        if (xSafe && ySafe) safeCandidates.push(i);
+                    }
+                    // Pick 2 well-separated candidates
+                    let i1, i2;
+                    if (safeCandidates.length >= 2) {
+                        // Pick i1 from first half, i2 from second half
+                        const mid = Math.floor(safeCandidates.length / 2);
+                        i1 = safeCandidates[Math.floor(Math.random() * mid)];
+                        i2 = safeCandidates[mid + Math.floor(Math.random() * (safeCandidates.length - mid))];
+                    } else {
+                        // Fallback
+                        i1 = Math.floor(N * 0.25);
+                        i2 = Math.floor(N * 0.65);
+                    }
                     while (hiResImages.length < 2) { hiResImages.push(null); hoverIndices.push(-1); }
                     for (let di = 0; di < 2; di++) {
                         const idx = di === 0 ? i1 : i2;

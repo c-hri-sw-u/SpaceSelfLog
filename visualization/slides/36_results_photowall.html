@@ -742,19 +742,7 @@
       }
       ctx.globalAlpha = 1.0;
 
-      // ── Page indicator (paged mode only) ──────────────────────
-      if (IS_PAGED) {
-        const baseScale = W / 1600;
-        const label = `${PAGE_INDEX + 1} / ${PAGE_COUNT}`;
-        const fs = baseScale * 11;
-        ctx.font = `500 ${fs}px 'Roboto', sans-serif`;
-        ctx.globalAlpha = 0.45;
-        ctx.fillStyle = THEME_LIGHT ? '#000000' : '#ffffff';
-        ctx.textAlign = 'right';
-        ctx.fillText(label, W - baseScale * 12, rect.height - baseScale * 10);
-        ctx.textAlign = 'left';
-        ctx.globalAlpha = 1.0;
-      }
+      // ── Page indicator hidden in export mode ──
 
       // Save metric state for overlay hit detection
       cachedLayoutPoses = layout.poses;

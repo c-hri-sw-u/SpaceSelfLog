@@ -133,23 +133,34 @@ async def main():
 
             # 等待 hi-res 放大图片加载完成
             print("Waiting for hi-res zoom images to load...")
-            await page.wait_for_timeout(10000)  # 等待 applyHoverAt 触发加载
+            await page.wait_for_timeout(15000)  # 等待 dots 放置 + hi-res 开始加载
             pw_frames = [f for f in page.frames
                          if "photowall" in f.url and "fast=0" in f.url]
             for fr in pw_frames:
                 try:
-                    await fr.evaluate("""async () => {
+                    result = await fr.evaluate("""async () => {
+                        // 确认 dots 是否已放置
+                        const state = {
+                            isCanvasReady: typeof isCanvasReady !== 'undefined' ? isCanvasReady : 'undef',
+                            hoverIndices: typeof hoverIndices !== 'undefined' ? JSON.stringify(hoverIndices) : 'undef',
+                            hiResImages: typeof hiResImages !== 'undefined' ? hiResImages.map(x => x !== null) : 'undef',
+                            layoutPoses: typeof cachedLayoutPoses !== 'undefined' ? cachedLayoutPoses.length : 'undef',
+                            filteredImages: typeof FILTERED_IMAGES !== 'undefined' ? FILTERED_IMAGES.length : 'undef',
+                            loadedBitmaps: typeof loadedBitmaps !== 'undefined' ? loadedBitmaps.size : 'undef',
+                            pageCount: typeof PAGE_COUNT !== 'undefined' ? PAGE_COUNT : 'undef',
+                        };
                         // 等所有 hiResImages 加完
-                        for (let i = 0; i < 30; i++) {
-                            const allLoaded = hiResImages.every(img => img !== null);
-                            if (allLoaded) break;
+                        for (let i = 0; i < 60; i++) {
+                            if (typeof hiResImages !== 'undefined' && hiResImages.every(img => img !== null)) break;
                             await new Promise(r => setTimeout(r, 1000));
                         }
                         if (typeof renderAllOverlays === 'function') renderAllOverlays();
+                        return state;
                     }""")
+                    print(f"  Frame state: {result}")
                 except Exception as e:
                     print(f"  WARNING: hi-res poll failed: {e}")
-            await page.wait_for_timeout(2000)
+            await page.wait_for_timeout(3000)
 
         # 2. 冻结动画 + 清理视觉元素
         print("Freezing animations & cleaning visuals...")

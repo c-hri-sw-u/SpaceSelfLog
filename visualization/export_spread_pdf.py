@@ -75,25 +75,23 @@ async def main():
             });
         """)
 
-        # 将页面结构修改为单页垂直排列，去除红色的中间参考线
-        await page.evaluate("""
+        # ── Step 1: 修改页面结构为单页垂直排列 ──
+        await page.evaluate(“””
             // 隐藏工具栏和侧边栏
             document.querySelectorAll('#toolbar, #meta-bar, #sidebar, #script-sidebar, .nav-arrow, #slide').forEach(el => {
                 if (el) el.style.display = 'none';
             });
 
-            // 1. 去掉中间的半透明红色矩形 (通过注入 CSS 强制隐藏伪元素)
+            // 1. 去掉中间的半透明红色矩形
             const style = document.createElement('style');
-            style.innerHTML = `
-                .spread-page::after { display: none !important; }
-            `;
+            style.innerHTML = `.spread-page::after { display: none !important; }`;
             document.head.appendChild(style);
 
             // 2. 解放页面滚动容器
             document.body.style.height = 'auto';
             document.body.style.overflow = 'visible';
             document.body.style.background = '#1a1a1a';
-            
+
             const bodyRow = document.getElementById('body-row');
             if (bodyRow) {
                 bodyRow.style.height = 'auto';
@@ -118,48 +116,59 @@ async def main():
                 container.style.display = 'block';
             }
 
-            // 3. 移除在 Spread 模式中为了对齐左右页而自动生成的“空白占位页”（导致了开头的黑页）
+            // 3. 移除空白占位页
             document.querySelectorAll('.spread-page.empty').forEach(el => el.remove());
 
-            // 4. 将原先并排的 spread-row 改为垂直堆叠，打破左右排版
-            const rows = document.querySelectorAll('.spread-row');
-            rows.forEach(r => {
+            // 4. 将 spread-row 改为垂直堆叠
+            document.querySelectorAll('.spread-row').forEach(r => {
                 r.style.display = 'block';
                 r.style.marginBottom = '0px';
                 r.style.maxWidth = '100%';
             });
-            
-            // 5. 对每一个子页面(单页)设置独立的硬分页
-            const pages = document.querySelectorAll('.spread-page');
-            pages.forEach(p => {
+
+            // 5. 每个子页面撑满宽度 + 硬分页
+            document.querySelectorAll('.spread-page').forEach(p => {
                 p.style.boxShadow = 'none';
                 p.style.border = 'none';
-                p.style.width = '100%';  // 强制撑满纸张宽度
+                p.style.width = '100%';
                 p.style.pageBreakInside = 'avoid';
                 p.style.breakInside = 'avoid';
                 p.style.pageBreakAfter = 'always';
             });
 
-            // 6. 遍历所有 iframe 内部，强行去掉所有的阴影（打印 PDF 时阴影常会因缩放 bug 变得巨大）
+            // 6. 去掉所有阴影
             const removeShadows = (doc) => {
                 if (!doc) return;
-                const style = doc.createElement('style');
-                style.innerHTML = `
-                    * {
-                        box-shadow: none !important;
-                        text-shadow: none !important;
-                    }
-                `;
-                doc.head.appendChild(style);
+                const s = doc.createElement('style');
+                s.innerHTML = `* { box-shadow: none !important; text-shadow: none !important; }`;
+                doc.head.appendChild(s);
             };
-
             removeShadows(document);
             document.querySelectorAll('iframe').forEach(iframe => {
-                try {
-                    removeShadows(iframe.contentDocument);
-                } catch(e) {}
+                try { removeShadows(iframe.contentDocument); } catch(e) {}
             });
-        """)
+        “””)
+
+        # ── Step 2: 等浏览器完成 iframe 重新布局 ──
+        # 关键：必须让浏览器有机会重新计算 iframe 尺寸，
+        # 否则 iframe 内的 window.innerWidth/innerHeight 还是旧的 spread 模式小尺寸
+        print(“Waiting for browser to re-layout iframes...”)
+        await page.evaluate(“””
+            new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+        “””)
+        await page.wait_for_timeout(500)
+
+        # ── Step 3: 现在 iframe 尺寸正确了，触发 resize 让 D3/Canvas 重渲染 ──
+        print(“Triggering iframe resize events for re-rendering...”)
+        await page.evaluate(“””
+            document.querySelectorAll('.spread-page iframe').forEach(iframe => {
+                try { iframe.contentWindow.dispatchEvent(new Event('resize')); } catch(e) {}
+            });
+        “””)
+
+        # 等待重渲染完成
+        print(“Waiting for charts to re-render at new dimensions...”)
+        await page.wait_for_timeout(3000)
         
         # 4. 导出 PDF
         # 指定输出为单页的 Letter 尺寸 (11 x 8.5 横排)

@@ -48,6 +48,77 @@ async def main():
             }
         """, timeout=30000)
 
+        # ── 1.5 切换 photowall 为真实图片模式 ──
+        pw_count = await page.evaluate("""
+            let count = 0;
+            document.querySelectorAll('.spread-page iframe').forEach(f => {
+                if (f.src && f.src.includes('photowall')) {
+                    f.src = f.src.replace(/fast=[^&]*/, 'fast=0')
+                              + (f.src.includes('fast=') ? '' : '&fast=0');
+                    count++;
+                }
+            });
+            count;
+        """)
+        if pw_count > 0:
+            print(f"Switching {pw_count} photowall iframes to real-image mode...")
+            # 等 iframe 重新加载
+            await page.wait_for_timeout(5000)
+
+            # 轮询 photowall 加载进度
+            pw_timeout = 600  # 最多等 10 分钟
+            pw_elapsed = 0
+            pw_ready = False
+            while pw_elapsed < pw_timeout:
+                await page.wait_for_timeout(5000)
+                pw_elapsed += 5
+                try:
+                    result = await page.evaluate("""
+                        let done = 0, totalLoaded = 0, totalImages = 0;
+                        document.querySelectorAll('.spread-page iframe').forEach(f => {
+                            if (!f.src || !f.src.includes('photowall')) return;
+                            try {
+                                const doc = f.contentDocument;
+                                const overlay = doc.getElementById('loading-overlay');
+                                const hidden = overlay
+                                    ? (overlay.style.display === 'none' || overlay.style.opacity === '0')
+                                    : false;
+                                if (hidden) done++;
+                                const l = parseInt(doc.getElementById('progress-count')?.innerText) || 0;
+                                const t = parseInt(doc.getElementById('total-count')?.innerText) || 0;
+                                totalLoaded += l;
+                                totalImages += t;
+                            } catch(e) {}
+                        });
+                        return {done, totalLoaded, totalImages};
+                    """)
+                    d, tl, ti = result['done'], result['totalLoaded'], result['totalImages']
+                    pct = f" ({tl}/{ti})" if ti > 0 else ""
+                    print(f"  Photowall: {d}/{pw_count} pages done{pct} ({pw_elapsed}s)")
+                    if d >= pw_count:
+                        pw_ready = True
+                        break
+                except Exception:
+                    print(f"  Photowall: polling error ({pw_elapsed}s)")
+
+            if not pw_ready:
+                print(f"WARNING: Photowall not ready after {pw_timeout}s, proceeding...")
+
+            # 重新轮询 _slideReady（含重载后的 photowall）
+            print("Re-polling all iframes for readiness...")
+            await page.wait_for_function("""
+                () => {
+                    const iframes = document.querySelectorAll('.spread-page iframe');
+                    if (iframes.length === 0) return true;
+                    return Array.from(iframes).every(f => {
+                        try {
+                            const w = f.contentWindow;
+                            return typeof w._slideReady === 'undefined' || w._slideReady === true;
+                        } catch(e) { return false; }
+                    });
+                }
+            """, timeout=60000)
+
         # 2. 冻结动画 + 清理视觉元素
         print("Freezing animations & cleaning visuals...")
         await page.evaluate("""

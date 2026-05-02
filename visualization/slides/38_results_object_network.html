@@ -441,9 +441,15 @@
         console.error(err);
       });
 
-    // In spread mode, auto-show the AI panel and pre-generate the image
-    if (document.body.classList.contains('spread-mode')) {
+    // In spread mode, auto-show the AI panel and pre-generate the image.
+    // Use a MutationObserver because the parent adds "spread-mode" via iframe.onload,
+    // which fires AFTER this script runs.
+    const checkSpreadMode = () => {
+      if (!document.body.classList.contains('spread-mode')) return;
       document.body.classList.add('spread-no-loader');
+      // Hide the AI button in spread mode
+      const aiBtn = document.getElementById('ai-btn');
+      if (aiBtn) aiBtn.style.display = 'none';
       document.body.classList.add('ai-active');
       setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 850);
       fetch('/slides/api/generate-object-art', { method: 'POST' })
@@ -453,7 +459,16 @@
           img.src = data.image_url;
           img.onload = () => { img.classList.add('loaded'); };
         });
-    }
+    };
+    // Check immediately in case class is already there
+    checkSpreadMode();
+    // Also watch for the class being added later
+    new MutationObserver((_, obs) => {
+      if (document.body.classList.contains('spread-mode')) {
+        obs.disconnect();
+        checkSpreadMode();
+      }
+    }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
 
     // ── Render ──────────────────────────────────────────────────

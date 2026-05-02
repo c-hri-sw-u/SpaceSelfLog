@@ -78,7 +78,9 @@ async def main():
                 result = await frame.evaluate("""() => {
                     const loaded = parseInt(document.getElementById('progress-count')?.innerText) || 0;
                     const total  = parseInt(document.getElementById('total-count')?.innerText) || 0;
-                    return { ready: typeof isCanvasReady !== 'undefined' && isCanvasReady === true, loaded, total };
+                    const overlay = document.getElementById('loading-overlay');
+                    const overlayHidden = overlay ? (overlay.style.display === 'none' || overlay.style.opacity === '0') : false;
+                    return { ready: overlayHidden && loaded >= total && total > 0, loaded, total };
                 }""")
                 ready = result['ready']
                 loaded = result['loaded']

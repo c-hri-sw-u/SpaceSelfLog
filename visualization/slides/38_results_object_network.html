@@ -441,6 +441,20 @@
         console.error(err);
       });
 
+    // In spread mode, auto-show the AI panel and pre-generate the image
+    if (document.body.classList.contains('spread-mode')) {
+      document.body.classList.add('spread-no-loader');
+      document.body.classList.add('ai-active');
+      setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 850);
+      fetch('/slides/api/generate-object-art', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+          const img = document.getElementById('ai-image');
+          img.src = data.image_url;
+          img.onload = () => { img.classList.add('loaded'); };
+        });
+    }
+
 
     // ── Render ──────────────────────────────────────────────────
     function renderGraph({ nodes, links }) {
@@ -592,7 +606,10 @@
         if (document.body.classList.contains('ai-active')) return;
 
         document.body.classList.add('ai-active');
-        document.getElementById('ai-loader').style.display = 'flex';
+        // Only show loader if not already in spread mode (spread mode auto-loads with pre-generated image)
+        if (!document.body.classList.contains('spread-no-loader')) {
+          document.getElementById('ai-loader').style.display = 'flex';
+        }
         
         // Trigger D3 resize after transition
         setTimeout(() => {

@@ -38,24 +38,92 @@ async def main():
         print("Waiting for charts to settle...")
         await page.wait_for_timeout(5000)
 
-        # 1.5 轮询所有 iframe（含 photowall）的 _slideReady
-        print("Polling iframes for readiness...")
-        if PHOTOWALL_ONLY:
-            print("  (photowall-only mode: skipping non-photowall iframes)")
-        pw_elapsed = 0
-        while pw_elapsed < 600:  # 最多等 10 分钟
+        # ── 1.5 Blank out photowall iframes to prevent concurrent loading ──
+        print("Blanking photowall iframes for sequential loading...")
+        pw_iframe_srcs = await page.evaluate("""() => {
+            const srcs = [];
+            document.querySelectorAll('.spread-page:not(.empty) iframe').forEach(iframe => {
+                if (iframe.src && iframe.src.includes('photowall')) {
+                    srcs.push({ src: iframe.src, selector: null });
+                }
+            });
+            // Blank them out
+            document.querySelectorAll('.spread-page:not(.empty) iframe').forEach(iframe => {
+                if (iframe.src && iframe.src.includes('photowall')) {
+                    iframe.dataset.originalSrc = iframe.src;
+                    iframe.src = 'about:blank';
+                }
+            });
+            return srcs;
+        }""")
+        print(f"  Found {len(pw_iframe_srcs)} photowall iframes (blanked out)")
+
+        # 1.6 Poll NON-photowall iframes for readiness
+        print("Polling non-photowall iframes for readiness...")
+        poll_elapsed = 0
+        while poll_elapsed < 120:
             await page.wait_for_timeout(5000)
-            pw_elapsed += 5
-            pw_frames = [f for f in page.frames if f != page.main_frame]
-            if PHOTOWALL_ONLY:
-                pw_frames = [f for f in pw_frames if "photowall" in f.url]
-            all_ready = True
-            pw_done = 0
-            total_loaded = 0
-            total_images = 0
-            for fr in pw_frames:
+            poll_elapsed += 5
+            frames = [f for f in page.frames if f != page.main_frame]
+            non_pw_frames = [f for f in frames if "photowall" not in f.url]
+            if not non_pw_frames:
+                break
+            done = 0
+            for fr in non_pw_frames:
                 try:
-                    r = await fr.evaluate("""() => {
+                    r = await fr.evaluate("() => typeof window._slideReady === 'undefined' || window._slideReady === true")
+                    if r: done += 1
+                except Exception:
+                    pass
+            print(f"  ... {done}/{len(non_pw_frames)} ready ({poll_elapsed}s)")
+            if done >= len(non_pw_frames):
+                break
+
+        # ── 1.7 Sequentially load photowall iframes one at a time ──
+        print("Loading photowall iframes sequentially...")
+        # Get all photowall iframe elements with their original srcs
+        pw_elements = await page.evaluate("""() => {
+            const result = [];
+            document.querySelectorAll('.spread-page:not(.empty) iframe').forEach((iframe, i) => {
+                if (iframe.dataset.originalSrc) {
+                    result.push({ index: i, originalSrc: iframe.dataset.originalSrc });
+                }
+            });
+            return result;
+        }""")
+
+        for pi, pw_info in enumerate(pw_elements):
+            src = pw_info['originalSrc']
+            short = src.split('?')[0].split('/')[-1][:30]
+            print(f"  [{pi+1}/{len(pw_elements)}] Loading {short}...")
+
+            # Restore src to trigger load
+            await page.evaluate("""(info) => {
+                const iframes = document.querySelectorAll('.spread-page:not(.empty) iframe');
+                iframes[info.index].src = info.originalSrc;
+            }""", pw_info)
+
+            # Poll this specific iframe for readiness
+            pw_load_elapsed = 0
+            pw_ready = False
+            while pw_load_elapsed < 600:  # max 10 min per page
+                await page.wait_for_timeout(5000)
+                pw_load_elapsed += 5
+
+                # Find the frame that matches this src
+                frame = None
+                for f in page.frames:
+                    if f != page.main_frame and pw_info['originalSrc'] in f.url:
+                        frame = f
+                        break
+
+                if frame is None:
+                    # Frame might not be registered yet
+                    print(f"    ... waiting for frame ({pw_load_elapsed}s)")
+                    continue
+
+                try:
+                    r = await frame.evaluate("""() => {
                         const ready = typeof window._slideReady === 'undefined' || window._slideReady === true;
                         const loaded = parseInt(document.getElementById('progress-count')?.innerText) || 0;
                         const total  = parseInt(document.getElementById('total-count')?.innerText) || 0;
@@ -63,91 +131,42 @@ async def main():
                         const overlayHidden = overlay ? (overlay.style.display === 'none' || overlay.style.opacity === '0') : true;
                         return { ready, loaded, total, overlayHidden };
                     }""")
-                    if r['ready']:
-                        pw_done += 1
+                    if r['ready'] and r['overlayHidden']:
+                        print(f"    READY ({pw_load_elapsed}s) — {r['loaded']}/{r['total']} images")
+                        pw_ready = True
+                        break
                     else:
-                        all_ready = False
-                        short = fr.url.split('/')[-1][:60]
-                        print(f"    NOT ready: {short} | loaded={r['loaded']}/{r['total']} overlayHidden={r['overlayHidden']}")
-                    total_loaded += r.get('loaded', 0)
-                    total_images += r.get('total', 0)
+                        pct = f" ({r['loaded']}/{r['total']})" if r['total'] > 0 else ""
+                        print(f"    ... loading{pct} ({pw_load_elapsed}s)")
                 except Exception as e:
-                    all_ready = False
-                    print(f"    NOT ready: {fr.url[:80]}... (error: {e})")
-            pct = f" ({total_loaded}/{total_images})" if total_images > 0 else ""
-            print(f"  ... {pw_done}/{len(pw_frames)} ready{pct} ({pw_elapsed}s)")
-            if all_ready:
-                print(f"  All iframes ready ({pw_elapsed}s)")
-                break
-            # 如果 photowall-only 模式下已超过 30s 且有卡住的 frame，注入数据
-            if PHOTOWALL_ONLY and pw_elapsed >= 30 and not all_ready:
-                # 从已 ready 的 frame 获取数据，注入到失败的 frame
-                stuck_frames = []
-                ready_frame = None
-                for fr in pw_frames:
-                    try:
-                        r = await fr.evaluate("() => typeof window._slideReady !== 'undefined' && window._slideReady === true")
-                        if r and not ready_frame:
-                            ready_frame = fr
-                        else:
-                            stuck_frames.append(fr)
-                    except Exception:
-                        stuck_frames.append(fr)
+                    print(f"    ... polling error: {e} ({pw_load_elapsed}s)")
 
-                if ready_frame and stuck_frames:
-                    print(f"  Injecting data into {len(stuck_frames)} stuck frames...")
-                    try:
-                        images_json = await ready_frame.evaluate("() => JSON.stringify(ALL_IMAGES)")
-                        for sf in stuck_frames:
-                            try:
-                                # 注入 ALL_IMAGES 并直接调 init（init 会检测 ALL_IMAGES 已有数据，跳过 fetch）
-                                await sf.evaluate("""async (imgJson) => {
-                                    ALL_IMAGES = JSON.parse(imgJson);
-                                    // 重置 loading overlay
-                                    const overlay = document.getElementById('loading-overlay');
-                                    overlay.style.display = ''; overlay.style.opacity = '1';
-                                    overlay.innerHTML = '';
-                                    isCanvasReady = false;
-                                    window._slideReady = false;
-                                    loadedBitmaps.clear();
-                                    loadedColors.clear();
-                                    FILTERED_IMAGES = [];
-                                    // 重新 init（ALL_IMAGES 已有数据，会跳过 fetch）
-                                    init();
-                                }""", images_json)
-                            except Exception as e:
-                                print(f"    inject failed: {e}")
-                        # 轮询注入的 frames
-                        inject_elapsed = 0
-                        while inject_elapsed < 120:
-                            await page.wait_for_timeout(5000)
-                            inject_elapsed += 5
-                            inject_ready = 0
-                            for sf in stuck_frames:
-                                try:
-                                    r = await sf.evaluate("() => window._slideReady === true")
-                                    if r: inject_ready += 1
-                                except Exception:
-                                    pass
-                            print(f"    injected: {inject_ready}/{len(stuck_frames)} ready ({inject_elapsed}s)")
-                            if inject_ready >= len(stuck_frames):
-                                break
-                    except Exception as e:
-                        print(f"  data injection failed: {e}")
-                break
-        else:
-            print("WARNING: Not all iframes ready after 600s, proceeding...")
+            if not pw_ready:
+                print(f"    WARNING: {short} not ready after 600s, proceeding...")
 
-        # 1.6 等 photowall overlay dots + hi-res 放大图
-        print("Waiting for photowall overlays to render...")
-        await page.wait_for_timeout(5000)
+            # Small delay between pages to let browser settle
+            await page.wait_for_timeout(2000)
+
+        # ── 1.8 Place hi-res overlay dots on all photowall pages ──
+        print("Placing hi-res zoom dots on photowall pages...")
         pw_frames = [f for f in page.frames if "photowall" in f.url]
-        for fr in pw_frames:
+        for fi, fr in enumerate(pw_frames):
             try:
                 await fr.evaluate("""async () => {
-                    if (!isCanvasReady || cachedLayoutPoses.length === 0) return;
+                    if (typeof cachedLayoutPoses === 'undefined' || cachedLayoutPoses.length === 0) return;
+                    const N = cachedLayoutPoses.length;
+                    // Place 2 dots per page at different positions
                     while (hiResImages.length < 2) { hiResImages.push(null); hoverIndices.push(-1); }
-                    // 手动加载 hi-res 图片
+                    const i1 = Math.floor(N * 0.2 + Math.random() * N * 0.1);
+                    const i2 = Math.floor(N * 0.6 + Math.random() * N * 0.15);
+                    for (let di = 0; di < 2; di++) {
+                        const idx = di === 0 ? i1 : i2;
+                        const pos = cachedLayoutPoses[Math.min(idx, N-1)];
+                        const px = pos.x + cachedW / 2;
+                        const py = pos.y + cachedOffsetY + cachedH / 2;
+                        applyHoverAt(px, py, di);
+                    }
+                    // Load hi-res images
                     const loadPromises = [];
                     for (let di = 0; di < 2; di++) {
                         const idx = hoverIndices[di];
@@ -163,8 +182,10 @@ async def main():
                     await Promise.all(loadPromises);
                     renderAllOverlays();
                 }""")
+                print(f"  [{fi+1}/{len(pw_frames)}] dots placed + hi-res loaded")
             except Exception as e:
-                print(f"  WARNING: overlay render failed: {e}")
+                print(f"  WARNING: overlay failed for frame {fi}: {e}")
+
         await page.wait_for_timeout(3000)
 
         # 2. 冻结动画 + 清理视觉元素

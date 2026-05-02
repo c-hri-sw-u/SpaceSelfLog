@@ -76,7 +76,7 @@ async def main():
         """)
 
         # ── Step 1: 修改页面结构为单页垂直排列 ──
-        await page.evaluate(“””
+        await page.evaluate("""
             // 隐藏工具栏和侧边栏
             document.querySelectorAll('#toolbar, #meta-bar, #sidebar, #script-sidebar, .nav-arrow, #slide').forEach(el => {
                 if (el) el.style.display = 'none';
@@ -147,27 +147,27 @@ async def main():
             document.querySelectorAll('iframe').forEach(iframe => {
                 try { removeShadows(iframe.contentDocument); } catch(e) {}
             });
-        “””)
+        """)
 
         # ── Step 2: 等浏览器完成 iframe 重新布局 ──
         # 关键：必须让浏览器有机会重新计算 iframe 尺寸，
         # 否则 iframe 内的 window.innerWidth/innerHeight 还是旧的 spread 模式小尺寸
-        print(“Waiting for browser to re-layout iframes...”)
-        await page.evaluate(“””
+        print("Waiting for browser to re-layout iframes...")
+        await page.evaluate("""
             new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-        “””)
+        """)
         await page.wait_for_timeout(500)
 
         # ── Step 3: 现在 iframe 尺寸正确了，触发 resize 让 D3/Canvas 重渲染 ──
-        print(“Triggering iframe resize events for re-rendering...”)
-        await page.evaluate(“””
+        print("Triggering iframe resize events for re-rendering...")
+        await page.evaluate("""
             document.querySelectorAll('.spread-page iframe').forEach(iframe => {
                 try { iframe.contentWindow.dispatchEvent(new Event('resize')); } catch(e) {}
             });
-        “””)
+        """)
 
         # 等待重渲染完成
-        print(“Waiting for charts to re-render at new dimensions...”)
+        print("Waiting for charts to re-render at new dimensions...")
         await page.wait_for_timeout(3000)
         
         # 4. 导出 PDF

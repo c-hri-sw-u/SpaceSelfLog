@@ -451,7 +451,7 @@
       const aiBtn = document.getElementById('ai-btn');
       if (aiBtn) aiBtn.style.display = 'none';
       document.body.classList.add('ai-active');
-      setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 850);
+      window._spreadAiActive = true;
       fetch('/slides/api/generate-object-art', { method: 'POST' })
         .then(r => r.json())
         .then(data => {
@@ -615,6 +615,13 @@
         sim.force('center', d3.forceCenter(rect.width / 2, rect.height / 2));
         sim.alpha(0.3).restart();
       });
+
+      // If spread mode already activated ai-active before graph was ready,
+      // trigger resize after the CSS transition completes so D3 picks up the new width.
+      if (window._spreadAiActive) {
+        setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 900);
+        delete window._spreadAiActive;
+      }
 
       // AI Logic
       window.generateAIArt = function() {

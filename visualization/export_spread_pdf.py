@@ -131,35 +131,54 @@ async def main():
             else:
                 print("WARNING: photowall _slideReady not all true, proceeding...")
 
-            # 等待 hi-res 放大图片加载完成
-            print("Waiting for hi-res zoom images to load...")
-            await page.wait_for_timeout(15000)  # 等待 dots 放置 + hi-res 开始加载
+            # 等待 dots 放置 + 手动触发 hi-res 加载
+            print("Waiting for dots to be placed and hi-res overlays to render...")
+            await page.wait_for_timeout(5000)  # 等待 setInterval 放置 dots
             pw_frames = [f for f in page.frames
                          if "photowall" in f.url and "fast=0" in f.url]
             for fr in pw_frames:
                 try:
-                    result = await fr.evaluate("""async () => {
-                        // 确认 dots 是否已放置
+                    state = await fr.evaluate("""async () => {
+                        // 检查状态
                         const state = {
                             isCanvasReady: typeof isCanvasReady !== 'undefined' ? isCanvasReady : 'undef',
                             hoverIndices: typeof hoverIndices !== 'undefined' ? JSON.stringify(hoverIndices) : 'undef',
                             hiResImages: typeof hiResImages !== 'undefined' ? hiResImages.map(x => x !== null) : 'undef',
                             layoutPoses: typeof cachedLayoutPoses !== 'undefined' ? cachedLayoutPoses.length : 'undef',
-                            filteredImages: typeof FILTERED_IMAGES !== 'undefined' ? FILTERED_IMAGES.length : 'undef',
                             loadedBitmaps: typeof loadedBitmaps !== 'undefined' ? loadedBitmaps.size : 'undef',
                             pageCount: typeof PAGE_COUNT !== 'undefined' ? PAGE_COUNT : 'undef',
                         };
-                        // 等所有 hiResImages 加完
-                        for (let i = 0; i < 60; i++) {
-                            if (typeof hiResImages !== 'undefined' && hiResImages.every(img => img !== null)) break;
-                            await new Promise(r => setTimeout(r, 1000));
-                        }
-                        if (typeof renderAllOverlays === 'function') renderAllOverlays();
                         return state;
                     }""")
-                    print(f"  Frame state: {result}")
+                    print(f"  Frame state: {state}")
+
+                    # 如果 hoverIndices 都是 -1，手动放置 dots
+                    await fr.evaluate("""async () => {
+                        if (!isCanvasReady || cachedLayoutPoses.length === 0) return;
+
+                        // 确保 hoverIndices 已扩展到 2 个
+                        while (hiResImages.length < 2) { hiResImages.push(null); hoverIndices.push(-1); }
+
+                        // 如果 dots 还没放置，手动放置
+                        if (hoverIndices[0] === -1) {
+                            const N = cachedLayoutPoses.length;
+                            const i1 = Math.floor(N * 0.25 + Math.random() * N * 0.15);
+                            const i2 = Math.floor(N * 0.60 + Math.random() * N * 0.15);
+                            const pos1 = cachedLayoutPoses[Math.min(i1, N-1)];
+                            const pos2 = cachedLayoutPoses[Math.min(i2, N-1)];
+                            applyHoverAt(pos1.x + cachedW/2, pos1.y + cachedOffsetY + cachedH/2, 0);
+                            applyHoverAt(pos2.x + cachedW/2, pos2.y + cachedOffsetY + cachedH/2, 1);
+                        }
+
+                        // 等 hiResImages 加完
+                        for (let i = 0; i < 30; i++) {
+                            if (hiResImages.every(img => img !== null)) break;
+                            await new Promise(r => setTimeout(r, 1000));
+                        }
+                        renderAllOverlays();
+                    }""")
                 except Exception as e:
-                    print(f"  WARNING: hi-res poll failed: {e}")
+                    print(f"  WARNING: hi-res overlay failed: {e}")
             await page.wait_for_timeout(3000)
 
         # 2. 冻结动画 + 清理视觉元素

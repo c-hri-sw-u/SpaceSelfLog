@@ -136,23 +136,34 @@ async def main():
                 iframes[info.index].src = info.originalSrc;
             }""", pw_info)
 
-            # Poll this specific iframe for readiness
+            # Get the iframe element handle, then its content frame
+            iframe_handle = await page.evaluate_handle(
+                """(idx) => document.querySelectorAll('.spread-page:not(.empty) iframe')[idx]""",
+                pw_info['index']
+            )
+            frame = iframe_handle.content_frame()
+
+            if frame is None:
+                # Fallback: wait and try URL matching
+                print("    content_frame() returned None, falling back to URL match...")
+                for _ in range(30):
+                    await page.wait_for_timeout(1000)
+                    for f in page.frames:
+                        if f != page.main_frame and "photowall" in f.url and "about:blank" not in f.url:
+                            frame = f
+                            break
+                    if frame:
+                        break
+                if frame is None:
+                    print(f"    WARNING: could not find frame, skipping")
+                    continue
+
+            # Poll for readiness
             pw_load_elapsed = 0
             pw_ready = False
             while pw_load_elapsed < 600:  # max 10 min per page
                 await page.wait_for_timeout(5000)
                 pw_load_elapsed += 5
-
-                # Find the frame that matches this src
-                frame = None
-                for f in page.frames:
-                    if f != page.main_frame and pw_info['originalSrc'] in f.url:
-                        frame = f
-                        break
-
-                if frame is None:
-                    print(f"    ... waiting for frame ({pw_load_elapsed}s)")
-                    continue
 
                 try:
                     r = await frame.evaluate("""() => {

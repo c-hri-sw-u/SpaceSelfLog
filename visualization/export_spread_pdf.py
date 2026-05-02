@@ -16,7 +16,7 @@ async def main():
     async with async_playwright() as p:
         browser = await p.chromium.launch()
         context = await browser.new_context(
-            device_scale_factor=3,   # 高清截图
+            device_scale_factor=2,   # 2× 截图，避免 Canvas/粒子因 DPR 过渲染
             viewport={"width": 1600, "height": 900}
         )
         page = await context.new_page()

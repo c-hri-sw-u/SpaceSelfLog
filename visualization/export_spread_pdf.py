@@ -2,6 +2,7 @@ import asyncio
 import io
 import re
 import sys
+from urllib.parse import urlparse, parse_qs
 from playwright.async_api import async_playwright
 from PIL import Image
 
@@ -130,53 +131,41 @@ async def main():
             short = src.split('?')[0].split('/')[-1][:30]
             print(f"  [{load_i+1}/{len(page_indices)}] Loading {short}...")
 
+            # Parse pg/half from originalSrc for matching
+            _parsed = urlparse(pw_info['originalSrc'])
+            _params = parse_qs(_parsed.query)
+            _target_pg = _params.get('pg', ['0'])[0]
+            _target_half = _params.get('half', [''])[0]
+
             # Restore src to trigger load
             await page.evaluate("""(info) => {
                 const iframes = document.querySelectorAll('.spread-page:not(.empty) iframe');
                 iframes[info.index].src = info.originalSrc;
             }""", pw_info)
 
-            # Get the iframe element handle, then its content frame
-            iframe_handle = await page.evaluate_handle(
-                """(idx) => document.querySelectorAll('.spread-page:not(.empty) iframe')[idx]""",
-                pw_info['index']
-            )
-            cf = iframe_handle.content_frame()
-            # Some Playwright versions return a coroutine, others return Frame directly
-            if asyncio.iscoroutine(cf):
-                frame = await cf
-            else:
-                frame = cf
-
-            if frame is None:
-                # Fallback: wait for frame to appear by URL
-                print("    content_frame() returned None, waiting for frame...")
-                frame = None
-                for _ in range(30):
-                    await page.wait_for_timeout(1000)
-                    for f in page.frames:
-                        if f != page.main_frame and "photowall" in f.url and "about:blank" not in f.url:
-                            frame = f
-                            break
-                    if frame:
-                        break
-                if frame is None:
-                    print(f"    WARNING: could not find frame, skipping")
-                    continue
-
-            # Wait for frame to navigate away from about:blank
-            print("    Waiting for frame navigation...")
+            # Find frame by matching URL params (content_frame() is unreliable after navigation)
+            print("    Waiting for frame to appear...")
+            frame = None
             for _ in range(60):
                 await page.wait_for_timeout(1000)
-                try:
-                    url = frame.url
-                    if "photowall" in url:
-                        print(f"    Frame navigated: {url[:80]}")
-                        break
-                except Exception:
-                    pass
-            else:
-                print(f"    WARNING: frame did not navigate, skipping")
+                for f in page.frames:
+                    if f == page.main_frame:
+                        continue
+                    try:
+                        f_url = f.url
+                        if ("photowall" in f_url
+                            and f"pg={_target_pg}" in f_url
+                            and f"half={_target_half}" in f_url):
+                            frame = f
+                            break
+                    except Exception:
+                        continue
+                if frame:
+                    print(f"    Frame found: {frame.url[:80]}")
+                    break
+
+            if frame is None:
+                print(f"    WARNING: frame not found after 60s, skipping")
                 continue
 
             # Wait for DOM to be ready

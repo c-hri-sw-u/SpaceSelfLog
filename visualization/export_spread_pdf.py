@@ -50,32 +50,32 @@ async def main():
             if PHOTOWALL_ONLY:
                 pw_frames = [f for f in pw_frames if "photowall" in f.url]
             all_ready = True
+            pw_done = 0
+            total_loaded = 0
+            total_images = 0
             for fr in pw_frames:
                 try:
-                    r = await fr.evaluate(
-                        "() => typeof window._slideReady === 'undefined' || window._slideReady === true",
-                        timeout=5000
-                    )
-                    if not r:
+                    r = await fr.evaluate("""() => {
+                        const ready = typeof window._slideReady === 'undefined' || window._slideReady === true;
+                        const loaded = parseInt(document.getElementById('progress-count')?.innerText) || 0;
+                        const total  = parseInt(document.getElementById('total-count')?.innerText) || 0;
+                        const overlay = document.getElementById('loading-overlay');
+                        const overlayHidden = overlay ? (overlay.style.display === 'none' || overlay.style.opacity === '0') : true;
+                        return { ready, loaded, total, overlayHidden };
+                    }""")
+                    if r['ready']:
+                        pw_done += 1
+                    else:
                         all_ready = False
-                        break
+                    total_loaded += r.get('loaded', 0)
+                    total_images += r.get('total', 0)
                 except Exception:
                     all_ready = False
-                    break
+            pct = f" ({total_loaded}/{total_images})" if total_images > 0 else ""
+            print(f"  ... {pw_done}/{len(pw_frames)} ready{pct} ({pw_elapsed}s)")
             if all_ready:
                 print(f"  All iframes ready ({pw_elapsed}s)")
                 break
-            # 打印进度
-            pw_done = 0
-            for fr in pw_frames:
-                try:
-                    r = await fr.evaluate(
-                        "() => typeof window._slideReady === 'undefined' || window._slideReady === true"
-                    )
-                    if r: pw_done += 1
-                except Exception:
-                    pass
-            print(f"  ... {pw_done}/{len(pw_frames)} ready ({pw_elapsed}s)")
         else:
             print("WARNING: Not all iframes ready after 600s, proceeding...")
 

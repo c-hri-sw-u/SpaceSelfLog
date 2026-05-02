@@ -107,18 +107,20 @@ async def main():
                 await frame.evaluate("""async () => {
                     if (typeof cachedLayoutPoses === 'undefined' || cachedLayoutPoses.length === 0) return;
                     const N = cachedLayoutPoses.length;
-                    // 6 个点，均匀分布在图片墙的不同高度位置
+                    // 8 个点，均匀分布在图片墙的不同高度位置
                     const indices = [
-                        Math.floor(N * 0.08 + Math.random() * N * 0.05),
-                        Math.floor(N * 0.22 + Math.random() * N * 0.05),
-                        Math.floor(N * 0.38 + Math.random() * N * 0.05),
-                        Math.floor(N * 0.52 + Math.random() * N * 0.05),
-                        Math.floor(N * 0.68 + Math.random() * N * 0.05),
-                        Math.floor(N * 0.84 + Math.random() * N * 0.05),
+                        Math.floor(N * 0.05 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.16 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.27 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.38 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.49 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.60 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.73 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.88 + Math.random() * N * 0.04),
                     ];
-                    // 扩展 hiResImages 和 hoverIndices 数组以支持 6 个点
-                    while (hiResImages.length < 6) { hiResImages.push(null); hoverIndices.push(-1); }
-                    for (let di = 0; di < 6; di++) {
+                    // 扩展 hiResImages 和 hoverIndices 数组以支持 8 个点
+                    while (hiResImages.length < 8) { hiResImages.push(null); hoverIndices.push(-1); }
+                    for (let di = 0; di < 8; di++) {
                         const pos = cachedLayoutPoses[Math.min(indices[di], N-1)];
                         const px = pos.x + cachedW / 2;
                         const py = pos.y + cachedOffsetY + cachedH / 2;

@@ -290,6 +290,7 @@
     let loadedColors = new Map();
     let aspectRatio = 4 / 3;
     let isCanvasReady = false;
+    window._slideReady = false;
 
     const canvas = document.getElementById('wall');
     const ctx = canvas.getContext('2d', { alpha: false });
@@ -530,6 +531,7 @@
         loadingOverlay.style.opacity = '0';
         setTimeout(() => loadingOverlay.style.display = 'none', 500);
         calculateAndApplyLayout();
+        window._slideReady = true;
       } catch (err) {
         console.error(err);
         loadingOverlay.innerHTML = "<div style='color:red'>Data Loading Failed.</div>";

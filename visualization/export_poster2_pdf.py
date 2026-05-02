@@ -135,43 +135,37 @@ async def main():
                         }
                     };
                 }""")
-                # 从图片墙中随机选 4 个高度层，每层放 2 个点（共 12 个）
+                # 8 行各 1 个 + 从中随机挑 4 行各加 1 个 = 12 个点
                 await frame.evaluate("""async () => {
                     if (typeof cachedLayoutPoses === 'undefined' || cachedLayoutPoses.length === 0) return;
                     const N = cachedLayoutPoses.length;
-                    // 按 Y 坐标分桶
-                    const rowH = cachedH * 4;
-                    const rows = {};
-                    cachedLayoutPoses.forEach((p, i) => {
-                        const row = Math.floor((p.y + cachedOffsetY) / rowH);
-                        if (!rows[row]) rows[row] = [];
-                        rows[row].push(i);
-                    });
-                    // 只保留图片数 >= 2 的行
-                    const validRows = Object.entries(rows)
-                        .filter(([, pool]) => pool.length >= 2)
-                        .map(([row, pool]) => ({ row: Number(row), pool }))
-                        .sort((a, b) => a.row - b.row);
-                    if (validRows.length < 4) {
-                        console.warn('Not enough rows with 2+ images:', validRows.length);
-                        return;
+                    // 8 行，均匀分布
+                    const bases = [
+                        Math.floor(N * 0.05 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.16 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.27 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.38 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.49 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.60 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.73 + Math.random() * N * 0.04),
+                        Math.floor(N * 0.88 + Math.random() * N * 0.04),
+                    ];
+                    // 从这 8 行中随机挑 4 行，每行再加 1 个（选附近的另一张图）
+                    const extra = [0,1,2,3,4,5,6,7].sort(() => Math.random() - 0.5).slice(0, 4);
+                    const indices = [...bases];
+                    for (const row of extra) {
+                        const center = bases[row];
+                        // 在中心附近 ±50 张中随机选一张不同的
+                        const lo = Math.max(0, center - 50);
+                        const hi = Math.min(N - 1, center + 50);
+                        let candidate;
+                        do { candidate = lo + Math.floor(Math.random() * (hi - lo + 1)); }
+                        while (candidate === center && (hi - lo) > 0);
+                        indices.push(candidate);
                     }
-                    // 随机选 4 行，每行挑 2 张
-                    const shuffled = validRows.sort(() => Math.random() - 0.5);
-                    const picked = shuffled.slice(0, 4);
-                    const indices = [];
-                    for (const { pool } of picked) {
-                        const i1 = Math.floor(Math.random() * pool.length);
-                        let i2 = Math.floor(Math.random() * pool.length);
-                        while (i2 === i1 && pool.length > 1) i2 = Math.floor(Math.random() * pool.length);
-                        indices.push(pool[i1], pool[i2]);
-                    }
-                    const count = indices.length; // should be 8 -> pad to 12
-                    while (hiResImages.length < count) { hiResImages.push(null); hoverIndices.push(-1); }
-                    for (let di = 0; di < count; di++) {
-                        const idx = indices[di];
-                        if (idx === undefined || !cachedLayoutPoses[idx]) continue;
-                        const pos = cachedLayoutPoses[idx];
+                    while (hiResImages.length < indices.length) { hiResImages.push(null); hoverIndices.push(-1); }
+                    for (let di = 0; di < indices.length; di++) {
+                        const pos = cachedLayoutPoses[indices[di]];
                         const px = pos.x + cachedW / 2;
                         const py = pos.y + cachedOffsetY + cachedH / 2;
                         applyHoverAt(px, py, di);

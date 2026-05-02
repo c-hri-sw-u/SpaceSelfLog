@@ -1,13 +1,11 @@
 import asyncio
 import io
-import os
-import tempfile
-import shutil
 from playwright.async_api import async_playwright
 from PIL import Image
 
 URL = "http://localhost:8000/slides/"
-DPI = 300  # 印刷级清晰度
+DPI = 300
+FIXED_PX_SCALE = 0.65  # 粒子/描边/字号缩放因子
 
 async def main():
     output_path = "spreads_export.pdf"
@@ -20,6 +18,41 @@ async def main():
             viewport={"width": 1600, "height": 900}
         )
         page = await context.new_page()
+
+        # ── 在所有 iframe 加载之前注入 Canvas 缩放覆盖 ──
+        # add_init_script 会在每个 frame（含 iframe）的 JS 执行之前运行
+        print(f"Injecting canvas scale ({FIXED_PX_SCALE}) via init script...")
+        await page.add_init_script("""
+            const S = %s;
+
+            // 粒子 / 点的半径
+            const origArc = CanvasRenderingContext2D.prototype.arc;
+            CanvasRenderingContext2D.prototype.arc = function(x, y, r, s, e, ccw) {
+                origArc.call(this, x, y, r * S, s, e, ccw);
+            };
+
+            // 描边宽度
+            const lwDesc = Object.getOwnPropertyDescriptor(
+                CanvasRenderingContext2D.prototype, 'lineWidth');
+            Object.defineProperty(CanvasRenderingContext2D.prototype, 'lineWidth', {
+                set(v) { lwDesc.set.call(this, v * S); },
+                get() { return lwDesc.get.call(this); }
+            });
+
+            // Canvas 字号（房间标签等）
+            const fontDesc = Object.getOwnPropertyDescriptor(
+                CanvasRenderingContext2D.prototype, 'font');
+            Object.defineProperty(CanvasRenderingContext2D.prototype, 'font', {
+                set(v) {
+                    const scaled = v.replace(
+                        /(%s)d+(?:\\.%sd+)?px/g,
+                        function(_, n) { return (parseFloat(n) * S) + 'px'; }
+                    );
+                    fontDesc.set.call(this, scaled);
+                },
+                get() { return fontDesc.get.call(this); }
+            });
+        """ % (FIXED_PX_SCALE, '\\', '\\'))
 
         # 1. 加载并渲染 Spread 模式
         print(f"Navigating to {URL} ...")
@@ -89,60 +122,8 @@ async def main():
                     f.contentDocument.head.appendChild(s);
                 } catch(e) {}
             });
-        """)
 
-        # 3. 按比例缩放 Canvas 中的固定 px 元素（粒子、描边、字号）
-        #    spread-page ~800px，但粒子/描边是固定 px 不随 viewport 缩放，
-        #    需要乘以 iframeWidth / parentWidth 使之与 vw 元素比例一致
-        FIXED_PX_SCALE = 0.65
-        print(f"Injecting fixed-px scale ({FIXED_PX_SCALE}) into iframes...")
-        await page.evaluate("""
-            const S = %s;
-            document.querySelectorAll('.spread-page iframe').forEach(iframe => {
-                try {
-                    const win = iframe.contentWindow;
-                    const proto = win.CanvasRenderingContext2D.prototype;
-
-                    // 粒子 / 点的半径
-                    const origArc = proto.arc;
-                    proto.arc = function(x, y, r, s, e, ccw) {
-                        origArc.call(this, x, y, r * S, s, e, ccw);
-                    };
-
-                    // 描边宽度
-                    const lwDesc = Object.getOwnPropertyDescriptor(proto, 'lineWidth');
-                    Object.defineProperty(proto, 'lineWidth', {
-                        set(v) { lwDesc.set.call(this, v * S); },
-                        get() { return lwDesc.get.call(this); }
-                    });
-
-                    // Canvas 字号（房间标签等）
-                    const fontDesc = Object.getOwnPropertyDescriptor(proto, 'font');
-                    Object.defineProperty(proto, 'font', {
-                        set(v) {
-                            const scaled = v.replace(
-                                /(\\d+(?:\\.\\d+)?)px/g,
-                                (_, n) => (parseFloat(n) * S) + 'px'
-                            );
-                            fontDesc.set.call(this, scaled);
-                        },
-                        get() { return fontDesc.get.call(this); }
-                    });
-
-                    // 清空画布，触发重绘
-                    iframe.contentDocument.querySelectorAll('canvas').forEach(c => {
-                        c.getContext('2d').clearRect(0, 0, c.width, c.height);
-                    });
-                    win.dispatchEvent(new Event('resize'));
-                } catch(e) { console.error(e); }
-            });
-        """ % FIXED_PX_SCALE)
-
-        print("Waiting for canvases to re-render...")
-        await page.wait_for_timeout(3000)
-
-        # SVG 装饰性描边（donut 间隔线等，不碰 sankey 数据宽度）
-        await page.evaluate("""
+            // SVG 装饰性描边缩放
             const S = %s;
             document.querySelectorAll('.spread-page iframe').forEach(iframe => {
                 try {
@@ -155,10 +136,10 @@ async def main():
             });
         """ % FIXED_PX_SCALE)
 
-        # 4. 逐页截图
+        # 3. 逐页截图
         print("Capturing pages...")
         spread_pages = await page.query_selector_all('.spread-page:not(.empty)')
-        screenshots = []  # list of (bytes, is_wide)
+        screenshots = []
 
         for i, sp in enumerate(spread_pages):
             is_wide = await sp.evaluate("el => el.classList.contains('wide-page')")

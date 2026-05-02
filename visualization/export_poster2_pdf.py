@@ -98,6 +98,44 @@ async def main():
         if not ready:
             print(f"WARNING: Canvas not ready after {timeout_ms/1000:.0f}s, proceeding anyway...")
 
+        # 在 iframe 内手动放置 6 个 hi-res 放大圆点（绕过 PAGE_COUNT < 2 的限制）
+        print("Placing hi-res zoom dots in iframe...")
+        try:
+            frame = next((f for f in page.frames if "photowall" in f.url), None)
+            if frame:
+                # 逐个触发 hi-res 加载，每次间隔等待
+                await frame.evaluate("""async () => {
+                    if (typeof cachedLayoutPoses === 'undefined' || cachedLayoutPoses.length === 0) return;
+                    const N = cachedLayoutPoses.length;
+                    // 6 个点，均匀分布在图片墙的不同高度位置
+                    const indices = [
+                        Math.floor(N * 0.08 + Math.random() * N * 0.05),
+                        Math.floor(N * 0.22 + Math.random() * N * 0.05),
+                        Math.floor(N * 0.38 + Math.random() * N * 0.05),
+                        Math.floor(N * 0.52 + Math.random() * N * 0.05),
+                        Math.floor(N * 0.68 + Math.random() * N * 0.05),
+                        Math.floor(N * 0.84 + Math.random() * N * 0.05),
+                    ];
+                    // 扩展 hiResImages 和 hoverIndices 数组以支持 6 个点
+                    while (hiResImages.length < 6) { hiResImages.push(null); hoverIndices.push(-1); }
+                    for (let di = 0; di < 6; di++) {
+                        const pos = cachedLayoutPoses[Math.min(indices[di], N-1)];
+                        const px = pos.x + cachedW / 2;
+                        const py = pos.y + cachedOffsetY + cachedH / 2;
+                        applyHoverAt(px, py, di);
+                        // 等待 hi-res 图片加载
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+                }""")
+                print("Waiting for hi-res images to finish loading...")
+                await page.wait_for_timeout(15_000)
+                await frame.evaluate("""() => {
+                    if (typeof renderAllOverlays === 'function') renderAllOverlays();
+                }""")
+                await page.wait_for_timeout(2_000)
+        except Exception as e:
+            print(f"WARNING: could not place zoom dots: {e}")
+
         print("Cleaning up for export...")
         await page.evaluate("""
             // 去掉 fitToScreen 的缩放 transform

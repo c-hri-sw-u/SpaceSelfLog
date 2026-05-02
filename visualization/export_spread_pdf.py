@@ -67,8 +67,8 @@ async def main():
                         pw_done += 1
                     else:
                         all_ready = False
-                        tag = fr.url.split('?')[0].split('/').pop()
-                        print(f"    NOT ready: {tag} | loaded={r['loaded']}/{r['total']} overlayHidden={r['overlayHidden']}")
+                        short = fr.url.split('/')[-1][:60]
+                        print(f"    NOT ready: {short} | loaded={r['loaded']}/{r['total']} overlayHidden={r['overlayHidden']}")
                     total_loaded += r.get('loaded', 0)
                     total_images += r.get('total', 0)
                 except Exception as e:
@@ -78,6 +78,10 @@ async def main():
             print(f"  ... {pw_done}/{len(pw_frames)} ready{pct} ({pw_elapsed}s)")
             if all_ready:
                 print(f"  All iframes ready ({pw_elapsed}s)")
+                break
+            # 如果 photowall-only 模式下已超过 60s 且大部分 ready，跳过卡住的
+            if PHOTOWALL_ONLY and pw_elapsed >= 60 and pw_done >= len(pw_frames) - 2:
+                print(f"  Proceeding with {pw_done}/{len(pw_frames)} ready after {pw_elapsed}s")
                 break
         else:
             print("WARNING: Not all iframes ready after 600s, proceeding...")

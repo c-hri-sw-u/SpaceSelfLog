@@ -35,7 +35,33 @@ async def main():
             }
         """)
 
-        # 轮询 iframe 内的 isCanvasReady 变量，自动等待渲染完成
+        # Phase 1: 等 iframe 重新加载，确认新页面已初始化（total-count > 0 且 URL 含 fast=0）
+        print("Waiting for iframe to reload with fast=0...")
+        iframe_reloaded = False
+        for _ in range(60):  # 最多等 5 分钟
+            await page.wait_for_timeout(5_000)
+            try:
+                frame = next((f for f in page.frames if "photowall" in f.url), None)
+                if frame is None:
+                    continue
+                if "fast=0" not in frame.url:
+                    continue
+                total_text = await frame.evaluate("""() => {
+                    return document.getElementById('total-count')?.innerText || '';
+                }""")
+                total = int(total_text) if total_text.isdigit() else 0
+                if total > 0:
+                    print(f"  iframe reloaded, total images: {total}")
+                    iframe_reloaded = True
+                    break
+            except Exception:
+                pass
+            print(f"  ... waiting for iframe reload")
+
+        if not iframe_reloaded:
+            print("WARNING: iframe did not reload, proceeding anyway...")
+
+        # Phase 2: 轮询 isCanvasReady，显示进度
         print("Polling iframe for render completion (isCanvasReady)...")
         timeout_ms = 3_600_000  # 最多等 60 分钟
         poll_interval_ms = 5_000
@@ -45,11 +71,9 @@ async def main():
             await page.wait_for_timeout(poll_interval_ms)
             elapsed += poll_interval_ms
             try:
-                # 通过 URL 匹配找到 iframe 对应的 Frame 对象
-                frame = page.frame(name="photowall-iframe") or \
-                        next((f for f in page.frames if "photowall" in f.url), None)
+                frame = next((f for f in page.frames if "photowall" in f.url), None)
                 if frame is None:
-                    print(f"  ... iframe not found yet ({elapsed/1000:.0f}s)")
+                    print(f"  ... iframe not found ({elapsed/1000:.0f}s)")
                     continue
                 result = await frame.evaluate("""() => {
                     const loaded = parseInt(document.getElementById('progress-count')?.innerText) || 0;

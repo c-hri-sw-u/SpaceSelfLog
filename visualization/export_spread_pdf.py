@@ -79,29 +79,42 @@ async def main():
             if all_ready:
                 print(f"  All iframes ready ({pw_elapsed}s)")
                 break
-            # 如果 photowall-only 模式下已超过 60s 且大部分 ready，跳过卡住的
-            if PHOTOWALL_ONLY and pw_elapsed >= 60 and pw_done >= len(pw_frames) - 2:
-                # 诊断卡住的 frame
+            # 如果 photowall-only 模式下已超过 30s 且有卡住的 frame，注入数据
+            if PHOTOWALL_ONLY and pw_elapsed >= 30 and not all_ready:
+                # 从已 ready 的 frame 获取数据，注入到失败的 frame
+                stuck_frames = []
+                ready_frame = None
                 for fr in pw_frames:
                     try:
-                        r = await fr.evaluate("() => typeof window._slideReady === 'undefined' || window._slideReady === true")
-                        if not r:
-                            diag = await fr.evaluate("""() => {
-                                const overlay = document.getElementById('loading-overlay');
-                                return {
-                                    url: location.href,
-                                    overlayHTML: overlay ? overlay.innerHTML.substring(0, 200) : 'none',
-                                    overlayDisplay: overlay ? overlay.style.display : 'none',
-                                    bodyLen: document.body.innerHTML.length,
-                                    hasInit: typeof init,
-                                    allImages: typeof ALL_IMAGES !== 'undefined' ? ALL_IMAGES.length : 'undef',
-                                    filtered: typeof FILTERED_IMAGES !== 'undefined' ? FILTERED_IMAGES.length : 'undef',
-                                };
-                            }""")
-                            print(f"    DIAG: {diag}")
+                        r = await fr.evaluate("() => typeof window._slideReady !== 'undefined' && window._slideReady === true")
+                        if r and not ready_frame:
+                            ready_frame = fr
+                        else:
+                            stuck_frames.append(fr)
+                    except Exception:
+                        stuck_frames.append(fr)
+
+                if ready_frame and stuck_frames:
+                    print(f"  Injecting data from ready frame into {len(stuck_frames)} stuck frames...")
+                    try:
+                        images_json = await ready_frame.evaluate("() => JSON.stringify(ALL_IMAGES)")
+                        for sf in stuck_frames:
+                            try:
+                                # 注入 ALL_IMAGES 并重跑 init
+                                await sf.evaluate("""async (imgJson) => {
+                                    ALL_IMAGES = JSON.parse(imgJson);
+                                    // 清除错误状态
+                                    const overlay = document.getElementById('loading-overlay');
+                                    if (overlay) { overlay.style.display = ''; overlay.style.opacity = '1'; }
+                                    // 重跑 init 的核心逻辑
+                                    init();
+                                }""", images_json)
+                            except Exception as e:
+                                print(f"    inject failed: {e}")
+                        # 等注入的 frames 加载完
+                        await page.wait_for_timeout(15000)
                     except Exception as e:
-                        print(f"    DIAG error: {e}")
-                print(f"  Proceeding with {pw_done}/{len(pw_frames)} ready after {pw_elapsed}s")
+                        print(f"  data extraction failed: {e}")
                 break
         else:
             print("WARNING: Not all iframes ready after 600s, proceeding...")

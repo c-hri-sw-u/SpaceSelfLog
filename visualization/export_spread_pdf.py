@@ -164,7 +164,28 @@ async def main():
                     print(f"    WARNING: could not find frame, skipping")
                     continue
 
-            # Poll for readiness
+            # Wait for frame to navigate away from about:blank
+            print("    Waiting for frame navigation...")
+            for _ in range(60):
+                await page.wait_for_timeout(1000)
+                try:
+                    url = frame.url
+                    if "photowall" in url:
+                        print(f"    Frame navigated: {url[:80]}")
+                        break
+                except Exception:
+                    pass
+            else:
+                print(f"    WARNING: frame did not navigate, skipping")
+                continue
+
+            # Wait for DOM to be ready
+            try:
+                await frame.wait_for_load_state('domcontentloaded', timeout=30000)
+            except Exception:
+                pass
+
+            # Poll for readiness (strict: _slideReady must be true, overlay must exist AND be hidden)
             pw_load_elapsed = 0
             pw_ready = False
             while pw_load_elapsed < 600:  # max 10 min per page
@@ -173,20 +194,25 @@ async def main():
 
                 try:
                     r = await frame.evaluate("""() => {
-                        const ready = typeof window._slideReady === 'undefined' || window._slideReady === true;
+                        const ready = window._slideReady === true;
+                        const overlay = document.getElementById('loading-overlay');
+                        const overlayExists = overlay !== null;
+                        const overlayHidden = overlayExists && (overlay.style.display === 'none' || overlay.style.opacity === '0');
                         const loaded = parseInt(document.getElementById('progress-count')?.innerText) || 0;
                         const total  = parseInt(document.getElementById('total-count')?.innerText) || 0;
-                        const overlay = document.getElementById('loading-overlay');
-                        const overlayHidden = overlay ? (overlay.style.display === 'none' || overlay.style.opacity === '0') : true;
-                        return { ready, loaded, total, overlayHidden };
+                        return { ready, loaded, total, overlayHidden, overlayExists };
                     }""")
-                    if r['ready'] and r['overlayHidden']:
+                    if r['ready'] and r['overlayExists'] and r['overlayHidden']:
                         print(f"    READY ({pw_load_elapsed}s) — {r['loaded']}/{r['total']} images")
                         pw_ready = True
                         break
                     else:
                         pct = f" ({r['loaded']}/{r['total']})" if r['total'] > 0 else ""
-                        print(f"    ... loading{pct} ({pw_load_elapsed}s)")
+                        state = []
+                        if not r['overlayExists']: state.append("no overlay")
+                        if not r['overlayHidden']: state.append("overlay visible")
+                        if not r['ready']: state.append("not ready")
+                        print(f"    ... loading{pct} [{', '.join(state)}] ({pw_load_elapsed}s)")
                 except Exception as e:
                     print(f"    ... polling error: {e} ({pw_load_elapsed}s)")
 

@@ -103,13 +103,14 @@ async def main():
         try:
             frame = next((f for f in page.frames if "photowall" in f.url), None)
             if frame:
-                # 先 patch renderAllOverlays 支持 12 个 dock（原版硬编码 di < 2）
+                # 先 patch renderAllOverlays 支持 N 个 dock（原版硬编码 di < 2）
                 await frame.evaluate("""() => {
+                    const DOCK_COUNT = hoverIndices.length || 12;
                     renderAllOverlays = function() {
                         const rect = innerDiv.getBoundingClientRect();
                         const bs = rect.width / 1600;
                         oCtx.save(); oCtx.setTransform(1,0,0,1,0,0); oCtx.clearRect(0,0,overlayCanvas.width,overlayCanvas.height); oCtx.restore();
-                        for (let di = 0; di < 12; di++) {
+                        for (let di = 0; di < DOCK_COUNT; di++) {
                             const imgIdx = hoverIndices[di];
                             if (imgIdx === -1) continue;
                             for (const it of buildDock(imgIdx, rect)) {
@@ -138,29 +139,39 @@ async def main():
                 await frame.evaluate("""async () => {
                     if (typeof cachedLayoutPoses === 'undefined' || cachedLayoutPoses.length === 0) return;
                     const N = cachedLayoutPoses.length;
-                    // 按 Y 坐标分桶，随机选 4 个桶，每桶 2 个点
-                    const rows = {};
+                    // 按 Y 坐标分桶
                     const rowH = cachedH * 4;
+                    const rows = {};
                     cachedLayoutPoses.forEach((p, i) => {
                         const row = Math.floor((p.y + cachedOffsetY) / rowH);
                         if (!rows[row]) rows[row] = [];
                         rows[row].push(i);
                     });
-                    const allRows = Object.keys(rows).map(Number).sort((a,b) => a - b);
-                    // 随机选 4 行
-                    const shuffled = allRows.sort(() => Math.random() - 0.5);
+                    // 只保留图片数 >= 2 的行
+                    const validRows = Object.entries(rows)
+                        .filter(([, pool]) => pool.length >= 2)
+                        .map(([row, pool]) => ({ row: Number(row), pool }))
+                        .sort((a, b) => a.row - b.row);
+                    if (validRows.length < 4) {
+                        console.warn('Not enough rows with 2+ images:', validRows.length);
+                        return;
+                    }
+                    // 随机选 4 行，每行挑 2 张
+                    const shuffled = validRows.sort(() => Math.random() - 0.5);
                     const picked = shuffled.slice(0, 4);
                     const indices = [];
-                    for (const r of picked) {
-                        const pool = rows[r];
+                    for (const { pool } of picked) {
                         const i1 = Math.floor(Math.random() * pool.length);
                         let i2 = Math.floor(Math.random() * pool.length);
                         while (i2 === i1 && pool.length > 1) i2 = Math.floor(Math.random() * pool.length);
                         indices.push(pool[i1], pool[i2]);
                     }
-                    while (hiResImages.length < 12) { hiResImages.push(null); hoverIndices.push(-1); }
-                    for (let di = 0; di < 12; di++) {
-                        const pos = cachedLayoutPoses[indices[di]];
+                    const count = indices.length; // should be 8 -> pad to 12
+                    while (hiResImages.length < count) { hiResImages.push(null); hoverIndices.push(-1); }
+                    for (let di = 0; di < count; di++) {
+                        const idx = indices[di];
+                        if (idx === undefined || !cachedLayoutPoses[idx]) continue;
+                        const pos = cachedLayoutPoses[idx];
                         const px = pos.x + cachedW / 2;
                         const py = pos.y + cachedOffsetY + cachedH / 2;
                         applyHoverAt(px, py, di);

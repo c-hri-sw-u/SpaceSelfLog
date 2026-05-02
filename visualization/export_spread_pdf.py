@@ -81,6 +81,26 @@ async def main():
                 break
             # 如果 photowall-only 模式下已超过 60s 且大部分 ready，跳过卡住的
             if PHOTOWALL_ONLY and pw_elapsed >= 60 and pw_done >= len(pw_frames) - 2:
+                # 诊断卡住的 frame
+                for fr in pw_frames:
+                    try:
+                        r = await fr.evaluate("() => typeof window._slideReady === 'undefined' || window._slideReady === true")
+                        if not r:
+                            diag = await fr.evaluate("""() => {
+                                const overlay = document.getElementById('loading-overlay');
+                                return {
+                                    url: location.href,
+                                    overlayHTML: overlay ? overlay.innerHTML.substring(0, 200) : 'none',
+                                    overlayDisplay: overlay ? overlay.style.display : 'none',
+                                    bodyLen: document.body.innerHTML.length,
+                                    hasInit: typeof init,
+                                    allImages: typeof ALL_IMAGES !== 'undefined' ? ALL_IMAGES.length : 'undef',
+                                    filtered: typeof FILTERED_IMAGES !== 'undefined' ? FILTERED_IMAGES.length : 'undef',
+                                };
+                            }""")
+                            print(f"    DIAG: {diag}")
+                    except Exception as e:
+                        print(f"    DIAG error: {e}")
                 print(f"  Proceeding with {pw_done}/{len(pw_frames)} ready after {pw_elapsed}s")
                 break
         else:

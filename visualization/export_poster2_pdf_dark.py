@@ -26,12 +26,12 @@ async def main():
         except Exception:
             print("Network idle timeout, continuing anyway...")
 
-        # 将 iframe 改为 dark 主题 + 真实图片加载，加 cache-buster 强制重新加载
-        print("Switching iframe to dark theme + real image mode...")
+        # 将 iframe 改为真实图片加载（保持 theme=light，dark 效果后续通过 CSS 覆盖）
+        print("Switching iframe to real image mode (fast=0)...")
         await page.evaluate("""
             const iframe = document.querySelector('iframe');
             if (iframe) {
-                iframe.src = iframe.src.replace('fast=1', 'fast=0').replace('theme=light', 'theme=dark') + '&_t=' + Date.now();
+                iframe.src = iframe.src.replace('fast=1', 'fast=0') + '&_t=' + Date.now();
             }
         """)
 
@@ -212,22 +212,16 @@ async def main():
             });
         """)
 
-        # 在 iframe 内把 canvas 背景从 #111 重绘为纯黑 #000
+        # 在 iframe 内通过 CSS 把背景覆盖为纯黑（不动 canvas）
         try:
             frame = next((f for f in page.frames if "photowall" in f.url), None)
             if frame:
                 await frame.evaluate("""() => {
                     document.body.style.background = '#000';
                     document.documentElement.style.background = '#000';
-                    // 在主 canvas 底层填纯黑，再重绘所有图片
-                    const canvas = document.querySelector('canvas');
-                    if (canvas) {
-                        const ctx = canvas.getContext('2d');
-                        ctx.save(); ctx.globalCompositeOperation = 'destination-over';
-                        ctx.fillStyle = '#000';
-                        ctx.fillRect(0, 0, canvas.width, canvas.height);
-                        ctx.restore();
-                    }
+                    const s = document.createElement('style');
+                    s.textContent = '.slide-container, .wrapper, canvas { background: #000 !important; }';
+                    document.head.appendChild(s);
                 }""")
         except Exception:
             pass

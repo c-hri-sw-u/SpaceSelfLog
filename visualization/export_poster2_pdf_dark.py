@@ -216,22 +216,67 @@ async def main():
             });
         """)
 
-        # 在 iframe 内通过 CSS 把背景覆盖为纯黑（只改主 canvas，不动 overlay canvas）
+        # 在 iframe 内将主 canvas 白色填充替换为黑色
+        # 主 canvas #wall 使用 { alpha: false }，完全不透明，CSS background 无法穿透
+        # 唯一方法：操作 canvas 像素，将纯白 fillRect 像素替换为黑色
+        print("Converting canvas background from white to black...")
         try:
             frame = next((f for f in page.frames if "photowall" in f.url), None)
             if frame:
+                # 先设置 iframe 内 HTML/body/container 背景为黑色（canvas 周围的 padding 区域）
                 await frame.evaluate("""() => {
                     document.body.style.background = '#000';
                     document.documentElement.style.background = '#000';
-                    const s = document.createElement('style');
-                    s.textContent = '#container, #inner { background: #000 !important; }';
-                    document.head.appendChild(s);
-                    // 只给主 canvas（第一个 canvas）垫黑色底
-                    const canvases = document.querySelectorAll('canvas');
-                    if (canvases[0]) canvases[0].style.background = '#000';
+                    const ctr = document.getElementById('container');
+                    if (ctr) ctr.style.background = '#000';
+                    const inner = document.getElementById('inner');
+                    if (inner) inner.style.background = '#000';
                 }""")
-        except Exception:
-            pass
+
+                # 验证主 canvas 是否已渲染照片（抽查 5 个像素点）
+                has_photos = await frame.evaluate("""() => {
+                    const c = document.getElementById('wall');
+                    const ctx = c.getContext('2d');
+                    const pts = [
+                        [c.width*0.2, c.height*0.15],
+                        [c.width*0.5, c.height*0.5],
+                        [c.width*0.8, c.height*0.85],
+                        [c.width*0.35, c.height*0.65],
+                        [c.width*0.7, c.height*0.3]
+                    ];
+                    let ok = 0;
+                    for (const [x,y] of pts) {
+                        const p = ctx.getImageData(x, y, 1, 1).data;
+                        if (p[0] < 250 || p[1] < 250 || p[2] < 250) ok++;
+                    }
+                    return ok;
+                }""")
+                if has_photos == 0:
+                    print("  WARNING: Canvas appears ALL WHITE - photos may not have rendered!")
+                else:
+                    print(f"  Canvas verified: {has_photos}/5 samples have photo content")
+
+                # 分块处理主 canvas，将纯白像素 (255,255,255) 替换为黑色 (0,0,0)
+                await frame.evaluate("""() => {
+                    const c = document.getElementById('wall');
+                    const ctx = c.getContext('2d');
+                    const w = c.width, h = c.height;
+                    const CHUNK = 2000;
+                    for (let y0 = 0; y0 < h; y0 += CHUNK) {
+                        const y1 = Math.min(y0 + CHUNK, h);
+                        const imgData = ctx.getImageData(0, y0, w, y1 - y0);
+                        const d = imgData.data;
+                        for (let i = 0; i < d.length; i += 4) {
+                            if (d[i] === 255 && d[i+1] === 255 && d[i+2] === 255) {
+                                d[i] = 0; d[i+1] = 0; d[i+2] = 0;
+                            }
+                        }
+                        ctx.putImageData(imgData, 0, y0);
+                    }
+                }""")
+                print("  Done: white canvas fill replaced with black.")
+        except Exception as e:
+            print(f"WARNING: could not convert canvas background: {e}")
 
         # 确保漫画图片加载完成
         print("Checking manga images...")

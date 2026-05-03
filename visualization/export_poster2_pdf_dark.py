@@ -204,10 +204,11 @@ async def main():
             document.head.appendChild(s);
         """)
 
-        # 漫画区域图片加白色边框
+        # 漫画区域：白框 + object-fit: contain 显示完整图片
         await page.evaluate("""
             document.querySelectorAll('.poster-sec-manga img').forEach(img => {
                 img.style.border = '0.05in solid #fff';
+                img.style.objectFit = 'contain';
             });
         """)
 

@@ -26,14 +26,18 @@ async def main():
         except Exception:
             print("Network idle timeout, continuing anyway...")
 
+        # 等待 iframe 出现后再修改 src
+        print("Waiting for iframe element...")
+        await page.wait_for_selector('iframe', timeout=30_000)
+        await page.wait_for_timeout(2_000)
+
         # 将 iframe 改为真实图片加载（保持 theme=light，dark 效果后续通过 CSS 覆盖）
         print("Switching iframe to real image mode (fast=0)...")
-        await page.evaluate("""
-            const iframe = document.querySelector('iframe');
-            if (iframe) {
-                iframe.src = iframe.src.replace('fast=1', 'fast=0') + '&_t=' + Date.now();
-            }
-        """)
+        iframe_src = await page.eval_on_selector('iframe', 'el => el.src')
+        print(f"  current iframe src: {iframe_src}")
+        new_src = iframe_src.replace('fast=1', 'fast=0') + '&_t=' + str(int(asyncio.get_event_loop().time() * 1000))
+        await page.eval_on_selector('iframe', f'el => el.src = "{new_src}"')
+        print(f"  new iframe src: {new_src}")
 
         # Phase 1: 等 iframe 重新加载，确认新页面已初始化（total-count > 0 且 URL 含 fast=0）
         print("Waiting for iframe to reload with fast=0...")

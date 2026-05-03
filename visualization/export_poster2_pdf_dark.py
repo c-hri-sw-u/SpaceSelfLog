@@ -243,22 +243,20 @@ async def main():
 
         await page.wait_for_timeout(2000)
 
-        rect = await page.eval_on_selector(
-            '.poster-container',
-            'el => { const r = el.getBoundingClientRect(); return {x: r.x, y: r.y, width: r.width, height: r.height}; }'
-        )
-        print(f"poster-container rect: {rect}")
+        # 用 locator.screenshot 直接截取容器元素，避免 clip 坐标偏差
+        container = page.locator('.poster-container')
+        box = await container.bounding_box()
+        print(f"poster-container bounding_box: {box}")
 
         DPI = 192
         output_path = "poster2_export_dark.jpg"
-        print(f"Taking {rect['width']:.0f}x{rect['height']:.0f}px screenshot (2x scale) → {output_path}")
+        print(f"Taking {box['width']:.0f}x{box['height']:.0f}px screenshot (2x scale) → {output_path}")
         print(f"(= {DPI} DPI at 36×78in)")
 
-        await page.screenshot(
+        await container.screenshot(
             path=output_path,
             type="jpeg",
-            quality=95,
-            clip=rect
+            quality=95
         )
 
         pdf_path = Path(output_path).with_suffix(".pdf")

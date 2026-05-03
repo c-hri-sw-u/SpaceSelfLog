@@ -31,7 +31,7 @@ async def main():
         await page.evaluate("""
             const iframe = document.querySelector('iframe');
             if (iframe) {
-                iframe.src = iframe.src.replace('fast=1', 'fast=0');
+                iframe.src = iframe.src.replace('fast=1', 'fast=0') + '&_t=' + Date.now();
             }
         """)
 

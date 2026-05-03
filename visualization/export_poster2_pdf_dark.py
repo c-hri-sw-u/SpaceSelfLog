@@ -224,7 +224,7 @@ async def main():
                     document.body.style.background = '#000';
                     document.documentElement.style.background = '#000';
                     const s = document.createElement('style');
-                    s.textContent = '.slide-container, .wrapper { background: #000 !important; }';
+                    s.textContent = '#container, #inner { background: #000 !important; }';
                     document.head.appendChild(s);
                     // 只给主 canvas（第一个 canvas）垫黑色底
                     const canvases = document.querySelectorAll('canvas');

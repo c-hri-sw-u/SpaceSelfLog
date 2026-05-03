@@ -216,7 +216,7 @@ async def main():
             });
         """)
 
-        # 在 iframe 内通过 CSS 把背景覆盖为纯黑（不动 canvas）
+        # 在 iframe 内通过 CSS 把背景覆盖为纯黑（只改主 canvas，不动 overlay canvas）
         try:
             frame = next((f for f in page.frames if "photowall" in f.url), None)
             if frame:
@@ -224,8 +224,11 @@ async def main():
                     document.body.style.background = '#000';
                     document.documentElement.style.background = '#000';
                     const s = document.createElement('style');
-                    s.textContent = '.slide-container, .wrapper, canvas { background: #000 !important; }';
+                    s.textContent = '.slide-container, .wrapper { background: #000 !important; }';
                     document.head.appendChild(s);
+                    // 只给主 canvas（第一个 canvas）垫黑色底
+                    const canvases = document.querySelectorAll('canvas');
+                    if (canvases[0]) canvases[0].style.background = '#000';
                 }""")
         except Exception:
             pass

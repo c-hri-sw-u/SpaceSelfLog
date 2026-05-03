@@ -6,7 +6,7 @@ from playwright.async_api import async_playwright
 URL = "http://localhost:8000/poster/2"
 
 VIEWPORT_W = 3456   # 36 * 96
-VIEWPORT_H = 7488   # 78 * 96
+VIEWPORT_H = 7500   # 略大于 78*96=7488，确保底部不被裁切
 SCALE      = 2    # 2x 渲染，输出 6912×14976px (= 192 DPI at 36×78in)
 
 async def main():

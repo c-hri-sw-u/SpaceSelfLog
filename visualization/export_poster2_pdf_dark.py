@@ -6,7 +6,7 @@ from playwright.async_api import async_playwright
 URL = "http://localhost:8000/poster/2"
 
 VIEWPORT_W = 3456   # 36 * 96
-VIEWPORT_H = 7488   # 78 * 96
+VIEWPORT_H = 7500   # 略大于 78*96=7488，确保底部不被裁切
 SCALE      = 2    # 2x 渲染，输出 6912×14976px (= 192 DPI at 36×78in)
 
 async def main():
@@ -210,6 +210,36 @@ async def main():
                 img.style.border = '0.05in solid #fff';
             });
         """)
+
+        # 在 iframe 内把 canvas 背景从 #111 重绘为纯黑 #000
+        try:
+            frame = next((f for f in page.frames if "photowall" in f.url), None)
+            if frame:
+                await frame.evaluate("""() => {
+                    document.body.style.background = '#000';
+                    document.documentElement.style.background = '#000';
+                    // 在主 canvas 底层填纯黑，再重绘所有图片
+                    const canvas = document.querySelector('canvas');
+                    if (canvas) {
+                        const ctx = canvas.getContext('2d');
+                        ctx.save(); ctx.globalCompositeOperation = 'destination-over';
+                        ctx.fillStyle = '#000';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.restore();
+                    }
+                }""")
+        except Exception:
+            pass
+
+        # 确保漫画图片加载完成
+        print("Checking manga images...")
+        await page.evaluate("""async () => {
+            const imgs = document.querySelectorAll('.poster-sec-manga img');
+            await Promise.all(Array.from(imgs).map(img => {
+                if (img.complete) return;
+                return new Promise(r => { img.onload = r; img.onerror = r; });
+            }));
+        }""")
 
         await page.wait_for_timeout(2000)
 

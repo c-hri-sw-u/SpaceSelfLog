@@ -194,6 +194,10 @@ async def main():
             // poster-container 也改成黑色背景
             if (container) container.style.background = '#000';
 
+            // 照片墙区域背景也改成黑色
+            const wall = document.querySelector('.poster-sec-wall');
+            if (wall) wall.style.background = '#000';
+
             // 去阴影
             const s = document.createElement('style');
             s.innerHTML = '* { box-shadow: none !important; text-shadow: none !important; }';

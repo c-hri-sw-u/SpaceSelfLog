@@ -26,12 +26,12 @@ async def main():
         except Exception:
             print("Network idle timeout, continuing anyway...")
 
-        # 将 iframe 的 fast=1 改为 fast=0，启用真实图片加载
-        print("Switching iframe to real image mode (fast=0)...")
+        # 将 iframe 改为 dark 主题 + 真实图片加载
+        print("Switching iframe to dark theme + real image mode...")
         await page.evaluate("""
             const iframe = document.querySelector('iframe');
             if (iframe) {
-                iframe.src = iframe.src.replace('fast=1', 'fast=0');
+                iframe.src = iframe.src.replace('fast=1', 'fast=0').replace('theme=light', 'theme=dark');
             }
         """)
 

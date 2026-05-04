@@ -33,7 +33,7 @@ IPAD        = 30          # inner vertical gap between sections
 TL_PAD      = 30          # padding above timeline
 TL_H        = 56          # timeline strip height (not counting TL_PAD)
 IMG_H       = 260         # thumbnail row height
-BLUR_R      = 1
+BLUR_R      = 2
 CONTENT_W   = W - PAD * 2         # full content width
 META_PLAN_W = 308                  # floor plan width in metadata row
 META_PLAN_MIN_H = 180              # minimum floor plan height
@@ -353,7 +353,10 @@ def load_thumbnails(session: str, timestamp: str) -> list[Image.Image]:
     for p in sorted(folder.iterdir()):
         if p.suffix.lower() in (".jpg", ".jpeg", ".png"):
             try:
-                imgs.append(Image.open(p).convert("RGB"))
+                img = Image.open(p).convert("RGB")
+                if img.height > img.width:
+                    img = img.rotate(-90, expand=True)
+                imgs.append(img)
             except Exception:
                 pass
     return imgs

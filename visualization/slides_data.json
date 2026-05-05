@@ -4,211 +4,211 @@
       "section": "cover",
       "src": "/slides/slide-files/01_cover.html",
       "subtitle": "",
-      "script": "Good morning, everyone. My name is Chris Wu, and today I'm presenting my thesis: 'Physical-World Observation for Personal AI Agent Personalization.' [Pause]\n\nBefore we dive in, I want you to imagine a scenario. Imagine you have a personal biographer who knows everything about you — your schedule, your emails, your preferences.\n\nBut here's the catch: this biographer has never actually met you. They know you bought a book through amazon order history — so they've already decided you're a bookworm. But they didn't see you place it on a high shelf where it's remained untouched.\n\nThis gap — between your digital traces and your lived experience — is what my research is about."
+      "script": "Good morning, everyone. My name is Chris Wu, and today I'm presenting: Physical-World Observation for Personal AI Agent Personalization. Such a long name.\n\n[Pause]\n\nFirst, I want to ask you a question: how well do you actually know your own life?\n\nNot your calendar. I mean, the actual texture of it.\n\nThink you know it well? Here's a number: across most chronic diseases, genetic factors account for less than 20% of the risk. The rest is lifestyle. Most of the time, we're simply not paying attention to ourselves.\n\nAnd if you asked someone who lives with you to describe your daily life — their version would probably differ from yours. They might be closer to the truth.\n\nThe same thing happens when we design our own homes, or describe what we want to a designer. We very often end up discovering a significant mismatch. The spaces we thought we'd love go untouched. The corners we actually use are barely big enough.\n\n[Pause]\n\nSo I've been imagining a future — where an agent that observes how you actually live becomes as ordinary as a smartwatch tracking your steps.\n\nToday I'm here to answer two questions: how far away is that future — and how do we make sure it's a future we actually want."
     },
     {
       "section": "Intro",
       "subtitle": "The Claw",
       "src": "/slides/slide-files/02_the_claw.html",
-      "script": "First, let me explain several concepts."
+      "script": "Before we get into the research — a few terms worth being precise about."
     },
     {
       "section": "Intro",
       "subtitle": "Personal AI Agents are Here",
       "src": "/slides/slide-files/03_agent_vs_assistant.html",
-      "script": "We're moving from AI assistants to AI agents.\n\nOn the left is the traditional AI assistant — reactive, session-based, focused on a single task. Every conversation starts from scratch.\n\nOn the right is the personal AI agent — proactive, continuous, with a persistent memory. It doesn't just answer questions. It knows your work, your patterns, your goals. It never forgets who you are.\n\nThis is a fundamentally different kind of relationship."
+      "script": "You've probably used something like ChatGPT. You ask a question, it answers, you close it. Tomorrow you open it again — it doesn't know you were ever there. That's the AI assistant model.\n\nA personal AI agent works on a different premise. It has persistent memory. It runs tasks on your behalf. It carries your context forward — your work, your patterns, your preferences — across every session. You don't reintroduce yourself every time.\n\nThat shift — from something that answers to something that knows you — is what makes personalization possible. And it's why the gap we're going to talk about actually matters."
     },
     {
       "section": "Intro",
       "subtitle": "The OpenClaw Fever",
       "src": "/slides/slide-files/04_openclaw_fever.html",
-      "script": "OpenClaw is at the center of this shift. And the scale of its adoption is remarkable.\n\nFrom Shenzhen to New York, thousands of people are gathering just to learn how to run this new kind of intelligence on their own machines. It's what I call the 'OpenClaw fever.'"
+      "script": "One platform is driving a lot of this: OpenClaw. And the scale of adoption caught most people off guard."
     },
     {
       "section": "Intro",
       "subtitle": "What is OpenClaw",
       "src": "/slides/slide-files/05_what_is_openclaw.html",
-      "script": "So, what exactly is OpenClaw?\n\nThink of it as the operating system for your AI agent. While models like Claude or GPT provide the brain, OpenClaw manages everything around it — your memory, your tasks, your computer environment — locally, on your own machine.\n\nIt's the persistent layer that lets an AI act on your behalf and remember you, session after session. The glue that makes the agent feel personal."
+      "script": "You can view OpenClaw as the operating system for your agent. While models like Claude or GPT provide the reasoning, OpenClaw handles what surrounds it — your memory, your tasks, your local environment. It's what lets an agent remember you, session after session."
     },
     {
       "section": "Intro",
       "subtitle": "OpenClaw's Spreading",
       "src": "/slides/slide-files/06_openclaws_spreading.html",
-      "script": "The deployment map speaks for itself.\n\nWithin months, OpenClaw spread to every continent — with dense clusters exceeding 50,000 active instances in both China and the US alone. This wasn't a gradual rollout. It blanketed the planet."
+      "script": "The deployment map gives you a sense of scale. This happened within months."
     },
     {
       "section": "Intro",
       "subtitle": "OpenClaw's GitHub Stars Growth",
       "src": "/slides/slide-files/07_openclaw_github_stars.html",
-      "script": "The data confirms the momentum. OpenClaw reached 100,000 GitHub stars in under a month — overtaking projects like React that took years to reach the same milestone. Whatever your benchmark for rapid growth, this exceeds it."
+      "script": "And it becomes the fastest growing open source project in the history"
     },
     {
       "section": "Intro",
       "subtitle": "Personalization",
       "src": "/slides/slide-files/08_personalization.html",
-      "script": "But first — what do we actually mean by personalization?\n\nIn 2000, Blom defined it as changing a system to increase its personal relevance to the individual. My framing is simpler: the service fits — or better yet, exceeds — your expectations.\n\nThink of it as a spectrum. At one end, systems that barely notice you exist. At the other, human conversation — where every word, every pause, is continuous personalization. That's the level of understanding we're aiming for."
+      "script": "I opened with a question: how well do you actually know your own life? Personalization asks the same thing of a system — how well does it know you?\n\nBlom defined it in 2000 as changing a system to increase its personal relevance to the individual. My framing is simpler: the service fits — or better yet, exceeds — your expectations.\n\nThink of it as a spectrum. At one end, systems that don't notice you exist. At the other, human conversation — where every word, every pause, is continuous adjustment."
     },
     {
       "section": "Intro",
       "subtitle": "Why Personalization Matters",
       "src": "/slides/slide-files/09_why_personalization_matters.html",
-      "script": "So why does this matter so much for an agent specifically?\n\nLook at the left side. A generic agent doesn't know you. Every task passes through the same fixed bottleneck — your context, your preferences, your goals all get flattened. The output might be technically correct, but it rarely hits what you actually need.\n\nNow look at the right. A personalized agent fuses your history, your preferences, and your workflows into one continuous context. The same task comes in — and it reaches the intended outcome, every time.\n\nThis is what I mean when I say: personalization is effectiveness. It's not a nice-to-have. It's the difference between an agent that works and one that doesn't."
+      "script": "For an AI agent, where you sit on that spectrum determines everything.\n\nOn the left, a generic agent sees every task the same way regardless of who's asking. Your context, your goals, your preferences all get flattened.\n\nOn the right, a personalized agent fuses your history, your preferences, your workflows. The same task comes in — and it reaches the right outcome."
     },
     {
       "section": "The Blind Spot",
       "subtitle": "The Blind Spot",
       "src": "/slides/slide-files/10_the_blind_spot.html",
-      "script": "But here's the problem. There is a massive blind spot.\n\nAll of that personalization — all of that memory and context — is built entirely from your digital life. What the agent knows about you is limited to what happens on a screen.\n\nThe rest of your life is invisible to it."
+      "script": "But there's a blind spot.\n\nAll of that memory for AI agents today — is built entirely from your digital life.\n\nThe rest of your life is invisible to it."
     },
     {
       "section": "The Blind Spot",
       "subtitle": "Two Worlds",
       "src": "/slides/slide-files/11_two_worlds.html",
-      "script": "This blind spot exists because we inhabit two worlds simultaneously.\n\nOn the left is the Digital Dimension — the realm of browser tabs, calendar invites, and chat logs that our agents know perfectly.\n\nBut on the right is the Physical World — where our actual lives unfold. This is where an agent could finally see that you've been staring at the same paragraph for twenty minutes, or notice the coat still on your chair that means you haven't left the house all day.\n\nRight now, our agents are personalizing from only half the picture."
+      "script": "We live in two worlds simultaneously.\n\nOn the left is the digital dimension — browser tabs, calendar, chat logs. AI agents are already good at it.\n\nOn the right is the physical world. The agent knows your calendar, but not that your desk is cluttered, your focus has drifted, and the coffee is your third of the morning.\n\nRight now, our agents are personalizing from only half the picture."
     },
     {
       "section": "The Blind Spot",
       "subtitle": "Research Landscape",
       "src": "/slides/slide-files/12_research_landscape.html",
-      "script": "The idea of recording your life and retrieving it later isn't new.\n\nVannevar Bush imagined the Memex in 1945 — a machine that could store and link everything you read using microcamera. Gordon Bell spent a decade photographing his every waking moment with MyLifeBits. These projects were as if prophesying the computer and big data era.\n\nToday, as machines learn to \"understand\" semantics and images, does continuous recording of life enable an agent to better understand you? That's the gap this research addresses."
+      "script": "This idea — recording your life and retrieving it later — isn't new.\n\nVannevar Bush imagined the Memex in 1945: a machine that could store and link everything you read. Gordon Bell spent a decade photographing his every waking moment with MyLifeBits.\n\nWhat's changed is that models can now extract structured meaning from images. The question becomes: does continuous observation actually help an agent understand you better? That's what this research tries to answer."
     },
     {
       "section": "The Blind Spot",
       "subtitle": "Research Questions",
       "src": "/slides/slide-files/13_research_questions.html",
-      "script": "Three research questions, three contributions.\n\nRQ1: What physical-world information becomes visible through egocentric perception that digital traces alone can't capture?\n\nRQ2: In what task and interaction contexts does this information meaningfully improve personalization — and when does it introduce noise or redundancy?\n\nRQ3: What design requirements emerge for integrating continuous egocentric sensing into an existing agent memory architecture?\n\nI'll walk through the system and the study that answer each one."
+      "script": "Three questions: what can physical observation reveal that digital traces can't, when does it actually help, and what does it take to build."
     },
     {
       "section": "Design Rationale",
       "subtitle": "Design Rationale",
       "src": "/slides/slide-files/14_design_rationale_cover.html",
-      "script": "Before I get into the system itself, I want to explain a few key design decisions — choices that shaped everything else."
+      "script": "Before the system itself — a few key decisions that shaped everything."
     },
     {
       "section": "Design Rationale",
       "subtitle": "Why Egocentric Vision?",
       "src": "/slides/slide-files/15_why_egocentric_vision.html",
-      "script": "The most fundamental choice was to use egocentric vision — a first-person wearable camera.\n\nThe reason is simple: your field of view is already a map of your attention. Whatever you're looking at is, by definition, what you're engaging with. No external sensor can tell you that.\n\nAnd unlike a fixed camera on the wall, a wearable goes everywhere you do — every room, every environment, every transition. A single frame captures your surroundings, your activity, and the objects around you all at once.\n\nTiming also matters. People built some gigantic egocentric database. Vision-language models have only recently become reliable enough to extract structured meaning from these images."
+      "script": "The most fundamental choice was to use egocentric vision — a first-person wearable camera.\n\nYour field of view is already a map of your attention. Whatever you're looking at is, by definition, what you're engaging with. No external sensor can tell you that.\n\nAnd unlike a fixed camera, a wearable goes everywhere you do — every room, every transition. A single frame captures your surroundings, your activity, and the objects around you at once."
     },
     {
       "section": "Design Rationale",
       "subtitle": "Why OpenClaw?",
       "src": "/slides/slide-files/16_why_openclaw.html",
-      "script": "The second major decision was to build on top of OpenClaw rather than a custom agent.\n\nThe key insight is this: OpenClaw personalizes using plain text files — markdown documents that describe who you are, what you're working on, what you prefer. Every session, the agent reads those files before it does anything else.\n\nThat means we can inject physical-world observations directly into the agent's memory — without touching its core architecture. We're not hacking the system. We're speaking its language.\n\nAnd because the memory is plain text, it's fully inspectable. We can trace exactly how a physical observation enters the agent's reasoning."
+      "script": "The second decision was to build on OpenClaw rather than a custom agent.\n\nOpenClaw personalizes through plain text files — markdown documents describing who you are, what you're working on, what you prefer. Every session, the agent reads those files before it does anything else.\n\nThat means we can inject physical-world observations directly into the agent's memory without touching its core architecture. We're speaking the system's own language."
     },
     {
       "section": "Design Rationale",
       "subtitle": "How OpenClaw works",
       "src": "/slides/slide-files/17_how_openclaw_works.html",
-      "script": "Here's how that actually works. At the start of every session, OpenClaw assembles a 'context window' from these markdown files — your persona, your preferences, your recent logs. The LLM reads all of this before the conversation even begins.\n\nWhat matters here is that this memory is plain text. You can open it, read it, and edit it yourself. It's not a black box — it's a transparent, human-readable record that grows with every session.\n\nThis is exactly the property we're going to take advantage of."
+      "script": "At the start of every session, OpenClaw assembles a context window from markdown files — your persona, your preferences, your recent logs. The model reads all of this before the conversation begins.\n\nThe memory is plain text. You can open it, read it, edit it. It's not a black box."
     },
     {
       "section": "System Design",
       "subtitle": "System Design",
       "src": "/slides/slide-files/18_system_design_cover.html",
-      "script": "Now let's look at how this actually works. How do we take raw video from a wearable camera and turn it into the kind of knowledge that makes an agent feel personal?\n\nHere's the pipeline."
+      "script": "Now let's look at how this actually works — how raw video from a wearable becomes the kind of knowledge that makes an agent feel personal."
     },
     {
       "section": "System Design",
       "subtitle": "Abstract Pipeline",
       "src": "/slides/slide-files/19_abstract_pipeline.html",
-      "script": "This is the big picture: a continuous loop moving from Collection, to Compression, then to Integration, and finally Feedback.\n\nI want to pause on Compression — because it is the strategic heart of this entire project.\n\nThe physical world generates an overwhelming amount of data. If we tried to record and process every single second, the system would drown. So the question isn't 'how do we capture everything?' The question is: 'how do we decide what matters?'\n\nIn this pipeline, to compress is to understand.\n\nMuch like the human brain, the system doesn't try to remember every frame. It filters noise to identify key events — moments that actually change something about who you are. By combining AI reasoning with your own feedback, we turn thousands of raw images into a handful of meaningful insights.\n\nOnly through this strategic compression can an agent truly understand who you are — not just what you did."
+      "script": "The big picture: a continuous loop — Collection, Compression, Integration, Feedback.\n\nI want to pause on Compression, because it's the strategic heart of this project.\n\nThe physical world generates an overwhelming amount of data. The question isn't 'how do we capture everything?' It's: 'how do we decide what matters?'\n\nIn this pipeline, to compress is to understand. The system doesn't try to remember every frame — it filters to identify key events, moments that actually change something about who you are. By combining AI reasoning with your own feedback, thousands of raw images become a handful of meaningful insights."
     },
     {
       "section": "System Design",
       "subtitle": "The Pipeline & Data Flow",
       "src": "/slides/slide-files/20_system_pipeline.html",
-      "script": "This is the five-layer pipeline that makes the system work.\n\nNotice the boundary in the middle. The first two layers — Capture and Preprocessing — run entirely on the 'edge,' meaning your phone. This keeps the system responsive and handles privacy locally, on your body.\n\nThe data then travels to your computer, where the Inference and Memory layers do the heavy lifting — turning filtered snapshots into structured knowledge. Finally, the Retrieval layer connects everything back to the agent, so it can actually use what it has learned.\n\nThink of it like a journalist and an editor working together: one gathers everything in the field, the other decides what's worth publishing. This division of labor is what makes the system powerful enough to think deeply, and light enough to run on a single battery all day."
+      "script": "This is the five-layer pipeline.\n\nNotice the boundary in the middle. Capture and Preprocessing run on your phone — locally, on your body. The data then moves to your computer, where Inference and Memory do the heavy lifting. Retrieval connects everything back to the agent.\n\nOne side gathers; the other decides what matters. That division of labor is what keeps the system light enough to run all day."
     },
     {
       "section": "System Design",
       "subtitle": "Layer 1 Capture & Layer 1.5 Preprocess",
       "src": "/slides/slide-files/21_layer1_layer1_5.html",
-      "script": "The first design challenge: how do you capture a human life without recording everything?\n\nThe answer is adaptive capture. Instead of filming at a fixed interval, the system listens. It monitors ambient sound, movement, and scene changes — signals that something in your environment is shifting. When those signals appear, the camera wakes up and starts capturing.\n\nThis means: if you're working quietly at your desk for thirty minutes, barely anything is recorded. But the moment you stand up, move to another room, or start a conversation, the system activates.\n\nThe Preprocessing layer then acts as a second filter — automatically scoring each frame for clarity and uniqueness, discarding the blurry or redundant ones.\n\nTogether, these two layers define the rhythm of the system: mostly quiet, selectively attentive."
+      "script": "The first challenge: how do you capture a human life without recording everything?\n\nThe answer is adaptive capture. Instead of filming at a fixed interval, the system listens — monitoring ambient sound, movement, and scene changes. When those signals appear, the camera activates.\n\nIf you're working quietly at your desk for thirty minutes, almost nothing is recorded. The moment you move to another room or start a conversation, it wakes up.\n\nMostly quiet, selectively attentive."
     },
     {
       "section": "System Design",
       "subtitle": "Capture Monitor",
       "src": "/slides/slide-files/22_capture_monitor.html",
-      "script": "To tune and monitor all of this, I built a monitor page streaming the camera from my phone — so I could observe the system's behavior, adjust the parameters, and verify it was running as intended."
+      "script": "To tune all of this, I built a monitor page streaming the camera from my phone — so I could watch the system's behavior and adjust the parameters in real time."
     },
     {
       "section": "System Design",
       "subtitle": "Layer 2 Inference",
       "src": "/slides/slide-files/23_layer2_inference.html",
-      "script": "Once we have those snapshots, the Inference layer acts as an intelligent interpreter. It doesn't just see a picture of a room — it looks for meaning.\n\nIf you're sitting at your kitchen table with a laptop and a half-eaten sandwich, it doesn't list the objects. It understands the context: this person is probably having a working lunch. It asks — what are they doing, what objects are around them, where are they, and most importantly, why does this moment matter?\n\nOne important design detail: each inference pass carries forward the output of the previous batch as part of its input. This means the system always has a sense of what just happened — maintaining continuity across time, not just isolated snapshots.\n\nThe output is a structured observation: a readable note that the agent can directly use."
+      "script": "Once we have those snapshots, the Inference layer looks for meaning.\n\nIf you're sitting at a kitchen table with a laptop and a half-eaten sandwich, it doesn't list the objects. It reads the context: this person is probably having a working lunch.\n\nThe output is a structured observation — a readable note the agent can use directly."
     },
     {
       "section": "System Design",
       "subtitle": "Layer 3 Memory",
       "src": "/slides/slide-files/24_layer3_memory.html",
-      "script": "Now let's look at how we organize this knowledge. I designed a four-layer memory architecture — one that mirrors how we naturally process our own experience.\n\nLogs are the base layer. Every raw observation from the camera lands here — like your immediate sensory memory. Unfiltered, granular, complete.\n\nInsights sit above that. Throughout the day, the system reviews the logs and distills them into a snapshot: what's happening right now, what are the key moments so far. Like keeping a running mental note.\n\nNarrative is the nightly reflection. At the end of the day, those moments are woven into a single, coherent timeline.\n\nAnd Patterns are the long view. Over weeks and months, the system identifies recurring habits and stores them in your behavioral profile.\n\nHere's what makes this different from ordinary memory: it can be corrected. If the system misreads a scene, you can open the file, edit it, and teach it what actually happened. It's a memory you can audit."
+      "script": "How do we organize this knowledge? The memory has four layers — from raw daily logs at the bottom up to long-term behavioral patterns at the top. Think of it as working memory on one end, long-term memory on the other as human.\n\nWhat matters most: it can be corrected. If the system misreads a scene, you can open the file, edit it, and teach it what actually happened. It's a memory you can audit."
     },
     {
       "section": "System Design",
       "subtitle": "Server Monitor",
       "src": "/slides/slide-files/25_server_monitor.html",
-      "script": "I also built a dashboard. Here, you can watch the system's interpretation process in real time.\n\nIn the center is the batch feed — raw snapshots coming in, immediately translated into structured observations. The system identifies what's on my desk, what I'm focused on, the context of the moment.\n\nOn the right, the memory state shows the agent's running journal — merging those observations into a high-level summary, tracking my current state and daily highlights as they accumulate.\n\nWhat you're watching is an agent that is no longer operating on guesswork — it is actively witnessing and making sense of my life."
+      "script": "I also built a dashboard. In the center, the batch feed — raw snapshots coming in, immediately translated into structured observations. On the right, the memory state showing the agent's running journal, tracking current state and daily highlights as they accumulate."
     },
     {
       "section": "System Design",
       "subtitle": "Layer 3.5 Retrieval",
       "src": "/slides/slide-files/26_layer3_5_retrieval.html",
-      "script": "Finally, we have the Retrieval layer — this is where stored knowledge becomes active assistance.\n\nIt works in three ways. The first is Bootstrap: every session begins with the agent already up to speed on your recent context — no need to catch it up.\n\nThe second is On-Demand: if you ask something like 'where did I leave that book I was reading?' the agent searches its physical logs and answers from observation, not assumption.\n\nThe third is Proactive: the agent can notice something has changed in your physical environment and initiate a conversation on its own.\n\nThis is the final step of the loop — turning memory into action."
+      "script": "Finally, the Retrieval layer — where stored knowledge becomes active assistance.\n\nIt works three ways. Bootstrap: every session begins with the agent already up to speed on your recent context.\n\nOn-Demand: if you ask 'where did I leave that book I was reading?' the agent searches its physical logs and answers from observation, not assumption.\n\nProactive: the agent can notice something has changed in your physical environment and initiate a conversation on its own."
     },
     {
       "section": "System Design",
       "subtitle": "Full Pipeline Overview",
       "src": "/slides/slide-files/27_full_pipeline.html",
-      "script": "Taken together, this pipeline builds a continuous, structured record of a person's physical life — and connects it directly to the agent that works for them.\n\nFrom the wearable on your body to the memory file in your agent — every layer serves one purpose: closing the gap between the life you live and the AI that's supposed to know you."
+      "script": "Taken together: a continuous, structured record of a person's physical life, connected to the agent that works for them."
     },
     {
       "section": "Study Design",
       "subtitle": "Study Design",
       "src": "/slides/slide-files/28_study_design_cover.html",
-      "script": "To evaluate this system, I ran a two-week autoethnographic study — using a 'research through design' methodology. In plain terms: I was both the designer and the subject."
+      "script": "To find out if this is a future we actually want, I had to live in it. A two-week autoethnographic study — research through design. I was both the designer and the subject."
     },
     {
       "section": "Study Design",
       "subtitle": "Study Design",
       "src": "/slides/slide-files/29_study_design_overview.html",
-      "script": "The study ran in two phases.\n\nThe first was a Calibration phase — where I tuned the pipeline parameters, tested the capture triggers, and adjusted the inference prompts based on real-world performance.\n\nThe second was a formal Observation phase. Once everything was set, I froze all system parameters and simply lived with it — letting the system run without intervention, so the data would be clean."
+      "script": "The study ran in two phases. First, calibration — I tuned the system until it was behaving reliably. Then I froze everything and simply lived with it."
     },
     {
       "section": "Study Design",
       "subtitle": "Data Collection",
       "src": "/slides/slide-files/30_study_design_metrics.html",
-      "script": "Over two weeks, the system collected thousands of egocentric keyframes, full transcripts of every interaction I had with the agent, and daily journal entries where I reflected on what the system got right — and what it got wrong.\n\nThese three streams of data — visual, conversational, and interpretive — give a picture that no single method alone could provide."
+      "script": "That produced three streams of data: egocentric images, transcripts of every conversation with the agent, and a daily journal where I wrote down what the system got right and what it got wrong."
     },
     {
       "section": "Study Design",
       "subtitle": "Experimental Protocol",
       "src": "/slides/slide-files/31_study_design_protocol.html",
-      "script": "The study used three observation modes.\n\nPassive observation: I went about my day normally, letting the system capture whatever it would.\n\nStructured probes: at specific moments, I asked the agent to recall something from earlier — testing whether the memory was accurate and useful.\n\nAnd proactive triggers: a scheduled job allowed the agent to initiate contact on its own, based on what it had observed — without me asking."
+      "script": "The observation itself worked in three modes. Passive — I went about my day and let the system run. Structured probes — at specific moments, I asked the agent to recall something from earlier. And proactive triggers — a scheduled task that let the agent start a conversation on its own."
     },
     {
       "section": "Study Design",
       "subtitle": "Study Device",
       "src": "/slides/slide-files/32_study_device.html",
-      "script": "The capture device was a head-mounted iPhone — an approximation of the smart glasses that are now entering the market. It holds the camera at eye level, capturing roughly what I'm actually looking at. This is what preserves the implicit attention signal that's central to the design."
+      "script": "All of this ran through one device — an off-the-shelf iPhone. Camera, microphone, motion sensors, all built in.\n\nThe mounting decision mattered more than I expected. I went with chest-mounted over head-mounted — less attentional precision, but comfortable enough to forget it was there. If you're aware of the device, you're not behaving naturally.\n\nYes, I walked around like this for two weeks."
     },
     {
       "section": "Study Design",
       "subtitle": "Design Iteration Log",
       "src": "/slides/slide-files/33_design_iteration_log.html",
-      "script": "Every change made during the calibration phase was logged here. Each entry records what was adjusted, why, and what effect it had.\n\nThis transparency was important: in a study where I'm both designer and subject, the log is the audit trail that keeps the process honest."
+      "script": "Every change during calibration was logged here. What was adjusted, why, and what effect it had.\n\nIn a study where I'm both designer and subject, this log is the audit trail that keeps the process honest."
     },
     {
       "section": "Study Design",
       "subtitle": "Autoethnographic Journal",
-      "script": "And this is the journal interface — where I wrote my daily research observations alongside the agent's conversation transcripts.\n\nThe goal was to capture the texture of the experience: the moments where the agent anticipated something correctly, the moments where it missed completely, and the moments that surprised me.",
+      "script": "And this is the journal — written observations alongside the agent's conversation transcripts.\n\nWhere it got things right. Where it missed. What surprised me.",
       "src": "/slides/slide-files/34_autoethnographic_journal.html"
     },
     {
       "section": "Results",
       "subtitle": "Results",
       "src": "/slides/slide-files/35_results.html",
-      "script": "Now — what did two weeks actually produce? Let's look at the data."
+      "script": "What did two weeks actually produce?"
     },
     {
       "section": "Results",
@@ -216,7 +216,7 @@
       "src": "/slides/slide-files/36_results_photowall.html?pg=0&pgs=6",
       "slidesOnly": true,
       "keepAlive": true,
-      "script": "This is the Timeline Wall — two weeks of my life, as seen by the agent. Each image is a moment the system judged worth capturing.\n\nWhat strikes me every time I look at this is the sheer range: early mornings, late nights, working at my desk, cooking, going outside. The agent didn't curate this. It simply witnessed."
+      "script": "This is two weeks of my life, as seen by the agent. Each image is a moment the system judged worth capturing."
     },
     {
       "section": "Results",
@@ -310,61 +310,61 @@
       "section": "Results",
       "subtitle": "Activity Daily Rhythm Matrix",
       "src": "/slides/slide-files/37_results_activity_rhythm.html",
-      "script": "The Activity Rhythm Matrix maps what I was doing against the time of day, across the full two weeks.\n\nWhat emerged wasn't random. There are clear bands — morning routines, deep work windows, evening patterns. What's interesting is how consistent they were, even on days that felt chaotic.\n\nThe agent can now recognize these rhythms — and adapt its support accordingly."
+      "script": "Looking more closely at the data — this matrix maps what I was doing against time of day, across the full two weeks.\n\nClear bands emerged: morning routines, deep work windows, evening habits. Consistent even on days that felt chaotic."
     },
     {
       "section": "Results",
       "subtitle": "Object Co-occurrence Network",
       "src": "/slides/slide-files/38_results_object_network.html",
-      "script": "This network graph maps how objects appear together. Each node is an object; each connection means they appeared in the same scene.\n\nThe clusters reveal habits I didn't consciously know I had. My work setup always includes the same lamp, the same mug. My cooking context is completely separate. These aren't things I would have told an agent — but they're now part of how it understands me."
+      "script": "This network maps how objects appear together. Each node is an object; each connection means they appeared in the same scene.\n\nThe clusters reveal habits I didn't consciously know I had. My work setup always includes the same lamp, the same mug. My cooking context is completely separate.\n\nThese aren't things I would have told an agent — but now they're part of how it understands me."
     },
     {
       "section": "Results",
       "subtitle": "Context to Activity Flow",
       "src": "/slides/slide-files/39_results_sankey.html",
-      "script": "The Sankey diagram traces the flow between environments and activities. Where I was — desk, kitchen, couch — strongly predicted what I was doing next.\n\nThis confirms something intuitive: physical location is one of the most reliable signals for intent. If the agent knows where I am, it already has a strong guess about what I need."
+      "script": "The Sankey traces the flow between environments and activities. Where I was — desk, kitchen, couch — strongly predicted what I was doing next.\n\nPhysical location is one of the most reliable signals for intent. If the agent knows where I am, it already has a strong guess about what I need."
     },
     {
       "section": "Results",
       "subtitle": "Apartment Activity Heatmap",
       "src": "/slides/slide-files/40_results_floorplan.html",
-      "script": "By projecting activities onto my floor plan, we can see where my life actually concentrates.\n\nThese hotspots aren't just coordinates. My desk is where I go to focus. My kitchen is where I go to decompress. The couch is where the in-between moments happen — the thinking, the reading, the brief breaks that never quite made it onto a calendar.\n\nThe agent now knows this."
+      "script": "By projecting activities onto my floor plan, we can see where life actually concentrates.\n\nThese hotspots aren't just coordinates. My desk is where I go to focus. My kitchen is where I decompress. The couch is where the in-between moments happen — the thinking, the brief breaks that never made it onto a calendar.\n\nThe agent now knows this."
     },
     {
       "section": "Results",
       "subtitle": "Integrated Spatial Activity Map",
       "src": "/slides/slide-files/41_results_fusion_map.html",
-      "script": "This final map fuses movement with meaning — not just where I was, but what I was doing there, and how often.\n\nWhat I find compelling about this image is what it would mean for someone who designs spaces. An architect or an interior designer doesn't just need to know how many square meters you have — they need to know how you actually inhabit a space. And right now, the only way to get that information is to ask you, and trust that you remember.\n\nImagine instead: they interview your agent. Yes, your agent. The system that has been quietly watching how you live for weeks, tracking where you focus, where you rest, where you feel at home.\n\nThat conversation — between a designer and an AI that genuinely knows its user — is closer than it sounds. And it's one of the futures this research is pointing toward."
+      "script": "This final map fuses movement with meaning — not just where I was, but what I was doing there, and how often.\n\nWhat I find interesting is what this would mean for someone who designs spaces. An architect doesn't just need to know square meters — they need to know how a space is actually inhabited. Right now, the only way to get that is to ask, and trust that the person remembers.\n\nImagine instead they talk to the agent. The system that has been watching how someone lives for weeks — tracking where they focus, where they rest, where they feel at home.\n\nThat conversation is closer than it sounds."
     },
     {
       "section": "Results",
       "subtitle": "What the Agent Learned About Me",
       "src": "/slides/slide-files/42_what_agent_learned.html",
-      "script": "So what does all this data actually become? These are real outputs from the agent's memory — things it learned about me over two weeks, not things I told it.\n\nIt noticed that my drink choices almost perfectly track what kind of work I'm doing. It recognized my late-night kitchen trips not as random movement, but as a consistent decompression loop. It saw that I always work with both physical paper and a screen at the same time.\n\nThese aren't things I would have thought to tell an agent. But now, it knows them."
+      "script": "So what does all this data actually become? These are real outputs from the agent's memory — things it learned about me over two weeks, not things I told it.\n\nIt noticed that my drink choices track what kind of work I'm doing. It recognized my late-night kitchen trips not as random movement, but as a consistent decompression loop. It saw that I always work with both paper and a screen.\n\nNone of this came from me. Now it knows."
     },
     {
       "section": "Discussion",
       "subtitle": "Answering the Research Questions",
       "src": "/slides/slide-files/43_discussion_rqs.html",
-      "script": "The slide maps the key findings and limitations for each research question. I'll just highlight what surprised me most.\n\nFor RQ1: the system captures something digital logs fundamentally cannot — the in-between moments, the drift between tasks. But raw observation doesn't automatically become insight. That requires a dedicated reasoning step, and that's the part that still needs work.\n\nFor RQ2: the gap between the best and worst moments was stark. At its peak, the agent inferred I'd gone rock climbing without being told. At its worst, it told me I was cleaning my refrigerator coils while I sat at my desk.\n\nThe design requirements in RQ3 follow directly from those failures."
+      "script": "The slide maps key findings and limitations for each research question. A few things worth highlighting.\n\nFor RQ1: the system captures something digital logs fundamentally cannot — the in-between moments, the drift between tasks. But raw observation doesn't automatically become insight. That requires a dedicated reasoning step.\n\nFor RQ2: the gap between the best and worst moments was stark. At its peak, the agent inferred I'd gone rock climbing without being told. At its worst, it told me I was cleaning refrigerator coils while I sat at my desk.\n\nThe design requirements in RQ3 follow directly from those failures."
     },
     {
       "section": "Discussion",
       "subtitle": "Moments of Connection & Disconnection",
       "src": "/slides/slide-files/44_case_study.html",
-      "script": "Let me close the analysis with two moments — one that worked, one that didn't.\n\nThe connection case: the agent noticed a gap in my log and asked if I'd gone rock climbing. It was right. That was the moment the system stopped feeling like a tool.\n\nThe disconnection case: I was sitting at my desk. The agent confidently told me I was cleaning the refrigerator coils.\n\nThe details are on the slide."
+      "script": "Two moments — one that worked, one that didn't.\n\nThe connection: the agent noticed a gap in my log and asked if I'd gone rock climbing. It was right. That was the first time the system stopped feeling like a tool.\n\nThe disconnection: I was sitting at my desk. The agent confidently told me I was cleaning the refrigerator coils.\n\nThe details are on the slide."
     },
     {
       "section": "Conclusion",
       "subtitle": "System Limitations",
       "src": "/slides/slide-files/45_limitations.html",
-      "script": "The slide lists four bottlenecks. A few things worth adding.\n\nThe Hawthorne effect was real — but what surprised me was how quickly I forgot about the camera when I was deeply focused. The social friction with third parties, on the other hand, was immediate and impossible to ignore.\n\nAnd the VLM over-interpretation issue isn't just a bug. These models are built to find meaning. Give them a passive environment, and they'll invent it."
+      "script": "Four bottlenecks — listed on the slide. A few things worth adding.\n\nThe Hawthorne effect was real, but I forgot about the camera surprisingly quickly when I was deeply focused. The social friction with other people, on the other hand, was immediate and impossible to ignore.\n\nAnd the VLM over-interpretation issue isn't just a bug. These models are built to find meaning. Give them a passive environment, and they'll invent it."
     },
     {
       "section": "Conclusion",
       "subtitle": "The Biographer Opens Its Eyes",
       "src": "/slides/slide-files/46_conclusion.html",
-      "script": "This manga was generated by the agent itself — using the physical-world data it had collected about me over the two weeks.\n\nI gave it no other brief. It already knew the story."
+      "script": "The agent had my data, and its insights about my life. I asked it to draw a manga to depict my life. This is what it made.\n\nThis is a new possibility for understanding how we actually live."
     },
     {
       "section": "Appendix",

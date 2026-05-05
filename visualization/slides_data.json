@@ -216,7 +216,7 @@
       "src": "/slides/slide-files/36_results_photowall.html?pg=0&pgs=6",
       "slidesOnly": true,
       "keepAlive": true,
-      "script": "This is two weeks of my life, as seen by the agent. Each image is a moment the system judged worth capturing."
+      "script": "This is part of my life in that 2 weeks, as seen by the agent. Each image is a moment the system judged worth capturing."
     },
     {
       "section": "Results",
@@ -270,37 +270,37 @@
       "section": "Results",
       "subtitle": "Activity Daily Rhythm Matrix",
       "src": "/slides/slide-files/37_results_activity_rhythm.html",
-      "script": "Looking more closely at the data — this matrix maps what I was doing against time of day, across the full two weeks.\n\nClear bands emerged: morning routines, deep work windows, evening habits. Consistent even on days that felt chaotic."
+      "script": "Looking more closely at the data — this matrix maps what I was doing against time of day, across the full two weeks."
     },
     {
       "section": "Results",
       "subtitle": "Object Co-occurrence Network",
       "src": "/slides/slide-files/38_results_object_network.html",
-      "script": "This network maps how objects appear together. Each node is an object; each connection means they appeared in the same scene.\n\nThe clusters reveal habits I didn't consciously know I had. My work setup always includes the same lamp, the same mug. My cooking context is completely separate.\n\nThese aren't things I would have told an agent — but now they're part of how it understands me."
+      "script": "This network maps object co-occurrence — what appeared together in the same scene.\n\nAnd I generated an image to show AI's perspective."
     },
     {
       "section": "Results",
       "subtitle": "Context to Activity Flow",
       "src": "/slides/slide-files/39_results_sankey.html",
-      "script": "The Sankey traces the flow between environments and activities. Where I was — desk, kitchen, couch — strongly predicted what I was doing next.\n\nPhysical location is one of the most reliable signals for intent. If the agent knows where I am, it already has a strong guess about what I need."
+      "script": "And beyond objects — location itself turned out to be one of the strongest signals.\n\nWhere I was — desk, kitchen, couch — strongly predicted what I was doing next. If the agent knows where I am, it already has a strong guess about what I need."
     },
     {
       "section": "Results",
       "subtitle": "Apartment Activity Heatmap",
       "src": "/slides/slide-files/40_results_floorplan.html",
-      "script": "By projecting activities onto my floor plan, we can see where life actually concentrates.\n\nThese hotspots aren't just coordinates. My desk is where I go to focus. My kitchen is where I decompress. The couch is where the in-between moments happen — the thinking, the brief breaks that never made it onto a calendar.\n\nThe agent now knows this."
+      "script": "And we can map the data onto the floor plan of my apartment.\n\nWe can see where life actually concentrates. This is the mismatch I mentioned at the start.\n\nThe agent now knows this."
     },
     {
       "section": "Results",
       "subtitle": "Integrated Spatial Activity Map",
       "src": "/slides/slide-files/41_results_fusion_map.html",
-      "script": "This final map fuses movement with meaning — not just where I was, but what I was doing there, and how often.\n\nWhat I find interesting is what this would mean for someone who designs spaces. An architect doesn't just need to know square meters — they need to know how a space is actually inhabited. Right now, the only way to get that is to ask, and trust that the person remembers.\n\nImagine instead they talk to the agent. The system that has been watching how someone lives for weeks — tracking where they focus, where they rest, where they feel at home.\n\nThat conversation is closer than it sounds."
+      "script": "This final map adds one more layer — not just where, but what I was doing there, and how often.\n\nWhat this would mean for someone who designs spaces: an architect doesn't need just square meters — they need to know how a space is actually inhabited. Right now, the only way to get that is to ask, and trust that the person remembers.\n\nImagine instead: they talk to the agent. \n\nWhen some day agents become reliable enough, that conversation is closer than it sounds."
     },
     {
       "section": "Results",
       "subtitle": "What the Agent Learned About Me",
       "src": "/slides/slide-files/42_what_agent_learned.html",
-      "script": "So what does all this data actually become? These are real outputs from the agent's memory — things it learned about me over two weeks, not things I told it.\n\nIt noticed that my drink choices track what kind of work I'm doing. It recognized my late-night kitchen trips not as random movement, but as a consistent decompression loop. It saw that I always work with both paper and a screen.\n\nNone of this came from me. Now it knows."
+      "script": "At the start I asked: how well do you actually know your own life? After two weeks, the agent's answer is that it knows some things about me that I hadn't put into words myself.\n\nIt noticed my drink choices track what kind of work I'm doing. My late-night kitchen trips aren't random — they're a consistent decompression loop. I always work with both paper and a screen."
     },
     {
       "section": "Discussion",

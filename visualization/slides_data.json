@@ -212,51 +212,11 @@
     },
     {
       "section": "Results",
-      "subtitle": "Full Timeline Wall (1/6)",
+      "subtitle": "Full Timeline Wall",
       "src": "/slides/slide-files/36_results_photowall.html?pg=0&pgs=6",
       "slidesOnly": true,
       "keepAlive": true,
       "script": "This is two weeks of my life, as seen by the agent. Each image is a moment the system judged worth capturing."
-    },
-    {
-      "section": "Results",
-      "subtitle": "Full Timeline Wall (2/6)",
-      "src": "/slides/slide-files/36_results_photowall.html?pg=1&pgs=6",
-      "slidesOnly": true,
-      "keepAlive": true,
-      "script": ""
-    },
-    {
-      "section": "Results",
-      "subtitle": "Full Timeline Wall (3/6)",
-      "src": "/slides/slide-files/36_results_photowall.html?pg=2&pgs=6",
-      "slidesOnly": true,
-      "keepAlive": true,
-      "script": ""
-    },
-    {
-      "section": "Results",
-      "subtitle": "Full Timeline Wall (4/6)",
-      "src": "/slides/slide-files/36_results_photowall.html?pg=3&pgs=6",
-      "slidesOnly": true,
-      "keepAlive": true,
-      "script": ""
-    },
-    {
-      "section": "Results",
-      "subtitle": "Full Timeline Wall (5/6)",
-      "src": "/slides/slide-files/36_results_photowall.html?pg=4&pgs=6",
-      "slidesOnly": true,
-      "keepAlive": true,
-      "script": ""
-    },
-    {
-      "section": "Results",
-      "subtitle": "Full Timeline Wall (6/6)",
-      "src": "/slides/slide-files/36_results_photowall.html?pg=5&pgs=6",
-      "slidesOnly": true,
-      "keepAlive": true,
-      "script": ""
     },
     {
       "section": "Results",

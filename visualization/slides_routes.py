@@ -78,7 +78,61 @@ def slides_get():
 def slides_post():
     data = request.get_json(force=True, silent=True) or {}
     SLIDES_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+    _write_script_md(data)
     return jsonify({"ok": True})
+
+
+SCRIPT_MD_FILE = VIZ_DIR / "script.md"
+
+
+def _generate_script_md(data: dict) -> str:
+    lines = ["# Presentation Script", ""]
+    current_section = None
+    slide_index = 0
+
+    for slide in data.get("slides", []):
+        script = (slide.get("script") or "").strip()
+        if not script:
+            continue
+        if slide.get("spreadOnly"):
+            continue
+
+        slide_index += 1
+
+        section = slide.get("section") or ""
+        if section != current_section:
+            current_section = section
+            lines.append(f"## {section}")
+            lines.append("")
+
+        num = str(slide_index).zfill(2)
+        subtitle = slide.get("subtitle") or ""
+        header = f"### {num}" + (f" — {subtitle}" if subtitle else "")
+        lines.append(header)
+        lines.append("")
+        lines.append(script)
+        lines.append("")
+
+    return "\n".join(lines)
+
+
+def _write_script_md(data: dict | None = None) -> None:
+    if data is None:
+        if SLIDES_FILE.exists():
+            data = json.loads(SLIDES_FILE.read_text(encoding="utf-8"))
+        else:
+            return
+    SCRIPT_MD_FILE.write_text(_generate_script_md(data), encoding="utf-8")
+
+
+@bp.get("/script.md")
+def serve_script_md():
+    if SLIDES_FILE.exists():
+        data = json.loads(SLIDES_FILE.read_text(encoding="utf-8"))
+        _write_script_md(data)
+    if not SCRIPT_MD_FILE.exists():
+        return "script.md not yet generated", 404
+    return send_file(SCRIPT_MD_FILE, mimetype="text/markdown; charset=utf-8")
 
 
 @bp.post("/api/slides/new")

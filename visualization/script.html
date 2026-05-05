@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presentation Script</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Georgia', serif;
+    background: #fafafa;
+    color: #111;
+    padding: 4rem 2rem;
+    max-width: 740px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+    font-weight: normal;
+    color: #888;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 1rem;
+  }
+
+  .section-header {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #aaa;
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+    padding-left: 0.5rem;
+    border-left: 2px solid #ffe94d;
+  }
+
+  .slide {
+    margin-bottom: 2rem;
+    padding: 1.5rem 1.5rem 1.5rem 1.5rem;
+    background: #fff;
+    border: 1px solid #ebebeb;
+    border-radius: 4px;
+  }
+
+  .slide-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .slide-number {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #bbb;
+    letter-spacing: 0.05em;
+    font-family: 'Courier New', monospace;
+    min-width: 2rem;
+  }
+
+  .slide-subtitle {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+  }
+
+  .slide-script {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: #222;
+    white-space: pre-wrap;
+  }
+
+  .slide-script p + p {
+    margin-top: 0.8em;
+  }
+
+  @media print {
+    body { padding: 2rem; background: #fff; }
+    .slide { break-inside: avoid; border: none; border-bottom: 1px solid #ddd; border-radius: 0; }
+    .section-header { margin-top: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Presentation Script</h1>
+<div id="content"></div>
+
+<script>
+fetch('./slides_data.json')
+  .then(r => r.json())
+  .then(data => {
+    const container = document.getElementById('content');
+    let currentSection = null;
+    let slideIndex = 0;
+
+    data.slides.forEach(slide => {
+      // Skip empty scripts and non-presentation slides
+      if (!slide.script || slide.script.trim() === '') return;
+      if (slide.spreadOnly) return;
+
+      slideIndex++;
+
+      // Section header
+      if (slide.section !== currentSection) {
+        currentSection = slide.section;
+        const header = document.createElement('div');
+        header.className = 'section-header';
+        header.textContent = currentSection;
+        container.appendChild(header);
+      }
+
+      // Slide block
+      const block = document.createElement('div');
+      block.className = 'slide';
+
+      const meta = document.createElement('div');
+      meta.className = 'slide-meta';
+
+      const num = document.createElement('span');
+      num.className = 'slide-number';
+      num.textContent = String(slideIndex).padStart(2, '0');
+
+      const subtitle = document.createElement('span');
+      subtitle.className = 'slide-subtitle';
+      subtitle.textContent = slide.subtitle || '';
+
+      meta.appendChild(num);
+      if (slide.subtitle) meta.appendChild(subtitle);
+      block.appendChild(meta);
+
+      const script = document.createElement('div');
+      script.className = 'slide-script';
+      script.textContent = slide.script;
+      block.appendChild(script);
+
+      container.appendChild(block);
+    });
+  });
+</script>
+</body>
+</html>

@@ -306,23 +306,23 @@
       "section": "Discussion",
       "subtitle": "Answering the Research Questions",
       "src": "/slides/slide-files/43_discussion_rqs.html",
-      "script": "The slide maps key findings and limitations for each research question. A few things worth highlighting.\n\nFor RQ1: the system captures something digital logs fundamentally cannot — the in-between moments, the drift between tasks. But raw observation doesn't automatically become insight. That requires a dedicated reasoning step.\n\nFor RQ2: the gap between the best and worst moments was stark. At its peak, the agent inferred I'd gone rock climbing without being told. At its worst, it told me I was cleaning refrigerator coils while I sat at my desk.\n\nThe design requirements in RQ3 follow directly from those failures."
+      "script": "So — what did the system actually deliver against each question?\n\nFor RQ1: yes, it captures something digital logs can't — the in-between moments, the drift between tasks. But raw observation doesn't automatically become insight. That requires a dedicated reasoning step.\n\nFor RQ2 and RQ3 — let me show you two specific moments."
     },
     {
       "section": "Discussion",
-      "subtitle": "Moments of Connection & Disconnection",
+      "subtitle": "",
       "src": "/slides/slide-files/44_case_study.html",
-      "script": "Two moments — one that worked, one that didn't.\n\nThe connection: the agent noticed a gap in my log and asked if I'd gone rock climbing. It was right. That was the first time the system stopped feeling like a tool.\n\nThe disconnection: I was sitting at my desk. The agent confidently told me I was cleaning the refrigerator coils.\n\nThe details are on the slide."
+      "script": "Two moments — one that worked, one that didn't.\n\nThe connection: I came back from rock climbing without logging anything. The agent noticed the gap in my day and asked if I'd gone climbing. It was right. I had asked it climbing questions before, but I didn't expect it to connect that to my actual life — to notice I was gone and guess correctly where. It felt, for a moment, like talking to someone who actually knew me.\n\nThe disconnection: I was crouching down, reorganizing my fridge. The agent reached out to let me know I was cleaning my refrigerator coils."
     },
     {
       "section": "Conclusion",
       "subtitle": "System Limitations",
       "src": "/slides/slide-files/45_limitations.html",
-      "script": "Four bottlenecks — listed on the slide. A few things worth adding.\n\nThe Hawthorne effect was real, but I forgot about the camera surprisingly quickly when I was deeply focused. The social friction with other people, on the other hand, was immediate and impossible to ignore.\n\nAnd the VLM over-interpretation issue isn't just a bug. These models are built to find meaning. Give them a passive environment, and they'll invent it."
+      "script": "So what are the boundaries of this future?\n\nThe Hawthorne effect was real — but I forgot about the camera surprisingly quickly when I was deeply focused. The social friction with other people, on the other hand, was immediate and impossible to ignore.\n\nAnd the VLM over-interpretation issue isn't just a bug. These models are built to find meaning. Give them a passive environment, and they'll invent it."
     },
     {
       "section": "Conclusion",
-      "subtitle": "The Biographer Opens Its Eyes",
+      "subtitle": "The Life It Witnessed",
       "src": "/slides/slide-files/46_conclusion.html",
       "script": "The agent had my data, and its insights about my life. I asked it to draw a manga to depict my life. This is what it made.\n\nThis is a new possibility for understanding how we actually live."
     },
@@ -372,7 +372,7 @@
       "section": "End",
       "subtitle": "Thank You",
       "src": "/slides/slide-files/47_thank_you.html",
-      "script": "And with that, I'll conclude my presentation. Thank you very much for your time and attention. I am now open to any questions you may have."
+      "script": "And with that, I'll conclude my presentation. Thank you very much for your time and attention."
     }
   ]
 }

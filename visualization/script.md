@@ -298,7 +298,7 @@ For RQ1: yes, it captures something digital logs can't — the in-between moment
 
 For RQ2 and RQ3 — let me show you two specific moments.
 
-### 44
+### 44 — Two moments
 
 Two moments — one that worked, one that didn't.
 
